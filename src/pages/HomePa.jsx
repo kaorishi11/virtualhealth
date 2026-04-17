@@ -14,8 +14,6 @@ import doutor from '../images/Dr. Lucas.png';
 import video from '../images/video.mp4';
 import home from '../images/homepac.png';
 
-import mais from '../images/mais.png';
-
 import certinho from '../images/certinho.png';
 import wats from '../images/wats.png';
 import insta from '../images/insta.png';
@@ -217,7 +215,6 @@ export default function HomePa() {
                         <li><img src={certinho} /> Perguntas frequentes</li>
                     </ul>
                 </div>
-
                 <div className="footer-column">
                     <h4>Virtual Health</h4>
                     <p>Seu médico virtual 24h</p>
@@ -226,7 +223,6 @@ export default function HomePa() {
                         <img src={insta} />
                     </div>
                 </div>
-
                 <div className="footer-column">
                     <h4>Contato</h4>
                     <ul>
