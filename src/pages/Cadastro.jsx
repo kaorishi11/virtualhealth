@@ -21,7 +21,7 @@ export default function Cadastro() {
 
       {/* DIREITA */}
       <div className="right">
-        <div className="card">
+        <div className="cadas-card">
           <h1>
             {tipo === "paciente"
               ? "Cadastre-se"
@@ -56,11 +56,11 @@ export default function Cadastro() {
           </div>
 
           <form>
-            {/* 🔹 CAMPOS COMUNS */}
+            {/*CAMPOS COMUNS */}
             <input type="text" placeholder="Nome completo" />
             <input type="email" placeholder="E-mail" />
 
-            {/* 🔥 PACIENTE */}
+            {/*PACIENTE */}
             {tipo === "paciente" && (
               <>
                 <div className="row">
@@ -70,7 +70,7 @@ export default function Cadastro() {
               </>
             )}
 
-            {/* 🔥 MÉDICO */}
+            {/*MÉDICO */}
             {tipo === "medico" && (
               <>
                 <div className="row">

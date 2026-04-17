@@ -46,7 +46,7 @@ export default function Login() {
 
       {/* LADO DIREITO */}
       <div className="right">
-        <div className="card">
+        <div className="login-card">
           <h1>Bem-vindo de volta!</h1>
           <p>Entre com sua conta para acessar a plataforma.</p>
 
