@@ -1,0 +1,457 @@
+/* AdminDashboard.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f5f7fb;
+    color: #1e293b;
+}
+
+/* Layout Principal */
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar - estilo original, apenas ajuste de cores */
+.sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.logo-area {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.logo {
+    width: 140px;
+    height: auto;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.nav-link {
+    padding: 0.75rem 1rem;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.logout-btn {
+    margin-top: auto;
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #ef4444;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #fef2f2;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    overflow-x: auto;
+    background-color: #f5f7fb;
+}
+
+/* Welcome Section */
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.welcome-section h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.search-btn {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 1.2rem;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-btn:hover {
+    background-color: #e2e8f0;
+}
+
+/* Cards Grid */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.card-icon {
+    width: 52px;
+    height: 52px;
+    background-color: #eef2ff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon img {
+    width: 28px;
+    height: 28px;
+}
+
+.card-content h2 {
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.card-content .number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.25rem;
+}
+
+.card-content .trend {
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.card-content .trend span {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.card-content .pending {
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.card-content .pending span {
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.card-content .total-completed {
+    font-size: 0.8rem;
+    color: #10b981;
+    font-weight: 500;
+}
+
+/* Monthly Chart Section */
+.chart-section {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.chart-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+}
+
+.bars-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.bar {
+    width: 100%;
+    background-color: #3b82f6;
+    border-radius: 8px 8px 4px 4px;
+    transition: height 0.3s;
+    min-height: 4px;
+}
+
+.bar.month-1 { height: 48px; background-color: #3b82f6; }
+.bar.month-2 { height: 28px; background-color: #94a3b8; }
+.bar.month-3 { height: 58px; background-color: #3b82f6; }
+.bar.month-4 { height: 52px; background-color: #3b82f6; }
+.bar.month-5 { height: 48px; background-color: #3b82f6; }
+
+.bar-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.bar-stats {
+    font-size: 0.65rem;
+    color: #475569;
+    text-align: center;
+}
+
+/* Recent Consultations Table */
+.table-section {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.table-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.view-all-btn {
+    background: none;
+    border: none;
+    color: #3b82f6;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.view-all-btn:hover {
+    background-color: #eff6ff;
+}
+
+.consultations-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.consultations-table thead tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.consultations-table th {
+    text-align: left;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.consultations-table td {
+    padding: 1rem 0.75rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+}
+
+/* Status badges - cores corretas */
+.status-pendente {
+    background-color: #fef3c7;
+    color: #d97706;
+    padding: 0.25rem 0.75rem;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-realizada {
+    background-color: #d1fae5;
+    color: #059669;
+    padding: 0.25rem 0.75rem;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-cancelada {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 0.25rem 0.75rem;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Action Buttons - editar e excluir */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-btn {
+    background-color: #eff6ff;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #2563eb;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.edit-btn:hover {
+    background-color: #dbeafe;
+}
+
+.delete-btn {
+    background-color: #fef2f2;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #dc2626;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background-color: #fee2e2;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1rem;
+    }
+    
+    .nav-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .logout-btn {
+        margin-top: 0;
+    }
+    
+    .main-content {
+        padding: 1.5rem;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .consultations-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+}

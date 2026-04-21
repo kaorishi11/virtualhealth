@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import login from '../images/login.png';
 import paciente from '../images/paciente.png';
 import medico from '../images/medico.png';
 import emailIcon from '../images/email.png';
-import senhaIcon from  '../images/cadeado.png';
+import senhaIcon from '../images/cadeado.png';
 import olhoAberto from '../images/olho.png';
 import olhoFechado from '../images/fechado.png';
 
@@ -15,21 +16,54 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [lembrar, setLembrar] = useState(false);
 
   const navigate = useNavigate();
+
+  // Carregar dados salvos ao iniciar
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem("savedEmail");
+      const savedSenha = localStorage.getItem("savedSenha");
+      const savedTipo = localStorage.getItem("savedTipo");
+      const lembrarSalvo = localStorage.getItem("lembrar");
+
+      if (lembrarSalvo === "true") {
+        if (savedEmail) setEmail(savedEmail);
+        if (savedSenha) setSenha(savedSenha);
+        if (savedTipo) setTipo(savedTipo);
+        setLembrar(true);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    }
+  }, []);
 
   function handleLogin(e) {
     e.preventDefault();
 
-    const dados = {
-      email,
-      senha,
-      tipo,
-    };
+    try {
+      // Salvar dados se "lembrar de mim" estiver marcado
+      if (lembrar) {
+        localStorage.setItem("savedEmail", email);
+        localStorage.setItem("savedSenha", senha);
+        localStorage.setItem("savedTipo", tipo);
+        localStorage.setItem("lembrar", "true");
+      } else {
+        localStorage.removeItem("savedEmail");
+        localStorage.removeItem("savedSenha");
+        localStorage.removeItem("savedTipo");
+        localStorage.setItem("lembrar", "false");
+      }
+    } catch (error) {
+      console.error("Erro ao salvar dados:", error);
+    }
 
-    console.log(dados);
+    if (email === "admin@gmail.com" && senha === "123456") {
+      navigate("/admin");
+      return;
+    }
 
-    //REDIRECIONAMENTO
     if (tipo === "paciente") {
       navigate("/home-paciente");
     } else {
@@ -37,14 +71,19 @@ export default function Login() {
     }
   }
 
+  function esqueciSenha() {
+    const emailRecuperacao = prompt("Digite seu e-mail para recuperar a senha:");
+    if (emailRecuperacao) {
+      alert(`Instruções de recuperação enviadas para ${emailRecuperacao}`);
+    }
+  }
+
   return (
     <div className="container">
-      {/* LADO ESQUERDO */}
       <div className="left">
         <img src={login} alt="medica" />
       </div>
 
-      {/* LADO DIREITO */}
       <div className="right">
         <div className="login-card">
           <h1>Bem-vindo de volta!</h1>
@@ -56,7 +95,7 @@ export default function Login() {
               onClick={() => setTipo("paciente")}
               type="button"
             >
-              <img src={paciente} alt="paciente icon" />
+              <img src={paciente} alt="paciente" />
               Sou paciente
             </button>
 
@@ -65,7 +104,7 @@ export default function Login() {
               onClick={() => setTipo("medico")}
               type="button"
             >
-              <img src={medico} alt="medico icon" />
+              <img src={medico} alt="medico" />
               Sou médico
             </button>
           </div>
@@ -78,19 +117,19 @@ export default function Login() {
                 placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
 
             <div className="input-group">
               <img src={senhaIcon} className="icon" alt="senha" />
-
               <input
                 type={mostrarSenha ? "text" : "password"}
                 placeholder="Senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
+                required
               />
-
               <img
                 src={mostrarSenha ? olhoAberto : olhoFechado}
                 className="icon-eye"
@@ -100,18 +139,32 @@ export default function Login() {
             </div>
 
             <div className="lembrar">
-              <input type="checkbox" />
-              <span>Lembrar de mim</span>
+              <input 
+                type="checkbox" 
+                id="lembrar" 
+                checked={lembrar}
+                onChange={(e) => {
+                  setLembrar(e.target.checked);
+                  if (!e.target.checked) {
+                    localStorage.removeItem("savedEmail");
+                    localStorage.removeItem("savedSenha");
+                    localStorage.removeItem("savedTipo");
+                    localStorage.setItem("lembrar", "false");
+                  }
+                }}
+              />
+              <label htmlFor="lembrar">Lembrar de mim</label>
             </div>
 
             <button type="submit">Entrar</button>
           </form>
 
-          <p>
-            Não tem conta? <Link to="/cadastro">Cadastre-se aqui</Link>
-          </p>
-
-          <span>Esqueceu a senha?</span>
+          <div className="links">
+            <p>
+              Não tem conta? <Link to="/cadastro">Cadastre-se aqui</Link>
+            </p>
+            <span onClick={esqueciSenha}>Esqueceu a senha?</span>
+          </div>
         </div>
       </div>
     </div>

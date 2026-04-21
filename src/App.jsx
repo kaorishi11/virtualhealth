@@ -8,6 +8,11 @@ import Chat from './pages/Chat';
 import ConfigPerfil from "./pages/ConfigPerfil";
 import AgendaPerfil from "./pages/AgendaPerfil";
 import NotiPerfil from "./pages/NotiPerfil";
+import Admin from "./pages/Admin";
+import AdmUsuario from "./pages/AdmUsuario";
+import AdmProfissional from "./pages/AdmProfissional";
+import AdmConsulta from "./pages/AdmConsulta";
+import AdmMensagem from "./pages/AdmMensagem";
 
 export default function App() {
   return (
@@ -22,7 +27,15 @@ export default function App() {
         <Route path="/perfil" element={< ConfigPerfil/>} />
         <Route path="/agendamento" element={< AgendaPerfil/>} />
         <Route path="/notificacoes" element={< NotiPerfil/>} />
+
         {/* <Route path="/home-medico" element={< HomeMe/>} /> */}
+
+        
+        <Route path="/admin" element={< Admin/>} />
+        <Route path="/admusuarios" element={< AdmUsuario/>} />
+        <Route path="/admprofissionais" element={< AdmProfissional/>} />
+        <Route path="/admconsultas" element={< AdmConsulta/>} />
+        <Route path="/admmensagens" element={< AdmMensagem/>} />
       </Routes>
     </BrowserRouter>
   );

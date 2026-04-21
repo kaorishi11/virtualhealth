@@ -47,6 +47,40 @@ body {
     font-size: 14px;
 }
 
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.topic-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.topic-item img {
+    width: 22px;
+    height: 22px;
+}
+
+.topic-item:hover {
+    background: #e2e8f0;
+}
+
+.topic-item.selected {
+    background: #2c7da0;
+    color: white;
+}
 /* CONTEÚDO PRINCIPAL */
 .chat-container {
     max-width: 900px;

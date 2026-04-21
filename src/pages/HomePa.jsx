@@ -26,6 +26,35 @@ import '../styles/HomePa.css';
 
 export default function HomePa() {
     const [openIndex, setOpenIndex] = useState(null);
+
+    const [indexDica, setIndexDica] = useState(0);
+    const nextDica = () => {
+        setIndexDica((prev) => (prev === dicas.length - 1 ? 0 : prev + 1));
+    };
+    const prevDica = () => {
+        setIndexDica((prev) => (prev === 0 ? dicas.length - 1 : prev - 1));
+    };
+    const dicas = [
+  {
+    texto:
+      "Manter vínculos sociais ativos contribui para o bem-estar psicológico. Escrever pensamentos e sentimentos pode ser uma forma eficaz de organizar emoções e aliviar tensões. Buscar apoio profissional é sempre a melhor escolha.",
+    nome: "Dra. Beatriz Lacerda - Psicóloga",
+    img: doutora,
+  },
+  {
+    texto:
+      "Atividades de fortalecimento muscular duas vezes por semana ajudam a preservar massa magra e prevenir lesões. Respeitar os limites do próprio corpo e uma alimentação equilibrada são fundamentais.",
+    nome: "Dr. Lucas Ferraz - Medicina do Esporte",
+    img: doutor,
+  },
+  {
+  texto:
+    "A qualidade do sono impacta diretamente a memória, concentração e equilíbrio emocional. Manter uma rotina regular, evitar telas antes de dormir e criar um ambiente tranquilo são hábitos essenciais para uma boa saúde neurológica.",
+  nome: "Dra. Ana Souza - Neurologista",
+  img: doutora,
+}
+];
+
     const [openFaq, setOpenFaq] = useState(null);
     const navigate = useNavigate();
     const faqs = [
@@ -63,7 +92,7 @@ export default function HomePa() {
 
             {/* HEADER */}
             <div className="header">
-                <img src={logo} className="logo" />
+                <img src={logo} className="logopaciente" />
 
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
@@ -110,7 +139,7 @@ export default function HomePa() {
                         <p>Acesse pelo celular, tablet ou computador em todas as plataformas digitais.</p>
                     </div>
 
-                    <div className="card">
+                    <div className="card2">
                         <img src={escudo} />
                         <p>Segurança e privacidade garantidas para os dados de todos os usuários.</p>
                     </div>
@@ -120,7 +149,7 @@ export default function HomePa() {
                         <p>Fácil acesso a informações e exames com Inteligência Artificial (Chatbot).</p>
                     </div>
 
-                    <div className="card">
+                    <div className="card2">
                         <img src={msg} />
                         <p>A equipe Virtual Health responde suas dúvidas com atenção e rapidez.</p>
                     </div>
@@ -149,35 +178,32 @@ export default function HomePa() {
 
             {/* ESPECIALISTAS */}
             <div className="experts-section">
-                <h2>Dicas dos especialistas</h2>
-                <hr />
+                <div className="carousel-container">
+
+                <button className="arrow left" onClick={prevDica}>❮</button>
 
                 <div className="experts-cards">
+                    {dicas.slice(indexDica, indexDica + 2).map((item, i) => (
+                        <div className="expert-card" key={i}>
+                            <p className="expert-text">{item.texto}</p>
 
-                    <div className="expert-card">
-                        <div>
-                            <p className="expert-text">
-                            Manter vínculos sociais ativos contribui para o bem-estar psicológico. 
-                            Escrever pensamentos e sentimentos pode ser uma forma eficaz de organizar emoções e 
-                            aliviar tensões. Buscar apoio profissional é sempre a melhor escolha.
-                            </p>
-                            <img src={doutora} />
-                            <p className="expert-name">Dra. Beatriz Lacerda - Psicóloga</p>
-                        </div>
-                    </div>
+                            <div className="expert-footer">
+                                <div className="perfil">
+                                    <img src={item.img} />
+                                    <div>
+                                        <strong>{item.nome}</strong>
+                                    </div>
+                                </div>
 
-                    <div className="expert-card">
-                        <div>
-                            <p className="expert-text">
-                            Atividades de fortalecimento muscular duas vezes por semana ajudam a preservar
-                             massa magra e prevenir lesões. Respeitar os limites do próprio corpo e uma alimentação
-                              equilibrada são fundamentais.
-                            </p>
-                            <img src={doutor} />
-                            <p className="expert-name">Dr. Lucas Ferraz - Medicina do Esporte</p>
+                                <div className="stars">★★★★★</div>
+                            </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
+
+                <button className="arrow right" onClick={nextDica}>❯</button>
+
+            </div>
             </div>
 
             <hr className="hr3"/>

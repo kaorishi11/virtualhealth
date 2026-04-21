@@ -138,7 +138,7 @@ export default function Clinicas() {
             <div className="hero-clinicas">
                 <h1><span>CONHEÇA TODAS AS <br />
                     CLÍNICAS</span> PRESENCIAIS</h1>
-                <p>Encontre especialistas próximos a você e agende sua consulta.</p>
+                <p>Encontre especialistas próximos a você e agende<br /> sua consulta.</p>
             </div>
 
             {/* CONTEÚDO */}
@@ -160,7 +160,9 @@ export default function Clinicas() {
                             />
                         </div>
                         <div className="filter-tags">
-                            <span className="filter-tag active">Especialista</span>
+                            <select>
+                                <option value="">Especialistas</option>
+                            </select>
                             <span className="filter-tag">Caçapava, São Paulo - SP</span>
                         </div>
                     </div>
@@ -285,35 +287,35 @@ export default function Clinicas() {
 
             {/* FOOTER */}
             <footer className="footer">
-                <div className="footer-column">
-                    <h4>Serviços</h4>
-                    <ul>
-                        <li><img src={certinho} alt="check" /> Teleconsulta 24h</li>
-                        <li><img src={certinho} alt="check" /> Agendamento online</li>
-                        <li><img src={certinho} alt="check" /> Especialidades</li>
-                        <li><img src={certinho} alt="check" /> Perguntas frequentes</li>
-                    </ul>
-                </div>
-
-                <div className="footer-column">
-                    <h4>Virtual Health</h4>
-                    <p>Seu médico virtual 24h</p>
-                    <div className="social-icons">
-                        <img src={wats} alt="whatsapp" />
-                        <img src={insta} alt="instagram" />
-                    </div>
-                </div>
-
-                <div className="footer-column">
-                    <h4>Contato</h4>
-                    <ul>
-                        <li><img src={local} alt="local" /> Endereço: Sesi Caçapava SP</li>
-                        <li><img src={tell} alt="telefone" /> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} alt="email" /> Email: VirtualHealthAssistencia@gmail.com</li>
-                        <li><img src={tempo} alt="horario" /> Horário: Equipe 24h</li>
-                    </ul>
-                </div>
-            </footer>
+            
+                            <div className="footer-column">
+                                <h4>Serviços</h4>
+                                <ul>
+                                    <li><img src={certinho} /> Teleconsulta 24h</li>
+                                    <li><img src={certinho} /> Agendamento online</li>
+                                    <li><img src={certinho} /> Especialidades</li>
+                                    <li><img src={certinho} /> Perguntas frequentes</li>
+                                </ul>
+                            </div>
+                            <div className="footer-column">
+                                <h4>Virtual Health</h4>
+                                <p>Seu médico virtual 24h</p>
+                                <div className="social">
+                                    <img src={wats} />
+                                    <img src={insta} />
+                                </div>
+                            </div>
+                            <div className="footer-column">
+                                <h4>Contato</h4>
+                                <ul>
+                                    <li><img src={local} /> Endereço: Sesi Caçapava SP</li>
+                                    <li><img src={tell} /> Telefone: (12) 9966-9732</li>
+                                    <li><img src={gmail} /> Email: Virtualhealth@gmail.com</li>
+                                    <li><img src={tempo} /> Horário: 24h</li>
+                                </ul>
+                            </div>
+            
+                        </footer>
         </div>
     );
 }

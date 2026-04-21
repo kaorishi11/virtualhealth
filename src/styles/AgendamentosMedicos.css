@@ -1,0 +1,436 @@
+/* BASE */
+.agenda-container {
+    display: flex;
+    height: 100vh;
+    font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+    background: #eef2f5;
+}
+
+/* ========== SIDEBAR ========== */
+.navbar {
+    width: 260px;
+    background: #2a7c80;
+    color: white;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logoperfil {
+    width: 100px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.nav-title {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 20px;
+}
+
+.navbar h3 {
+    font-size: 12px;
+    margin: 20px 0 10px;
+    opacity: 0.7;
+    letter-spacing: 1px;
+}
+
+.navbar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.navbar li {
+    margin-bottom: 12px;
+}
+
+.navbar li.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+}
+
+.navbar li.active a {
+    font-weight: 600;
+}
+
+.navbar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.navbar a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar a img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+}
+
+.logout {
+    margin-top: auto;
+    font-size: 14px;
+    cursor: pointer;
+    padding-top: 20px;
+}
+
+.logout a {
+    color: #ffd966;
+    padding: 8px 10px;
+}
+
+.logout a:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ========== CONTEÚDO ========== */
+.agenda-content {
+    flex: 1;
+    padding: 30px 40px;
+    overflow-y: auto;
+}
+
+.agenda-content h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1e293b;
+    border-left: 4px solid #2a7c80;
+    padding-left: 16px;
+    margin-bottom: 25px;
+}
+
+/* ========== MÊS COM SETAS ========== */
+.mes-container {
+    background: white;
+    border-radius: 16px;
+    padding: 25px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.mes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.month-nav-btn {
+    background: #f1f5f9;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 30px;
+    color: #2a7c80;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.month-nav-btn:hover:not(:disabled) {
+    background: #2a7c80;
+    color: white;
+    transform: scale(1.05);
+}
+
+.month-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.mes-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+/* ========== LISTA DE AGENDAMENTOS ========== */
+.appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.appointment-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+}
+
+.appointment-card:hover {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: #cbd5e1;
+}
+
+/* DIA */
+.appointment-day {
+    min-width: 55px;
+    text-align: center;
+}
+
+.day-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2a7c80;
+    line-height: 1;
+}
+
+/* DETALHES */
+.appointment-details {
+    flex: 2;
+}
+
+.appointment-header {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.appointment-header strong {
+    color: #0f172a;
+}
+
+.appointment-info {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.appointment-local {
+    color: #475569;
+    font-weight: 500;
+}
+
+/* STATUS */
+.appointment-status {
+    min-width: 100px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.status-confirmado {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.status-agendando {
+    background: #fef9c3;
+    color: #a16207;
+    border: 1px solid #fde047;
+}
+
+.status-resolvido {
+    background: #e0e7ff;
+    color: #3730a3;
+    border: 1px solid #c7d2fe;
+}
+
+/* AÇÃO */
+.appointment-action {
+    min-width: 110px;
+}
+
+.action-btn {
+    padding: 7px 16px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    width: 100%;
+}
+
+.btn-entrar {
+    background: #2a7c80;
+    color: white;
+}
+
+.btn-entrar:hover {
+    background: #1f5e61;
+    transform: scale(1.02);
+}
+
+.btn-cancelar {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.btn-cancelar:hover {
+    background: #fecaca;
+    transform: scale(1.02);
+}
+
+.btn-relatorio {
+    background: #e0e7ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
+}
+
+.btn-relatorio:hover {
+    background: #c7d2fe;
+    transform: scale(1.02);
+}
+
+/* SEM AGENDAMENTOS */
+.no-appointments {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+/* ========== RESPONSIVO ========== */
+@media (max-width: 900px) {
+    .agenda-content {
+        padding: 20px 25px;
+    }
+    
+    .appointment-card {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .appointment-day {
+        min-width: 45px;
+    }
+    
+    .day-number {
+        font-size: 24px;
+    }
+    
+    .appointment-details {
+        flex: 1;
+        min-width: 180px;
+    }
+    
+    .appointment-status {
+        min-width: 90px;
+    }
+    
+    .appointment-action {
+        min-width: 100px;
+    }
+    
+    .mes-header h2 {
+        font-size: 18px;
+    }
+    
+    .month-nav-btn {
+        padding: 6px 14px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 650px) {
+    .agenda-container {
+        flex-direction: column;
+    }
+    
+    .navbar {
+        width: 100%;
+        padding: 15px 20px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .logoperfil {
+        width: 60px;
+        margin-bottom: 0;
+    }
+    
+    .nav-title {
+        display: none;
+    }
+    
+    .navbar h3 {
+        display: none;
+    }
+    
+    .navbar ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .navbar li {
+        margin-bottom: 0;
+    }
+    
+    .navbar a {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .logout {
+        margin-top: 0;
+        padding-top: 0;
+    }
+    
+    .mes-container {
+        padding: 15px 18px;
+    }
+    
+    .mes-header {
+        margin-bottom: 18px;
+    }
+    
+    .mes-header h2 {
+        font-size: 16px;
+    }
+    
+    .month-nav-btn {
+        padding: 5px 12px;
+        font-size: 14px;
+    }
+    
+    .appointment-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .appointment-day {
+        min-width: auto;
+    }
+    
+    .appointment-status {
+        width: 100%;
+    }
+    
+    .appointment-action {
+        width: 100%;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+}

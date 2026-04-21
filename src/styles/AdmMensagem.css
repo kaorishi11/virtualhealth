@@ -1,0 +1,296 @@
+/* AdminMensagens.css */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f5f7fb;
+    color: #1e293b;
+}
+
+/* Layout Principal */
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background-color: #ffffff;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.logo-area {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.logo-area h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.nav-section-title {
+    padding: 0.75rem 1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+}
+
+.nav-link {
+    padding: 0.75rem 1rem;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-left: 0.5rem;
+}
+
+.nav-link:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.logout-btn {
+    margin-top: auto;
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: #ef4444;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #fef2f2;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    overflow-x: auto;
+    background-color: #f5f7fb;
+}
+
+/* Header */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Messages Table Section */
+.table-section {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
+    margin-bottom: 1.5rem;
+}
+
+.table-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.mensagens-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.mensagens-table thead tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.mensagens-table th {
+    text-align: left;
+    padding: 1rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mensagens-table td {
+    padding: 1rem 0.75rem;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+}
+
+/* Status Badges */
+.status-pendente {
+    background-color: #fef3c7;
+    color: #d97706;
+    padding: 0.25rem 0.75rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-visto {
+    background-color: #d1fae5;
+    color: #059669;
+    padding: 0.25rem 0.75rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-excluida {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 0.25rem 0.75rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Mensagem com censura */
+.mensagem-censurada {
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-btn {
+    background-color: #eff6ff;
+    border: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #2563eb;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.edit-btn:hover {
+    background-color: #dbeafe;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: #ef4444;
+    transition: all 0.2s;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+}
+
+.delete-btn:hover {
+    background-color: #fef2f2;
+    transform: scale(1.1);
+}
+
+/* Rocket Action Button */
+.rocket-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #3b82f6;
+    transition: all 0.2s;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+}
+
+.rocket-btn:hover {
+    background-color: #eff6ff;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .mensagens-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1rem;
+    }
+    
+    .nav-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .logout-btn {
+        margin-top: 0;
+    }
+    
+    .main-content {
+        padding: 1.5rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+}

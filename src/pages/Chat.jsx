@@ -14,6 +14,11 @@ import tell from "../images/tel.png";
 import gmail from "../images/gmail.png";
 import tempo from "../images/tempo.png";
 
+import coracao from "../images/coracao.png";
+import exames from "../images/exames.png";
+import saude from "../images/saude.png";
+import sintomas from "../images/sintomas.png";
+
 export default function ChatMedico() {
     const [messages, setMessages] = useState([
         {
@@ -28,11 +33,11 @@ export default function ChatMedico() {
     const messagesEndRef = useRef(null);
 
     const topics = [
-        { id: "pressao", label: "Pressão arterial" },
-        { id: "sintomas", label: "Sintomas" },
-        { id: "exames", label: "Meus exames" },
-        { id: "agendar", label: "Agendar Consulta" },
-        { id: "dicas", label: "Dicas de saúde" }
+        { id: "pressao", label: "Pressão arterial", img: coracao },
+        { id: "sintomas", label: "Sintomas", img: sintomas },
+        { id: "exames", label: "Meus exames", img: exames },
+        { id: "agendar", label: "Agendar Consulta", img: exames },
+        { id: "dicas", label: "Dicas de saúde", img: saude }
     ];
 
     const scrollToBottom = () => {
@@ -182,17 +187,14 @@ export default function ChatMedico() {
                         <div className="topics-title">Escolha um dos temas abaixo ou me conte o que está sentindo:</div>
                         <div className="topics-grid">
                             {topics.map((topic) => (
-                                <label 
-                                    key={topic.id} 
+                                <div 
+                                    key={topic.id}
                                     className={`topic-item ${selectedTopics.includes(topic.id) ? "selected" : ""}`}
+                                    onClick={() => handleTopicToggle(topic.id, topic.label)}
                                 >
-                                    <input 
-                                        type="checkbox" 
-                                        checked={selectedTopics.includes(topic.id)}
-                                        onChange={() => handleTopicToggle(topic.id, topic.label)}
-                                    />
-                                    {topic.label}
-                                </label>
+                                    <img src={topic.img} alt={topic.label} />
+                                    <span>{topic.label}</span>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -223,34 +225,34 @@ export default function ChatMedico() {
 
             {/* FOOTER */}
             <footer className="footer">
+
                 <div className="footer-column">
                     <h4>Serviços</h4>
                     <ul>
-                        <li><img src={certinho} alt="check" /> Teleconsulta 24h</li>
-                        <li><img src={certinho} alt="check" /> Agendamento online</li>
-                        <li><img src={certinho} alt="check" /> Especialidades</li>
-                        <li><img src={certinho} alt="check" /> Perguntas frequentes</li>
+                        <li><img src={certinho} /> Teleconsulta 24h</li>
+                        <li><img src={certinho} /> Agendamento online</li>
+                        <li><img src={certinho} /> Especialidades</li>
+                        <li><img src={certinho} /> Perguntas frequentes</li>
                     </ul>
                 </div>
-
                 <div className="footer-column">
                     <h4>Virtual Health</h4>
                     <p>Seu médico virtual 24h</p>
-                    <div className="social-icons">
-                        <img src={wats} alt="whatsapp" />
-                        <img src={insta} alt="instagram" />
+                    <div className="social">
+                        <img src={wats} />
+                        <img src={insta} />
                     </div>
                 </div>
-
                 <div className="footer-column">
                     <h4>Contato</h4>
                     <ul>
-                        <li><img src={local} alt="local" /> Endereço: Sesi Caçapava SP</li>
-                        <li><img src={tell} alt="telefone" /> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} alt="email" /> Email: virtualhealthassistencia@gmail.com</li>
-                        <li><img src={tempo} alt="horario" /> Horário: Equipe 24h</li>
+                        <li><img src={local} /> Endereço: Sesi Caçapava SP</li>
+                        <li><img src={tell} /> Telefone: (12) 9966-9732</li>
+                        <li><img src={gmail} /> Email: Virtualhealth@gmail.com</li>
+                        <li><img src={tempo} /> Horário: 24h</li>
                     </ul>
                 </div>
+
             </footer>
         </div>
     );
