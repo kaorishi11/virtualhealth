@@ -63,7 +63,7 @@ export default function HomePa() {
 
             {/* HEADER */}
             <div className="header">
-                <img src={logo}/>
+                <img src={logo} className="logo" />
 
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
@@ -75,7 +75,9 @@ export default function HomePa() {
                     Fazer Consulta
                 </button>
 
-                <img src={email} className="email" />
+                <Link to="/">
+                    <img src={email} className="email" />
+                </Link>
             </div>
 
             {/* HERO */}

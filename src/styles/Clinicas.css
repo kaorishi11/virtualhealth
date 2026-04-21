@@ -12,12 +12,24 @@ body {
 
 /* HEADER */
 .header {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1050px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 40px;
-    background: white;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 0px 15px;
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-radius: 50px;
+    z-index: 1000;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    overflow: visible;
 }
 
 .logo {
@@ -49,15 +61,22 @@ body {
 
 /* HERO - igual imagem */
 .hero-clinicas {
-    background: linear-gradient(135deg, #e8f0f5 0%, #dce5ec 100%);
-    padding: 48px 32px 32px 32px;
-    text-align: center;
+    background: #DBE0E3;
+    background-image: url('../images/clinicas.png');
+    padding: 100px 40px;
+    background-position: right center;
+    background-repeat: no-repeat;
+    background-size: 860px;
+    text-align: left;
 }
 
 .hero-clinicas h1 {
-    font-size: 32px;
-    font-weight: 700;
-    color: #1a2c3e;
+    font-size: 50px;
+    line-height: 1.2;
+    color: white;
+}
+.hero-clinicas span {
+    color: #2c7da0;
 }
 
 .hero-clinicas p {
@@ -139,23 +158,62 @@ body {
     font-size: 24px;
     font-weight: 600;
     color: #1e293b;
+    text-align: left;
 }
 
+.section-header hr {
+    width: 350px;
+    height: 4px;
+    background: #3a8dad;
+    margin: 10px auto;
+    margin-left: 0;
+    border: none;
+}
+.hr {
+    height: 2px;
+    width: 1000px;
+    background: #9b9898;
+    margin-top: 50px;
+    margin-bottom: 50px;
+    margin-left: -25px;
+}
 /* GRID DE MÉDICOS */
-.doctors-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 30px;
-    margin-bottom: 48px;
+.doctors{
+    padding: 0px 55px;
 }
 
 .doctor-card {
+    display: flex;
+    gap: 30px;
+    justify-content: space-between;
     background: white;
     border-radius: 24px;
+    margin-bottom: 24px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
 }
+/* ESQUERDA */
+.doctor-left {
+    flex: 1;
+}
 
+/* DIREITA */
+.doctor-right {
+    flex: 1;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.teleconsulta-box {
+    font-size: 14px;
+    color: #334155;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 .doctor-header {
     display: flex;
     gap: 16px;
@@ -208,16 +266,13 @@ body {
 /* DOIS BOTÕES: ENDEREÇO E TELECONSULTA */
 .buttons-row {
     display: flex;
-    gap: 12px;
-    margin: 16px 0;
 }
 
 .btn-endereco {
     flex: 1;
     background: #f1f5f9;
     border: 1px solid #e2e8f0;
-    padding: 10px;
-    border-radius: 40px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 500;
     color: #2c7da0;
@@ -226,14 +281,14 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
+    padding: 5px 10px;
 }
 
 .btn-teleconsulta {
     flex: 1;
     background: #e6f7ec;
     border: 1px solid #c8e6d9;
-    padding: 10px;
-    border-radius: 40px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 500;
     color: #2e7d64;

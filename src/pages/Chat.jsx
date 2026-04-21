@@ -4,6 +4,8 @@ import "../styles/Chat.css";
 
 // Imagens
 import logo from "../images/logo.png";
+import email from '../images/login (2).png';
+import robochat from "../images/robochat.png";
 import certinho from "../images/certinho.png";
 import wats from "../images/wats.png";
 import insta from "../images/insta.png";
@@ -125,19 +127,27 @@ export default function ChatMedico() {
         <div>
             {/* HEADER */}
             <div className="header">
-                <img src={logo} className="logo" alt="logo" />
+                <img src={logo} className="logo"/>
+            
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
                 </div>
-                <button className="consulta-btn">Fazer Consulta</button>
+            
+                <button className="consulta-btn" onClick={() => navigate("/chat")}>
+                    Fazer Consulta
+                </button>
+            
+                <Link to="/">
+                    <img src={email} className="email" />
+                </Link>
             </div>
-
             {/* CHAT PRINCIPAL */}
             <div className="chat-container">
                 <div className="chat-card">
                     {/* HEADER DO CHAT */}
+                    
                     <div className="chat-header">
                         <h1>CONVERSE COM O SEU <span>MÉDICO VIRTUAL!</span></h1>
                         <p>Olá! sou seu médico virtual. Como posso ajudar você hoje?</p>
@@ -149,7 +159,7 @@ export default function ChatMedico() {
                             <div key={msg.id}>
                                 {msg.type === "doctor" ? (
                                     <div className="doctor-message">
-                                        <div className="doctor-avatar">👨‍⚕️</div>
+                                        <div className="doctor-avatar"><img src={robochat}/></div>
                                         <div className="message-bubble">
                                             <p>{msg.text}</p>
                                             <div className="doctor-name">Dr. Virtual Health</div>
@@ -208,38 +218,6 @@ export default function ChatMedico() {
                     <div className="disclaimer">
                         <p>⚠️ Esse chat não substitui as avaliações médicas presenciais. Em caso de emergência, procure um serviço de saúde imediatamente.</p>
                     </div>
-                </div>
-            </div>
-
-            {/* GRID DE INFORMAÇÕES */}
-            <div className="info-grid">
-                {/* SERVIÇOS */}
-                <div className="info-card">
-                    <h3>Serviços</h3>
-                    <ul className="services-list">
-                        <li>Teleconsulta 24h</li>
-                        <li>Agendamento online</li>
-                        <li>Especialidades</li>
-                        <li>Perguntas frequentes</li>
-                    </ul>
-                </div>
-
-                {/* VIRTUAL HEALTH */}
-                <div className="info-card virtual-card">
-                    <div className="virtual-icon">🏥</div>
-                    <h3>Virtual Health</h3>
-                    <p>Seu médico virtual 24h</p>
-                </div>
-
-                {/* CONTATO */}
-                <div className="info-card">
-                    <h3>Contato</h3>
-                    <ul className="contact-list">
-                        <li><span className="contact-icon">📍</span> Endereço: Sesi Caçapava SP</li>
-                        <li><span className="contact-icon">📞</span> Telefone: (12) 9966-9732</li>
-                        <li><span className="contact-icon">✉️</span> Email: virtualhealthassistencia@gmail.com</li>
-                        <li><span className="contact-icon">⏰</span> Horário: Equipe 24h</li>
-                    </ul>
                 </div>
             </div>
 

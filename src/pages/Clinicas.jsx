@@ -4,10 +4,11 @@ import "../styles/Clinicas.css";
 
 // Imagens
 import logo from "../images/logo.png";
+import email from '../images/login (2).png';
 import lupa from "../images/lupa.png";
 import marta from "../images/med.png";
 import andrey from "../images/medi.png";
-import sheila from "../images/medico.png";
+import sheila from "../images/douto.png";
 import iconlocal from "../images/iconlocal.png";
 import certinho from "../images/certinho.png";
 import wats from "../images/wats.png";
@@ -99,7 +100,7 @@ export default function Clinicas() {
 
     const handleSelectHour = (hour) => {
         setSelectedHour(hour);
-        alert(`✅ Consulta agendada com ${selectedDoctor?.name}\n📅 Dia: ${selectedDate?.day}/03/2026\n⏰ Horário: ${hour}\n💰 Valor: R$ ${selectedDoctor?.price.toFixed(2)}`);
+        alert(`Consulta agendada com ${selectedDoctor?.name}\n Dia: ${selectedDate?.day}/03/2026\n⏰ Horário: ${hour}\n💰 Valor: R$ ${selectedDoctor?.price.toFixed(2)}`);
     };
 
     const toggleAddress = (doctorId) => {
@@ -116,129 +117,120 @@ export default function Clinicas() {
         <div>
             {/* HEADER */}
             <div className="header">
-                <img src={logo} className="logo" alt="logo" />
+                <img src={logo} className="logo" />
+
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
-                    <Link to="/">Contato</Link>
+                    <Link to="/contato">Contato</Link>
                 </div>
-                <button className="consulta-btn">Fazer Consulta</button>
+
+                <button className="consulta-btn" onClick={() => navigate("/chat")}>
+                    Fazer Consulta
+                </button>
+
+                <Link to="/">
+                    <img src={email} className="email" />
+                </Link>
             </div>
 
             {/* HERO */}
             <div className="hero-clinicas">
-                <h1>CONHEÇA TODAS AS CLÍNICAS PRESENCIAIS</h1>
+                <h1><span>CONHEÇA TODAS AS <br />
+                    CLÍNICAS</span> PRESENCIAIS</h1>
                 <p>Encontre especialistas próximos a você e agende sua consulta.</p>
-
-                <div className="search-container">
-                    <div className="search-input-wrapper">
-                        <img src={lupa} alt="buscar" />
-                        <input
-                            type="text"
-                            placeholder="Procure clínicas ou especialistas..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="filter-tags">
-                        <span className="filter-tag active">Especialista</span>
-                        <span className="filter-tag">Caçapava, São Paulo - SP</span>
-                    </div>
-                </div>
             </div>
 
             {/* CONTEÚDO */}
             <div className="main-content">
-                <div className="section-header">
-                    <h2>Clínicas e especialistas para você</h2>
+                <div className="search-section">
+                    <div className="section-header">
+                        <h2>Clínicas e especialistas para você</h2>
+                        <hr />
+                    </div>
+
+                    <div className="search-container">
+                        <div className="search-input-wrapper">
+                            <img src={lupa} alt="buscar" />
+                            <input
+                                type="text"
+                                placeholder="Procure clínicas ou especialistas..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="filter-tags">
+                            <span className="filter-tag active">Especialista</span>
+                            <span className="filter-tag">Caçapava, São Paulo - SP</span>
+                        </div>
+                    </div>
                 </div>
 
+                <hr className="hr"/>
+
                 {/* GRID MÉDICOS */}
-                <div className="doctors-grid">
+                <div className="doctors">
                     {filteredDoctors.map((doc) => (
                         <div className="doctor-card" key={doc.id}>
-                            <div className="doctor-header">
-                                <div className="doctor-avatar">
-                                    <img src={doc.avatar} alt={doc.name} />
-                                </div>
-                                <div className="doctor-info">
-                                    <h3>{doc.name}</h3>
-                                    <div className="doctor-specialty">{doc.specialty}</div>
-                                    <div className="doctor-rating">
-                                        ⭐ {doc.rating} ({doc.reviews} avaliações)
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* DOIS BOTÕES: ENDEREÇO E TELECONSULTA */}
-                            <div className="buttons-row">
-                                <button 
-                                    className="btn-endereco"
-                                    onClick={() => toggleAddress(doc.id)}
-                                >
-                                    📍 Endereço
-                                </button>
-                                <button 
-                                    className="btn-teleconsulta"
-                                    onClick={() => toggleTeleconsulta(doc.id)}
-                                >
-                                    📱 Teleconsulta
-                                </button>
-                            </div>
+    {/* ESQUERDA */}
+    <div className="doctor-left">
+        <div className="doctor-header">
+            <div className="doctor-avatar">
+                <img src={doc.avatar} alt={doc.name} />
+            </div>
 
-                            {/* MAPA DO ENDEREÇO */}
-                            {showAddress[doc.id] && (
-                                <div className="doctor-map">
-                                    <iframe
-                                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.01},${doc.coordinates.lat - 0.01},${doc.coordinates.lng + 0.01},${doc.coordinates.lat + 0.01}&layer=mapnik&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
-                                        allowFullScreen
-                                        title={`Mapa - ${doc.name}`}
-                                    ></iframe>
-                                    <p style={{ fontSize: "12px", marginTop: "8px", color: "#475569" }}>
-                                        📍 {doc.enderecoCompleto}
-                                    </p>
-                                </div>
-                            )}
+            <div className="doctor-info">
+                <h3>{doc.name}</h3>
+                <div className="doctor-specialty">{doc.specialty}</div>
+                <div className="doctor-rating">
+                    ⭐ {doc.rating} ({doc.reviews} avaliações)
+                </div>
+            </div>
+        </div>
 
-                            {/* TELECONSULTA INFO */}
-                            {showTeleconsulta[doc.id] && (
-                                <div className="teleconsulta-chip" style={{ 
-                                    background: "#e6f7ec", 
-                                    padding: "12px", 
-                                    borderRadius: "12px",
-                                    marginTop: "12px"
-                                }}>
-                                    <div>📱 Teleconsulta disponível</div>
-                                    <div style={{ fontSize: "12px", marginTop: "8px" }}>
-                                        ⏱️ Duração média: 30 a 50 minutos<br />
-                                        🔒 Dados protegidos pela LGPD<br />
-                                        💻 Acesse pelo celular ou computador
-                                    </div>
-                                </div>
-                            )}
+        <div className="buttons-row">
+            <button onClick={() => toggleAddress(doc.id)}>
+                Endereço
+            </button>
 
-                            <div className="price-value">Consulta: R${doc.price.toFixed(2)}</div>
+            <button onClick={() => toggleTeleconsulta(doc.id)}>
+                Teleconsulta
+            </button>
+        </div>
 
-                            <button className="btn-schedule" onClick={() => handleSelectDoctor(doc)}>
-                                Agendar Consulta
-                            </button>
+        <p>{doc.enderecoCompleto}</p>
 
-                            {/* TABELA DE HORÁRIOS - igual imagem */}
-                            <div className="horarios-table">
-                                <div className="horarios-title">Consultas Presenciais</div>
-                                <div className="days-row-horarios">
-                                    {["HOJE", "AMANHÃ", "DOMINGO", "SEGUNDA"].map((day, idx) => (
-                                        <div className="day-card-horario" key={day}>
-                                            <div className="day-name-horario">{day}</div>
-                                            <div className="day-date-horario">
-                                                {idx === 0 ? "27/02" : idx === 1 ? "28/02" : idx === 2 ? "02/03" : "03/03"}
-                                            </div>
-                                            <div className="no-hours-horario">Sem horários</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+        <div className="price-value">
+            Consulta: R${doc.price.toFixed(2)}
+        </div>
+
+        <button className="btn-schedule">
+            Agendar Consulta
+        </button>
+    </div>
+
+    {/* DIREITA */}
+    <div className="doctor-right">
+
+        {showAddress[doc.id] && (
+            <iframe
+                src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.01},${doc.coordinates.lat - 0.01},${doc.coordinates.lng + 0.01},${doc.coordinates.lat + 0.01}&layer=mapnik&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
+                title="mapa"
+            />
+        )}
+
+        {showTeleconsulta[doc.id] && (
+            <div className="teleconsulta-box">
+                <p>Teleconsulta disponível</p>
+                <p>⏱30 a 50 minutos</p>
+                <p>Dados protegidos</p>
+                <p>Celular ou computador</p>
+            </div>
+        )}
+
+    </div>
+</div>
                     ))}
                 </div>
 
