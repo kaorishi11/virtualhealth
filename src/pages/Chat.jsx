@@ -139,7 +139,7 @@ export default function ChatMedico() {
                     Fazer Consulta
                 </button>
             
-                <Link to="/">
+                <Link to="/perfil">
                     <img src={email} className="email" />
                 </Link>
             </div>

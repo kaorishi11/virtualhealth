@@ -45,7 +45,7 @@ export default function Contato() {
                 <button className="consulta-btn" onClick={() => navigate("/chat")}>
                     Fazer Consulta
                 </button>
-                <Link to="/">
+                <Link to="/perfil">
                     <img src={emailheader} className="email" />
                 </Link>
             </div>

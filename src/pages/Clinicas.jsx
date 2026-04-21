@@ -129,7 +129,7 @@ export default function Clinicas() {
                     Fazer Consulta
                 </button>
 
-                <Link to="/">
+                <Link to="/perfil">
                     <img src={email} className="email" />
                 </Link>
             </div>
