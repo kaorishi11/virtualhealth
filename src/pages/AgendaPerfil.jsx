@@ -107,8 +107,10 @@ export default function AgendamentosMedicos() {
 
             {/* SIDEBAR */}
             <div className="navbar">
-                <img src={logo} className="logoperfil" alt="logo" />
-                <p className="nav-title">Configuração</p>
+                <div className="nav-header">
+                    <img src={logo} className="logoperfil" alt="logo" />
+                    <p className="nav-title">Configuração</p>
+                </div>
 
                 <h3>CONTA</h3>
                 <ul>

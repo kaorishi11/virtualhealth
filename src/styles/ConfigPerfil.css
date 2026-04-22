@@ -6,9 +6,8 @@
     background: #f0f2f5;
 }
 
-/* ========== SIDEBAR MELHORADA ========== */
 .navbar {
-    width: 270px;
+    width: 200px;
     background: #1a6b6f;
     background: linear-gradient(180deg, #1f7378 0%, #135b5f 100%);
     color: white;
@@ -18,13 +17,21 @@
 }
 
 .nav-header {
-    padding: 30px 24px 20px 24px;
+    padding: 5px 4px 10px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     margin-bottom: 15px;
+    display: flex;
+}
+.nav-header img {
+    margin-left: -20px;
+}
+.nav-header p{
+    margin-top: 18px;
+    margin-left: 10px;
 }
 
 .logoperfil {
-    width: 100px;
+    width: 150px;
     height: auto;
 }
 
@@ -40,6 +47,7 @@
     margin: 0 0 12px 4px;
     opacity: 0.7;
     text-transform: uppercase;
+    margin-left: 0;
 }
 
 .navbar ul {
@@ -125,12 +133,13 @@
 /* ========== CARD PERFIL - FOTO CENTRALIZADA ========== */
 .perfil-card {
     background: #0f5c63;
+    max-width: 400px;
     background: linear-gradient(135deg, #126e75 0%, #0b555a 100%);
-    border-radius: 20px;
-    padding: 30px 35px;
+    border-radius: 10px;
+    padding: 10px 10px;
     display: flex;
     align-items: center;
-    gap: 35px;
+    gap: 10px;
     color: white;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
@@ -204,18 +213,21 @@
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    gap: 20px;
     margin-bottom: 30px;
 }
 
 /* ========== CARDS ========== */
 .card {
     background: white;
+    max-width: 400px;
     border-radius: 20px;
-    padding: 24px 28px;
+    padding: 20px 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     border: 1px solid #e2e8f0;
     transition: 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 .card:hover {
@@ -257,7 +269,7 @@
 }
 
 input {
-    padding: 12px 15px;
+    padding: 10px 10px;
     border-radius: 14px;
     border: 1px solid #e2edf2;
     background: #fafcfd;
@@ -306,8 +318,8 @@ input:focus {
 /* ========== BOTÕES ========== */
 .btn {
     margin-top: 18px;
-    padding: 11px 0;
-    border-radius: 40px;
+    padding: 8px 50px;
+    border-radius: 10px;
     border: none;
     background: #1a6b6f;
     color: white;
