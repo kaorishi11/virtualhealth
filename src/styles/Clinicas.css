@@ -31,8 +31,14 @@ body {
     overflow: visible;
 }
 
-.logo {
-    height: 48px;
+.logoclinicas {
+    height: 45px;
+    transform: scale(1.4);
+    transform-origin: left center;
+}
+
+.header img {
+    height: 45px;
 }
 
 .nav-links {

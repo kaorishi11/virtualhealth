@@ -34,7 +34,7 @@ export default function Contato() {
         <div>
             {/* HEADER */}
             <div className="header">
-                <img src={logo} className="logo"/>
+                <img src={logo} className="logocontato"/>
 
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>

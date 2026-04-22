@@ -117,7 +117,7 @@ export default function Clinicas() {
         <div>
             {/* HEADER */}
             <div className="header">
-                <img src={logo} className="logo" />
+                <img src={logo} className="logoclinicas" />
 
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
