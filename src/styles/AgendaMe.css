@@ -1,0 +1,545 @@
+/* ========== CONTAINER PRINCIPAL ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.agenda-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #f5f7fa;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: linear-gradient(180deg, #1a6b6f 0%, #0d4e52 100%);
+    color: white;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+.sidebar-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.logo-medico {
+    width: 180px;
+    height: auto;
+    object-fit: contain;
+}
+
+.perfil-medico {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.avatar-medico {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    border: 3px solid #ffd966;
+    margin-bottom: 14px;
+    object-fit: cover;
+}
+
+.perfil-medico h2 {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+.perfil-medico p {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-lateral {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-section {
+    margin-bottom: 32px;
+}
+
+.menu-section h3 {
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    opacity: 0.6;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+.menu-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-section li {
+    margin-bottom: 8px;
+}
+
+.menu-section li a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.menu-section li a img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.menu-section li.active a {
+    background: rgba(255, 217, 102, 0.18);
+    border-left: 3px solid #ffd966;
+}
+
+.menu-section li a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.logout {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.logout a {
+    color: #ffd966;
+    text-decoration: none;
+    display: block;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+}
+
+.logout a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ========== MAIN CONTENT ========== */
+.main-content {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-y: auto;
+    background: #f5f7fa;
+}
+
+/* ========== HEADER ========== */
+.agenda-header {
+    margin-bottom: 24px;
+}
+
+.agenda-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a2a3a;
+    letter-spacing: -0.3px;
+}
+
+/* ========== SELETOR DE DATA COM SETAS ========== */
+.data-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 24px;
+    background: white;
+    padding: 12px 24px;
+    border-radius: 50px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+    width: fit-content;
+}
+
+.seta-btn {
+    background: #f0f2f5;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #1a6b6f;
+    font-weight: bold;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seta-btn:hover {
+    background: #e0e8ee;
+    transform: scale(1.05);
+}
+
+.data-info {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a2a3a;
+}
+
+.dia-semana {
+    font-weight: 700;
+    color: #1a6b6f;
+}
+
+.dia-numero {
+    color: #1a2a3a;
+}
+
+.mes {
+    color: #6a7a8a;
+    font-weight: 500;
+}
+
+/* ========== FILTROS ========== */
+.filtros {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.filtro-btn {
+    padding: 8px 24px;
+    border: 1px solid #e0e8ee;
+    border-radius: 30px;
+    background: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6a7a8a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filtro-btn:hover {
+    background: #f0f2f5;
+    border-color: #1a6b6f;
+    color: #1a6b6f;
+}
+
+.filtro-btn.online:hover {
+    background: #e3f2fd;
+    border-color: #1976d2;
+    color: #1976d2;
+}
+
+.filtro-btn.presencial:hover {
+    background: #e8f5e9;
+    border-color: #388e3c;
+    color: #388e3c;
+}
+
+/* ========== LISTA DE AGENDAMENTOS ========== */
+.agendamentos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.agendamento-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+    transition: all 0.2s;
+}
+
+.agendamento-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Horário */
+.agendamento-horario {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.horario-principal {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a6b6f;
+}
+
+.duracao {
+    font-size: 0.8rem;
+    color: #8a9aaa;
+    font-weight: 500;
+}
+
+/* Paciente */
+.agendamento-paciente {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.paciente-foto {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e8ee;
+}
+
+.paciente-dados h3 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a2a3a;
+}
+
+.paciente-dados p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #8a9aaa;
+}
+
+/* Footer com tags e botões */
+.agendamento-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.agendamento-tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.tag.tipo {
+    background: #f0f2f5;
+    color: #6a7a8a;
+}
+
+.tag.modalidade.online {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.tag.modalidade.presencial {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+/* Botões de ação */
+.agendamento-botoes {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-agenda {
+    padding: 6px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-agenda.iniciar {
+    background: #ffd966;
+    color: #2d5a5e;
+}
+
+.btn-agenda.iniciar:hover {
+    background: #ffcd4a;
+    transform: scale(1.02);
+}
+
+.btn-agenda.cancelar {
+    background: #fee;
+    color: #e74c3c;
+    border: 1px solid #fcc;
+}
+
+.btn-agenda.cancelar:hover {
+    background: #fdd;
+    transform: scale(1.02);
+}
+
+.btn-agenda.prontuario {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.btn-agenda.prontuario:hover {
+    background: #d4e6f5;
+    transform: scale(1.02);
+}
+
+.btn-agenda.realizada {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.btn-agenda.realizada:hover {
+    background: #d4edd6;
+    transform: scale(1.02);
+}
+
+/* ========== RESPONSIVIDADE ========== */
+@media (max-width: 768px) {
+    .agenda-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-width: auto;
+        height: auto;
+        position: relative;
+        padding: 20px 24px;
+    }
+    
+    .sidebar-logo {
+        justify-content: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    .logo-medico {
+        width: 140px;
+    }
+    
+    .perfil-medico {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        text-align: left;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+    }
+    
+    .avatar-medico {
+        margin-bottom: 0;
+        width: 65px;
+        height: 65px;
+    }
+    
+    .menu-lateral {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .menu-section {
+        margin-bottom: 0;
+        flex: 1;
+    }
+    
+    .logout {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        align-self: center;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .agenda-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .data-selector {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .agendamento-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .agendamento-botoes {
+        width: 100%;
+    }
+    
+    .btn-agenda {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .agendamento-card {
+        padding: 16px;
+    }
+    
+    .agendamento-paciente {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .paciente-foto {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .agendamento-tags {
+        justify-content: center;
+    }
+    
+    .filtros {
+        flex-wrap: wrap;
+    }
+    
+    .filtro-btn {
+        flex: 1;
+        text-align: center;
+    }
+}

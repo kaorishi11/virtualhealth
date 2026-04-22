@@ -1,0 +1,627 @@
+/* ========== RESET E CONTAINER PRINCIPAL ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #f5f7fa;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ========== SIDEBAR - TOTALMENTE VISÍVEL ========== */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: linear-gradient(180deg, #1a6b6f 0%, #0d4e52 100%);
+    color: white;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+.sidebar-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.logo-medico {
+    width: 180px;
+    height: auto;
+    object-fit: contain;
+}
+
+.perfil-medico {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.avatar-medico {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    border: 3px solid #ffd966;
+    margin-bottom: 14px;
+    object-fit: cover;
+}
+
+.perfil-medico h2 {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+.perfil-medico p {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-lateral {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-section {
+    margin-bottom: 32px;
+}
+
+.menu-section h3 {
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    opacity: 0.6;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+.menu-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-section li {
+    margin-bottom: 8px;
+}
+
+.menu-section li a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.menu-section li a img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.menu-section li.active a {
+    background: rgba(255, 217, 102, 0.18);
+    border-left: 3px solid #ffd966;
+}
+
+.menu-section li a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.logout {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.logout a {
+    color: #ffd966;
+    text-decoration: none;
+    display: block;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+}
+
+.logout a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ========== MAIN CONTENT ========== */
+.main-content {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-y: auto;
+    background: #f5f7fa;
+}
+
+/* ========== WELCOME HEADER ========== */
+.welcome-header {
+    margin-bottom: 32px;
+}
+
+.welcome-header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #1a2a3a;
+    margin: 0 0 6px;
+}
+
+.welcome-header h1 span {
+    color: #1a6b6f;
+    font-weight: 700;
+}
+
+.welcome-header p {
+    color: #7a8e9e;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* ========== STATS CARDS ========== */
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+    transition: all 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card img {
+    width: 48px;
+    height: 48px;
+}
+
+.stat-info h4 {
+    margin: 0 0 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #8a9aaa;
+    letter-spacing: 0.3px;
+}
+
+.stat-info p {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1a6b6f;
+    line-height: 1.2;
+}
+
+/* ========== CONSULTAS E CALENDÁRIO ========== */
+.consultas-calendario {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 30px;
+}
+
+/* ========== CONSULTAS DE HOJE ========== */
+.consultas-hoje {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #eef2f6;
+}
+
+.section-header img {
+    width: 24px;
+    height: 24px;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a2a3a;
+}
+
+.consultas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.consulta-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 14px;
+    transition: all 0.2s;
+}
+
+.consulta-item:hover {
+    background: #f0f5f7;
+}
+
+.consulta-info-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+}
+
+.consulta-foto {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e0e8ee;
+}
+
+.consulta-dados h4 {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a2a3a;
+}
+
+.consulta-dados p {
+    margin: 0 0 8px;
+    font-size: 0.75rem;
+    color: #8a9aaa;
+}
+
+.consulta-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.horario {
+    background: #e8edf0;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #4a6a7a;
+}
+
+.modalidade {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.modalidade.online {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.modalidade.presencial {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.btn-consulta {
+    padding: 8px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-consulta.iniciar {
+    background: #ffd966;
+    color: #2d5a5e;
+}
+
+.btn-consulta.iniciar:hover {
+    background: #ffcd4a;
+    transform: scale(1.02);
+}
+
+.btn-consulta.ver {
+    background: #e8edf0;
+    color: #6a7a8a;
+}
+
+.btn-consulta.ver:hover {
+    background: #dce4e8;
+}
+
+/* ========== CALENDÁRIO ========== */
+.calendario-side {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.calendario-mensal {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+}
+
+.calendario-titulo {
+    margin: 0 0 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a2a3a;
+    text-align: center;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 16px;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: #1a6b6f;
+    letter-spacing: 0.5px;
+}
+
+.calendario-dias {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.week-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.85rem;
+    color: #4a6a7a;
+}
+
+.week-row span {
+    padding: 8px 0;
+    border-radius: 50%;
+    width: 36px;
+    margin: 0 auto;
+    display: inline-block;
+    transition: all 0.2s;
+}
+
+.dia-atual {
+    background: #1a6b6f;
+    color: white !important;
+    font-weight: 700;
+}
+
+/* ========== CONSULTA SEMANAL ========== */
+.consulta-semanal {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+}
+
+.consulta-semanal h3 {
+    margin: 0 0 16px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a2a3a;
+    text-align: center;
+}
+
+.tipos-atendimento {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.tipo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #8a9aaa;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.dot.presencial {
+    background: #388e3c;
+}
+
+.dot.tele {
+    background: #1976d2;
+}
+
+.dias-semana {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+}
+
+.dia-item {
+    text-align: center;
+    flex: 1;
+}
+
+.dia-nome {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6a7a8a;
+    margin-bottom: 8px;
+}
+
+.indicadores {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.indicador {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.indicador.presencial {
+    background: #388e3c;
+}
+
+.indicador.tele {
+    background: #1976d2;
+}
+
+/* ========== RESPONSIVIDADE ========== */
+@media (max-width: 1100px) {
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .consultas-calendario {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-width: auto;
+        height: auto;
+        position: relative;
+        padding: 20px 24px;
+    }
+    
+    .sidebar-logo {
+        justify-content: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    .logo-medico {
+        width: 140px;
+    }
+    
+    .perfil-medico {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        text-align: left;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+    }
+    
+    .avatar-medico {
+        margin-bottom: 0;
+        width: 65px;
+        height: 65px;
+    }
+    
+    .menu-lateral {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .menu-section {
+        margin-bottom: 0;
+        flex: 1;
+    }
+    
+    .logout {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        align-self: center;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-header h1 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .consulta-info-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .consulta-meta {
+        justify-content: center;
+    }
+    
+    .consulta-item {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .dias-semana {
+        flex-wrap: wrap;
+    }
+}

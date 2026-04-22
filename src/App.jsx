@@ -13,6 +13,11 @@ import AdmUsuario from "./pages/AdmUsuario";
 import AdmProfissional from "./pages/AdmProfissional";
 import AdmConsulta from "./pages/AdmConsulta";
 import AdmMensagem from "./pages/AdmMensagem";
+import HomeMe from "./pages/HomeMe";
+import AgendaMe from "./pages/AgendaMe";
+import DicasMe from "./pages/DicasMe";
+import ConsultaMe from "./pages/ConsultaMe";
+import PerfilMe from "./pages/PerfilMe";
 
 export default function App() {
   return (
@@ -28,9 +33,12 @@ export default function App() {
         <Route path="/agendamento" element={< AgendaPerfil/>} />
         <Route path="/notificacoes" element={< NotiPerfil/>} />
 
-        {/* <Route path="/home-medico" element={< HomeMe/>} /> */}
+        <Route path="/home-medico" element={< HomeMe/>} />
+        <Route path="/agenda" element={< AgendaMe/>} />
+        <Route path="/consulta" element={< ConsultaMe/>} />
+        <Route path="/dicas" element={< DicasMe/>} />
+        <Route path="/perfil-medico" element={< PerfilMe/>} />
 
-        
         <Route path="/admin" element={< Admin/>} />
         <Route path="/admusuarios" element={< AdmUsuario/>} />
         <Route path="/admprofissionais" element={< AdmProfissional/>} />

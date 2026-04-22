@@ -1,18 +1,20 @@
-// AdminUsuarios.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/AdmUsuario.css'; 
+import '../styles/AdmUsuario.css';
 
 import logo from '../images/logo.png';
+import iconUsers from '../images/icon1.png';
 
 export default function AdminUsuarios() {
-    // Dados dos usuários baseado na imagem
+    // Dados dos usuários
     const [usuarios, setUsuarios] = useState([
         { id: 1, nome: 'Vinícius Queiroz', email: 'vinicius@gmail.com', status: 'Inativo', data: '01/03/2026' },
         { id: 2, nome: 'Pedro Lucas', email: 'pedro@gmail.com', status: 'Ativo', data: '05/03/2026' },
         { id: 3, nome: 'Miguel Chagas', email: 'miguel@gmail.com', status: 'Ativo', data: '10/03/2026' },
         { id: 4, nome: 'Giovana Paula', email: 'giovana@gmail.com', status: 'Inativo', data: '20/03/2026' },
     ]);
+
+    const [searchTerm, setSearchTerm] = useState('');
 
     const getStatusClass = (status) => {
         return status === 'Ativo' ? 'status-ativo' : 'status-inativo';
@@ -21,7 +23,6 @@ export default function AdminUsuarios() {
     const handleEdit = (id) => {
         const usuario = usuarios.find(u => u.id === id);
         alert(`Editar usuário: ${usuario.nome}`);
-        // Aqui você pode abrir um modal ou redirecionar para página de edição
     };
 
     const handleDelete = (id) => {
@@ -33,39 +34,59 @@ export default function AdminUsuarios() {
 
     const handleNovoUsuario = () => {
         alert('➕ Abrir formulário para novo usuário');
-        // Aqui você pode abrir um modal ou redirecionar para página de cadastro
     };
+
+    const filteredUsuarios = usuarios.filter(usuario =>
+        usuario.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        usuario.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="admin-container">
-            {/* Sidebar */}
+            {/* Sidebar - mesmo estilo do AdminDashboard */}
             <aside className="sidebar">
-                <div className="logo-area">
-                    <img src={logo} alt="Logo" className="logo" />
-                </div>
-                <nav className="nav-menu">
-                    <Link to="/admin" className="nav-link">Visão geral</Link>
-                    <Link to="/admusuarios" className="nav-link">Usuários</Link>
-                    <Link to="/admprofissionais" className="nav-link">Profissionais</Link>
-                    <Link to="/admconsultas" className="nav-link">Consultas</Link>
-                    <Link to="/admmensagens" className="nav-link">Mensagens</Link>
-                </nav>
-                <button className="logout-btn">Sair</button>
-            </aside>
+                            <div className="sidebar-logo">
+                                <img src={logo} alt="Logo" className="logo-medico" />
+                            </div>
+            
+                            <div className='menu-lateral'>
+                                <div className='menu-section'>
+                                    <h3>GERAL</h3>
+                                    <ul>
+                                        <li><Link to="/admin">Visão geral</Link></li>
+                                        <li className="active"><Link to="/admusuarios">Usuários</Link></li>
+                                        <li><Link to="/admprofissionais">Profissionais</Link></li>
+                                        <li><Link to="/admconsultas">Consultas</Link></li>
+                                        <li><Link to="/admmensagens">Mensagens</Link></li>
+                                    </ul>
+                                </div>
+                            
+                                <div className="logout">
+                                    <Link to="/">Desconectar</Link>
+                                </div>
+                            </div>
+                        </aside>
 
             {/* Main Content */}
             <main className="main-content">
-                {/* Page Header */}
-                <div className="page-header">
-                    <h1>Dashboard</h1>
-                    <p>Gerenciamento de Usuários</p>
+                {/* Welcome Section */}
+                <div className="welcome-section">
+                    <h1>Gerenciamento de Usuários</h1>
                 </div>
 
-                {/* Users Table */}
+                {/* Tabela de Usuários */}
                 <div className="table-section">
                     <div className="table-header">
                         <h2>USUÁRIOS CADASTRADOS</h2>
-                        <button className="view-all-btn">Ver tudo</button>
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" 
+                                placeholder="Buscar usuário..." 
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <table className="users-table">
@@ -79,7 +100,7 @@ export default function AdminUsuarios() {
                             </tr>
                         </thead>
                         <tbody>
-                            {usuarios.map((usuario) => (
+                            {filteredUsuarios.map((usuario) => (
                                 <tr key={usuario.id}>
                                     <td>{usuario.nome}</td>
                                     <td>{usuario.email}</td>
@@ -100,7 +121,7 @@ export default function AdminUsuarios() {
                                             className="delete-btn"
                                             onClick={() => handleDelete(usuario.id)}
                                         >
-                                            🗑️
+                                            Excluir
                                         </button>
                                     </td>
                                 </tr>
@@ -108,7 +129,7 @@ export default function AdminUsuarios() {
                         </tbody>
                     </table>
 
-                    {/* New User Button */}
+                    {/* Botão Novo Usuário */}
                     <div className="new-user-btn">
                         <button className="btn-primary" onClick={handleNovoUsuario}>
                             + Novo Usuário

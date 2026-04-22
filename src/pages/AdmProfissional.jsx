@@ -1,12 +1,12 @@
-// AdminProfissionais.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/AdmProfissional.css'; 
+import '../styles/AdmProfissional.css';
 
 import logo from '../images/logo.png';
+import iconProfissionais from '../images/icon2.png';
 
 export default function AdminProfissionais() {
-    // Dados dos profissionais baseado na imagem
+    // Dados dos profissionais
     const [profissionais, setProfissionais] = useState([
         { 
             id: 1, 
@@ -46,6 +46,8 @@ export default function AdminProfissionais() {
         },
     ]);
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     const getStatusClass = (status) => {
         return status === 'Aceito' ? 'status-aceito' : 'status-negado';
     };
@@ -53,7 +55,6 @@ export default function AdminProfissionais() {
     const handleEdit = (id) => {
         const profissional = profissionais.find(p => p.id === id);
         alert(`✏️ Editar profissional: ${profissional.nome}`);
-        // Aqui você pode abrir um modal ou redirecionar para página de edição
     };
 
     const handleDelete = (id) => {
@@ -65,39 +66,60 @@ export default function AdminProfissionais() {
 
     const handleNovoProfissional = () => {
         alert('➕ Abrir formulário para novo profissional');
-        // Aqui você pode abrir um modal ou redirecionar para página de cadastro
     };
+
+    const filteredProfissionais = profissionais.filter(profissional =>
+        profissional.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profissional.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        profissional.registro.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="admin-container">
-            {/* Sidebar */}
+            {/* Sidebar - mesmo estilo do AdminDashboard */}
             <aside className="sidebar">
-                <div className="logo-area">
-                    <h2>VIRTUAL HEALTH</h2>
-                </div>
-                <nav className="nav-menu">
-                    <Link to="/admin" className="nav-link">Visão geral</Link>
-                    <Link to="/admusuarios" className="nav-link">Usuários</Link>
-                    <Link to="/admprofissionais" className="nav-link">Profissionais</Link>
-                    <Link to="/admconsultas" className="nav-link">Consultas</Link>
-                    <Link to="/admmensagens" className="nav-link">Mensagens</Link>
-                </nav>
-                <button className="logout-btn">Sair</button>
-            </aside>
+                            <div className="sidebar-logo">
+                                <img src={logo} alt="Logo" className="logo-medico" />
+                            </div>
+            
+                            <div className='menu-lateral'>
+                                <div className='menu-section'>
+                                    <h3>GERAL</h3>
+                                    <ul>
+                                        <li ><Link to="/admin">Visão geral</Link></li>
+                                        <li><Link to="/admusuarios">Usuários</Link></li>
+                                        <li className="active"><Link to="/admprofissionais">Profissionais</Link></li>
+                                        <li><Link to="/admconsultas">Consultas</Link></li>
+                                        <li><Link to="/admmensagens">Mensagens</Link></li>
+                                    </ul>
+                                </div>
+                            
+                                <div className="logout">
+                                    <Link to="/">Desconectar</Link>
+                                </div>
+                            </div>
+                        </aside>
 
             {/* Main Content */}
             <main className="main-content">
-                {/* Page Header */}
-                <div className="page-header">
-                    <h1>Dashboard</h1>
-                    <p>Gerenciamento de Profissionais</p>
+                {/* Welcome Section */}
+                <div className="welcome-section">
+                    <h1>Gerenciamento de Profissionais</h1>
                 </div>
 
-                {/* Professionals Table */}
+                {/* Tabela de Profissionais */}
                 <div className="table-section">
                     <div className="table-header">
                         <h2>PROFISSIONAIS CADASTRADOS</h2>
-                        <button className="view-all-btn">Ver tudo &gt;</button>
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" 
+                                placeholder="Buscar profissional..." 
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <table className="profissionais-table">
@@ -113,7 +135,7 @@ export default function AdminProfissionais() {
                             </tr>
                         </thead>
                         <tbody>
-                            {profissionais.map((profissional) => (
+                            {filteredProfissionais.map((profissional) => (
                                 <tr key={profissional.id}>
                                     <td>{profissional.nome}</td>
                                     <td>{profissional.especialidade}</td>
@@ -136,7 +158,7 @@ export default function AdminProfissionais() {
                                             className="delete-btn"
                                             onClick={() => handleDelete(profissional.id)}
                                         >
-                                            🗑️
+                                            Excluir
                                         </button>
                                     </td>
                                 </tr>
@@ -144,7 +166,7 @@ export default function AdminProfissionais() {
                         </tbody>
                     </table>
 
-                    {/* New Professional Button */}
+                    {/* Botão Novo Profissional */}
                     <div className="new-profissional-btn">
                         <button className="btn-primary" onClick={handleNovoProfissional}>
                             + Novo Profissional

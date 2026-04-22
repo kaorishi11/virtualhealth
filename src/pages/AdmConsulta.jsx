@@ -1,16 +1,18 @@
-// AdminConsultas.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/AdmConsulta.css';
 
+import logo from '../images/logo.png';
+import iconConsultas from '../images/icon2.png';
+
 export default function AdminConsultas() {
-    // Dados das consultas baseado na imagem
+    // Dados das consultas
     const [consultas, setConsultas] = useState([
         { 
             id: 1, 
             profissional: 'Vinícius Queiroz', 
             especialidade: 'Oftalmologista', 
-            paciente: 'Lana', 
+            paciente: 'Lana Silva', 
             status: 'Pendente', 
             data: '01/03/2026', 
             horario: '09:10' 
@@ -19,7 +21,7 @@ export default function AdminConsultas() {
             id: 2, 
             profissional: 'Pedro Lucas', 
             especialidade: 'Dentista', 
-            paciente: 'Larissa', 
+            paciente: 'Larissa Costa', 
             status: 'Concluída', 
             data: '05/03/2026', 
             horario: '09:10' 
@@ -28,7 +30,7 @@ export default function AdminConsultas() {
             id: 3, 
             profissional: 'Miguel Chagas', 
             especialidade: 'Ginecologista', 
-            paciente: 'Magali', 
+            paciente: 'Magali Souza', 
             status: 'Concluída', 
             data: '10/03/2025', 
             horario: '09:10' 
@@ -37,7 +39,7 @@ export default function AdminConsultas() {
             id: 4, 
             profissional: 'Giovana Paula', 
             especialidade: 'Nutricionista', 
-            paciente: 'Mônica', 
+            paciente: 'Mônica Santos', 
             status: 'Cancelada', 
             data: '20/03/2026', 
             horario: '09:10' 
@@ -58,7 +60,6 @@ export default function AdminConsultas() {
     const handleEdit = (id) => {
         const consulta = consultas.find(c => c.id === id);
         alert(`✏️ Editar consulta de ${consulta.paciente} com Dr(a). ${consulta.profissional}`);
-        // Aqui você pode abrir um modal ou redirecionar para página de edição
     };
 
     const handleDelete = (id) => {
@@ -68,63 +69,64 @@ export default function AdminConsultas() {
         }
     };
 
-    const handleViewAll = () => {
-        alert('📋 Ver todas as consultas');
-        // Aqui você pode redirecionar para página com todas as consultas
-    };
-
-    // Filtrar consultas baseado no termo de busca
     const filteredConsultas = consultas.filter(consulta =>
         consulta.profissional.toLowerCase().includes(searchTerm.toLowerCase()) ||
         consulta.paciente.toLowerCase().includes(searchTerm.toLowerCase()) ||
         consulta.especialidade.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Estatísticas
+    const totalConsultas = consultas.length;
+    const consultasPendentes = consultas.filter(c => c.status === 'Pendente').length;
+    const consultasConcluidas = consultas.filter(c => c.status === 'Concluída').length;
+    const consultasCanceladas = consultas.filter(c => c.status === 'Cancelada').length;
+
     return (
         <div className="admin-container">
-            {/* Sidebar */}
+            {/* Sidebar - mesmo estilo do AdminDashboard */}
             <aside className="sidebar">
-                <div className="logo-area">
-                    <h2>VIRTUAL HEALTH</h2>
+                <div className="sidebar-logo">
+                    <img src={logo} alt="Logo" className="logo-medico" />
                 </div>
-                <nav className="nav-menu">
-                    <Link to="/admin" className="nav-link">Visão geral</Link>
-                    <Link to="/admusuarios" className="nav-link">Usuários</Link>
-                    <Link to="/admprofissionais" className="nav-link">Profissionais</Link>
-                    <Link to="/admconsultas" className="nav-link">Consultas</Link>
-                    <Link to="/admmensagens" className="nav-link">Mensagens</Link>
-                </nav>
-                <button className="logout-btn">Sair</button>
+
+                <div className='menu-lateral'>
+                    <div className='menu-section'>
+                        <h3>GERAL</h3>
+                        <ul>
+                            <li><Link to="/admin">Visão geral</Link></li>
+                            <li><Link to="/admusuarios">Usuários</Link></li>
+                            <li><Link to="/admprofissionais">Profissionais</Link></li>
+                            <li className="active"><Link to="/admconsultas">Consultas</Link></li>
+                            <li><Link to="/admmensagens">Mensagens</Link></li>
+                        </ul>
+                    </div>
+                
+                    <div className="logout">
+                        <Link to="/">Desconectar</Link>
+                    </div>
+                </div>
             </aside>
 
             {/* Main Content */}
             <main className="main-content">
-                {/* Page Header */}
-                <div className="page-header">
-                    <h1>Dashboard</h1>
-                    <p>Gerenciamento de Consultas</p>
+                {/* Welcome Section */}
+                <div className="welcome-section">
+                    <h1>Gerenciamento de Consultas</h1>
                 </div>
 
-                {/* Search Bar */}
-                <div className="search-bar">
-                    <div className="search-input">
-                        <span className="search-icon">🔍</span>
-                        <input 
-                            type="text" 
-                            placeholder="Buscar..." 
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <button className="view-all-btn" onClick={handleViewAll}>
-                        Ver tudo &gt;
-                    </button>
-                </div>
-
-                {/* Consultations Table */}
+                {/* Tabela de Consultas */}
                 <div className="table-section">
                     <div className="table-header">
-                        <h2>CONSULTAS</h2>
+                        <h2>CONSULTAS RECENTES</h2>
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" 
+                                placeholder="Buscar consulta..." 
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <table className="consultas-table">
@@ -163,7 +165,7 @@ export default function AdminConsultas() {
                                             className="delete-btn"
                                             onClick={() => handleDelete(consulta.id)}
                                         >
-                                            🗑️
+                                            Excluir
                                         </button>
                                     </td>
                                 </tr>

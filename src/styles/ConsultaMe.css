@@ -1,0 +1,497 @@
+/* ========== CONTAINER PRINCIPAL ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.consulta-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    background-color: #f5f7fa;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: linear-gradient(180deg, #1a6b6f 0%, #0d4e52 100%);
+    color: white;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+.sidebar-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.logo-medico {
+    width: 180px;
+    height: auto;
+    object-fit: contain;
+}
+
+.perfil-medico {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.avatar-medico {
+    width: 85px;
+    height: 85px;
+    border-radius: 50%;
+    border: 3px solid #ffd966;
+    margin-bottom: 14px;
+    object-fit: cover;
+}
+
+.perfil-medico h2 {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+.perfil-medico p {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.menu-lateral {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-section {
+    margin-bottom: 32px;
+}
+
+.menu-section h3 {
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    opacity: 0.6;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+.menu-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-section li {
+    margin-bottom: 8px;
+}
+
+.menu-section li a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.menu-section li a img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.menu-section li.active a {
+    background: rgba(255, 217, 102, 0.18);
+    border-left: 3px solid #ffd966;
+}
+
+.menu-section li a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.logout {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.logout a {
+    color: #ffd966;
+    text-decoration: none;
+    display: block;
+    padding: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+}
+
+.logout a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ========== MAIN CONTENT ========== */
+.main-content {
+    flex: 1;
+    padding: 32px 40px;
+    overflow-y: auto;
+    background: #f5f7fa;
+}
+
+/* ========== HEADER ========== */
+.consulta-header {
+    margin-bottom: 32px;
+}
+
+.consulta-header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a2a3a;
+    letter-spacing: -0.3px;
+}
+
+/* ========== GRID PRINCIPAL ========== */
+.consulta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+/* ========== ÁREA DE VÍDEO ========== */
+.video-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.medico-card {
+    background: white;
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+    text-align: center;
+}
+
+.medico-info {
+    margin-bottom: 28px;
+}
+
+.medico-foto {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffd966;
+    margin-bottom: 16px;
+}
+
+.medico-dados h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a2a3a;
+    margin-bottom: 4px;
+}
+
+.medico-dados p {
+    font-size: 0.85rem;
+    color: #8a9aaa;
+}
+
+.btn-video {
+    background: linear-gradient(135deg, #1a6b6f 0%, #0d4e52 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-video:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26, 107, 111, 0.3);
+}
+
+/* ========== ÁREA DO PACIENTE ========== */
+.paciente-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.paciente-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eef2f6;
+}
+
+.paciente-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #eef2f6;
+}
+
+.paciente-foto-grande {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffd966;
+}
+
+.paciente-info h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a2a3a;
+    margin-bottom: 6px;
+}
+
+.paciente-info p {
+    font-size: 0.85rem;
+    color: #8a9aaa;
+}
+
+/* Detalhes da consulta */
+.consulta-detalhes {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.detalhe-item {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.detalhe-item:last-child {
+    margin-bottom: 0;
+}
+
+.detalhe-label {
+    width: 80px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #6a7a8a;
+}
+
+.detalhe-valor {
+    font-size: 0.9rem;
+    color: #1a2a3a;
+}
+
+.detalhe-valor.destaque {
+    font-weight: 700;
+    color: #1a6b6f;
+}
+
+/* Área de anotações */
+.anotacoes-area {
+    margin-bottom: 24px;
+}
+
+.anotacoes-area label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #1a6b6f;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.anotacoes-area textarea {
+    width: 100%;
+    padding: 14px;
+    border: 1.5px solid #e0e8ee;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.2s;
+    background: #fafcfd;
+}
+
+.anotacoes-area textarea:focus {
+    outline: none;
+    border-color: #1a6b6f;
+    box-shadow: 0 0 0 3px rgba(26, 107, 111, 0.08);
+    background: white;
+}
+
+.anotacoes-area textarea::placeholder {
+    color: #b0c0ce;
+}
+
+/* Botão salvar */
+.btn-salvar {
+    background: #ffd966;
+    color: #2d5a5e;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-salvar:hover {
+    background: #ffcd4a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 217, 102, 0.4);
+}
+
+/* Link do perfil do médico */
+.perfil-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.perfil-link:hover {
+    opacity: 0.9;
+}
+
+.perfil-link:hover .avatar-medico {
+    transform: scale(1.02);
+    transition: transform 0.2s;
+}
+
+/* ========== RESPONSIVIDADE ========== */
+@media (max-width: 900px) {
+    .consulta-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .consulta-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-width: auto;
+        height: auto;
+        position: relative;
+        padding: 20px 24px;
+    }
+    
+    .sidebar-logo {
+        justify-content: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    .logo-medico {
+        width: 140px;
+    }
+    
+    .perfil-medico {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        text-align: left;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+    }
+    
+    .avatar-medico {
+        margin-bottom: 0;
+        width: 65px;
+        height: 65px;
+    }
+    
+    .menu-lateral {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .menu-section {
+        margin-bottom: 0;
+        flex: 1;
+    }
+    
+    .logout {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        align-self: center;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .consulta-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .paciente-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .medico-foto {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .medico-card, .paciente-card {
+        padding: 20px;
+    }
+    
+    .detalhe-item {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .detalhe-label {
+        width: auto;
+    }
+    
+    .btn-video, .btn-salvar {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+    }
+}

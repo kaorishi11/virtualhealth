@@ -1,29 +1,22 @@
-// AdminDashboard.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/Admin.css';
 
 // Placeholder imports - substitua pelos caminhos reais das suas imagens
 import logo from '../images/logo.png';
-import adm1 from '../images/adm1.png';
-import adm2 from '../images/adm2.png';
-import adm3 from '../images/adm3.png';
+import iconUsers from '../images/icon1.png';
+import iconConsultas from '../images/icon2.png';
+import iconCompleted from '../images/icon3.png';
 
 export default function AdminDashboard() {
-    const monthlyData = [
-        { month: 'Jan', conclusions: '2.4%', consultations: 1532, partners: 67 },
-        { month: 'Fev', conclusions: '1.5%', consultations: 0, partners: 0 },
-        { month: 'Mar', conclusions: '3.0%', consultations: 0, partners: 0 },
-        { month: 'Abril', conclusions: '2.8%', consultations: 0, partners: 0 },
-        { month: 'Maio', conclusions: '2.6%', consultations: 0, partners: 0 },
-    ];
-
-    const [consultations, setConsultations] = useState([
-        { id: 1, name: 'Vinícius Queiroz', date: '15/03/2025', status: 'Pendente', type: 'Urologista' },
-        { id: 2, name: 'Pedro Lucas', date: '01/03/2026', status: 'Realizada', type: 'Dentista' },
-        { id: 3, name: 'Miguel Chagas', date: '03/03/2026', status: 'Realizada', type: 'Nutricionista' },
+    const [searchTerm, setSearchTerm] = useState('');
+    
+    const consultations = [
+        { id: 1, name: 'Vinícius Queiroz', date: '15/03/2026', status: 'Pendente', type: 'Urologista' },
+        { id: 2, name: 'Pedro Lucas', date: '01/03/2026', status: 'Pendente', type: 'Dentista' },
+        { id: 3, name: 'Miguel Chagas', date: '03/03/2026', status: 'Pendente', type: 'Nutricionista' },
         { id: 4, name: 'Giovana Paula', date: '21/03/2026', status: 'Cancelada', type: 'Ginecologista' },
-    ]);
+    ];
 
     const getStatusClass = (status) => {
         switch(status) {
@@ -34,119 +27,129 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleEdit = (id) => {
+    const handleView = (id) => {
         const consult = consultations.find(c => c.id === id);
-        alert(`Editar consulta de ${consult.name}`);
+        alert(`Ver detalhes da consulta de ${consult.name}`);
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm('Tem certeza que deseja excluir esta consulta?')) {
-            setConsultations(consultations.filter(c => c.id !== id));
-            alert('Consulta excluída com sucesso!');
-        }
-    };
+    const filteredConsultations = consultations.filter(consult =>
+        consult.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="admin-container">
-            {/* Sidebar */}
+            {/* Sidebar - HEADER CORRIGIDO */}
             <aside className="sidebar">
-                <div className="logo-area">
-                    <img src={logo} alt="Logo" className="logo" />
+                <div className="sidebar-logo">
+                    <img src={logo} alt="Logo" className="logo-medico" />
                 </div>
-                <nav className="nav-menu">
-                    <Link to="/admin" className="nav-link">Visão geral</Link>
-                    <Link to="/admusuarios" className="nav-link">Usuários</Link>
-                    <Link to="/admprofissionais" className="nav-link">Profissionais</Link>
-                    <Link to="/admconsultas" className="nav-link">Consultas</Link>
-                    <Link to="/" className="nav-link">Mensagens</Link>
-                </nav>
-                <button className="logout-btn">Sair</button>
+
+                <div className='menu-lateral'>
+                    <div className='menu-section'>
+                        <h3>GERAL</h3>
+                        <ul>
+                            <li className="active"><Link to="/admin">Visão geral</Link></li>
+                            <li><Link to="/admusuarios">Usuários</Link></li>
+                            <li><Link to="/admprofissionais">Profissionais</Link></li>
+                            <li><Link to="/admconsultas">Consultas</Link></li>
+                            <li><Link to="/admmensagens">Mensagens</Link></li>
+                        </ul>
+                    </div>
+                
+                    <div className="logout">
+                        <Link to="/">Desconectar</Link>
+                    </div>
+                </div>
             </aside>
 
             {/* Main Content */}
             <main className="main-content">
                 {/* Welcome Section */}
                 <div className="welcome-section">
-                    <h1>Bem-vindo de volta, Admin!</h1>
-                    <button className="search-btn">Buscar...</button>
+                    <h1>Bem-vindo de volta, <span>Gustavo!</span></h1>
                 </div>
 
-                {/* Cards */}
-                <div className="cards-grid">
-                    <div className="card">
-                        <div className="card-icon">
-                            <img src={adm1} alt="Usuários" />
+                {/* Cards com estatísticas */}
+                <div className="stats-cards">
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <img src={iconUsers} alt="Usuários" />
                         </div>
-                        <div className="card-content">
-                            <h2>Usuários ativos</h2>
-                            <div className="number">1532</div>
-                            <div className="trend"><span>-2,4%</span> este mês</div>
-                        </div>
-                    </div>
-
-                    <div className="card">
-                        <div className="card-icon">
-                            <img src={adm2} alt="Consultas" />
-                        </div>
-                        <div className="card-content">
-                            <h2>Consultas do dia</h2>
-                            <div className="number">67</div>
-                            <div className="pending"><span>8</span> pendentes</div>
+                        <div className="stat-info">
+                            <h3>Usuários ativos</h3>
+                            <p>1532</p>
+                            <span className="trend down">-2,4% este mês</span>
                         </div>
                     </div>
 
-                    <div className="card">
-                        <div className="card-icon">
-                            <img src={adm3} alt="Concluídas" />
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <img src={iconConsultas} alt="Consultas" />
                         </div>
-                        <div className="card-content">
-                            <h2>Consultas concluídas</h2>
-                            <div className="number">32</div>
-                            <div className="total-completed">Consultas concluídas (geral)</div>
+                        <div className="stat-info">
+                            <h3>Consultas do dia</h3>
+                            <p>67</p>
+                            <span className="pending">8 pendentes</span>
+                        </div>
+                    </div>
+
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <img src={iconCompleted} alt="Concluídas" />
+                        </div>
+                        <div className="stat-info">
+                            <h3>Consultas concluídas</h3>
+                            <p>32</p>
+                            <span className="completed">Consultas concluídas (geral)</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Monthly Chart */}
+                {/* Gráfico Mensal */}
                 <div className="chart-section">
-                    <div className="chart-header">
-                        <h2>MENSAL</h2>
-                        <div className="chart-legend">
-                            <div className="legend-item">
-                                <div className="legend-color" style={{ backgroundColor: '#3b82f6' }}></div>
-                                <span>Conclusões (%)</span>
-                            </div>
-                            <div className="legend-item">
-                                <div className="legend-color" style={{ backgroundColor: '#94a3b8' }}></div>
-                                <span>Consultas</span>
-                            </div>
+                    <h2>Mensal</h2>
+                    <div className="chart-bars">
+                        <div className="bar-item">
+                            <div className="bar" style={{ height: '48px' }}></div>
+                            <span>Jan</span>
+                            <small>2.4%</small>
                         </div>
-                    </div>
-                    <div className="bars-container">
-                        {monthlyData.map((data, idx) => (
-                            <div key={idx} className="bar-item">
-                                <div 
-                                    className={`bar month-${idx + 1}`}
-                                    style={{ 
-                                        height: data.consultations > 0 ? `${Math.min(data.consultations / 30, 80)}px` : '28px',
-                                        backgroundColor: data.consultations > 0 ? '#94a3b8' : '#3b82f6'
-                                    }}
-                                ></div>
-                                <div className="bar-label">{data.month}</div>
-                                <div className="bar-stats">
-                                    {data.conclusions} <br />
-                                    {data.consultations > 0 ? `${data.consultations}` : '-'}
-                                </div>
-                            </div>
-                        ))}
+                        <div className="bar-item">
+                            <div className="bar gray" style={{ height: '28px' }}></div>
+                            <span>Fev</span>
+                            <small>1.5%</small>
+                        </div>
+                        <div className="bar-item">
+                            <div className="bar" style={{ height: '58px' }}></div>
+                            <span>Mar</span>
+                            <small>3.0%</small>
+                        </div>
+                        <div className="bar-item">
+                            <div className="bar" style={{ height: '52px' }}></div>
+                            <span>Abril</span>
+                            <small>2.8%</small>
+                        </div>
+                        <div className="bar-item">
+                            <div className="bar" style={{ height: '48px' }}></div>
+                            <span>Maio</span>
+                            <small>2.6%</small>
+                        </div>
                     </div>
                 </div>
 
-                {/* Recent Consultations Table */}
+                {/* Tabela de Consultas Recentes */}
                 <div className="table-section">
                     <div className="table-header">
                         <h2>CONSULTAS RECENTES</h2>
-                        <button className="view-all-btn">Ver tudo</button>
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" 
+                                placeholder="Buscar..." 
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
                     <table className="consultations-table">
                         <thead>
@@ -159,7 +162,7 @@ export default function AdminDashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {consultations.map((consult) => (
+                            {filteredConsultations.map((consult) => (
                                 <tr key={consult.id}>
                                     <td>{consult.name}</td>
                                     <td>{consult.date}</td>
@@ -169,18 +172,12 @@ export default function AdminDashboard() {
                                         </span>
                                     </td>
                                     <td>{consult.type}</td>
-                                    <td className="action-buttons">
+                                    <td>
                                         <button 
-                                            className="edit-btn"
-                                            onClick={() => handleEdit(consult.id)}
+                                            className="view-btn"
+                                            onClick={() => handleView(consult.id)}
                                         >
-                                            Editar
-                                        </button>
-                                        <button 
-                                            className="delete-btn"
-                                            onClick={() => handleDelete(consult.id)}
-                                        >
-                                            Excluir
+                                            Ver
                                         </button>
                                     </td>
                                 </tr>

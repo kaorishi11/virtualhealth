@@ -1,10 +1,12 @@
-// AdminMensagens.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/AdmMensagem.css';
 
+import logo from '../images/logo.png';
+import iconMensagens from '../images/icon3.png';
+
 export default function AdminMensagens() {
-    // Dados das mensagens baseado na imagem
+    // Dados das mensagens
     const [mensagens, setMensagens] = useState([
         { 
             id: 1, 
@@ -36,6 +38,8 @@ export default function AdminMensagens() {
         },
     ]);
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     const getStatusClass = (status) => {
         switch(status) {
             case 'Pendente': return 'status-pendente';
@@ -52,7 +56,6 @@ export default function AdminMensagens() {
     const handleEdit = (id) => {
         const mensagem = mensagens.find(m => m.id === id);
         alert(`✏️ Editar mensagem de ${mensagem.nome}`);
-        // Aqui você pode abrir um modal ou redirecionar para página de edição
     };
 
     const handleDelete = (id) => {
@@ -64,39 +67,66 @@ export default function AdminMensagens() {
 
     const handleRocketAction = (id) => {
         const mensagem = mensagens.find(m => m.id === id);
-        alert(`🚀 Ação rápida para mensagem de ${mensagem.nome}`);
-        // Aqui você pode implementar uma ação rápida (responder, encaminhar, etc)
+        alert(`🚀 Responder mensagem de ${mensagem.nome}`);
     };
+
+    const filteredMensagens = mensagens.filter(mensagem =>
+        mensagem.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mensagem.mensagem.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Estatísticas
+    const totalMensagens = mensagens.length;
+    const mensagensPendentes = mensagens.filter(m => m.status === 'Pendente').length;
+    const mensagensVistas = mensagens.filter(m => m.status === 'Visto').length;
+    const mensagensExcluidas = mensagens.filter(m => m.status === 'Excluída').length;
 
     return (
         <div className="admin-container">
-            {/* Sidebar */}
-            <aside className="sidebar">
-                <div className="logo-area">
-                    <h2>VIRTUAL HEALTH</h2>
-                </div>
-                <nav className="nav-menu">
-                    <Link to="/admin" className="nav-link">Visão geral</Link>
-                    <Link to="/admusuarios" className="nav-link">Usuários</Link>
-                    <Link to="/admprofissionais" className="nav-link">Profissionais</Link>
-                    <Link to="/admconsultas" className="nav-link">Consultas</Link>
-                    <Link to="/admmensagens" className="nav-link">Mensagens</Link>
-                </nav>
-                <button className="logout-btn">Sair</button>
-            </aside>
+            {/* Sidebar - mesmo estilo do AdminDashboard */}
+           <aside className="sidebar">
+                           <div className="sidebar-logo">
+                               <img src={logo} alt="Logo" className="logo-medico" />
+                           </div>
+           
+                           <div className='menu-lateral'>
+                               <div className='menu-section'>
+                                   <h3>GERAL</h3>
+                                   <ul>
+                                       <li><Link to="/admin">Visão geral</Link></li>
+                                       <li><Link to="/admusuarios">Usuários</Link></li>
+                                       <li><Link to="/admprofissionais">Profissionais</Link></li>
+                                       <li><Link to="/admconsultas">Consultas</Link></li>
+                                       <li className="active"><Link to="/admmensagens">Mensagens</Link></li>
+                                   </ul>
+                               </div>
+                           
+                               <div className="logout">
+                                   <Link to="/">Desconectar</Link>
+                               </div>
+                           </div>
+                       </aside>
 
             {/* Main Content */}
             <main className="main-content">
-                {/* Page Header */}
-                <div className="page-header">
-                    <h1>Dashboard</h1>
-                    <p>Gerenciamento de Mensagens</p>
+                {/* Welcome Section */}
+                <div className="welcome-section">
+                    <h1>Gerenciamento de Mensagens</h1>
                 </div>
 
-                {/* Messages Table */}
+                {/* Tabela de Mensagens */}
                 <div className="table-section">
                     <div className="table-header">
-                        <h2>MENSAGENS</h2>
+                        <h2>MENSAGENS RECEBIDAS</h2>
+                        <div className="search-wrapper">
+                            <input 
+                                type="text" 
+                                placeholder="Buscar mensagem..." 
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <table className="mensagens-table">
@@ -110,7 +140,7 @@ export default function AdminMensagens() {
                             </tr>
                         </thead>
                         <tbody>
-                            {mensagens.map((mensagem) => (
+                            {filteredMensagens.map((mensagem) => (
                                 <tr key={mensagem.id}>
                                     <td>{mensagem.nome}</td>
                                     <td>
@@ -133,13 +163,13 @@ export default function AdminMensagens() {
                                             className="rocket-btn"
                                             onClick={() => handleRocketAction(mensagem.id)}
                                         >
-                                            🚀
+                                            Responder
                                         </button>
                                         <button 
                                             className="delete-btn"
                                             onClick={() => handleDelete(mensagem.id)}
                                         >
-                                            🗑️
+                                            Excluir
                                         </button>
                                     </td>
                                 </tr>
