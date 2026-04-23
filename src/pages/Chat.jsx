@@ -101,25 +101,34 @@ export default function ChatMedico() {
     };
 
     const handleSendMessage = () => {
-        if (inputValue.trim() === "") return;
+    if (inputValue.trim() === "") return;
 
-        // Mensagem do usuário
-        const userMessage = {
-            id: Date.now(),
-            type: "user",
-            text: inputValue
-        };
-
-        // Resposta automática do médico
-        const doctorMessage = {
-            id: Date.now() + 1,
-            type: "doctor",
-            text: "Obrigado por compartilhar. Estou analisando sua mensagem. Recomendo agendar uma consulta presencial ou por teleconsulta para uma avaliação mais detalhada. Como posso ajudar mais?"
-        };
-
-        setMessages(prev => [...prev, userMessage, doctorMessage]);
-        setInputValue("");
+    const userMessage = {
+        id: Date.now(),
+        type: "user",
+        text: inputValue
     };
+
+    let doctorResponse = "Obrigado por compartilhar. Estou analisando sua mensagem. Recomendo agendar uma consulta presencial ou por teleconsulta para uma avaliação mais detalhada. Como posso ajudar mais?";
+
+    if (selectedTopics.includes("sintomas")) {
+        const texto = inputValue.toLowerCase();
+
+        if (texto.includes("dor de cabeça") || texto.includes("dores de cabeça")) {
+            doctorResponse = "Dores de cabeça podem ter várias causas, como estresse, falta de sono, desidratação ou até problemas de visão. É importante observar a frequência e intensidade. Se for algo constante ou muito forte, procure um médico para avaliação mais detalhada.";
+        }
+    }
+
+    const doctorMessage = {
+        id: Date.now() + 1,
+        type: "doctor",
+        text: doctorResponse
+    };
+
+    // 👇 ISSO FALTAVA
+    setMessages(prev => [...prev, userMessage, doctorMessage]);
+    setInputValue("");
+};
 
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -155,7 +164,6 @@ export default function ChatMedico() {
                     
                     <div className="chat-header">
                         <h1>CONVERSE COM O SEU <span>MÉDICO VIRTUAL!</span></h1>
-                        <p>Olá! sou seu médico virtual. Como posso ajudar você hoje?</p>
                     </div>
 
                     {/* MENSAGENS */}

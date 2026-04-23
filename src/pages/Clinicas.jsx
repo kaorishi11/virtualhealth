@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Clinicas.css";
 
 // Imagens
@@ -9,7 +9,6 @@ import lupa from "../images/lupa.png";
 import marta from "../images/med.png";
 import andrey from "../images/medi.png";
 import sheila from "../images/douto.png";
-import iconlocal from "../images/iconlocal.png";
 import certinho from "../images/certinho.png";
 import wats from "../images/wats.png";
 import insta from "../images/insta.png";
@@ -19,14 +18,18 @@ import gmail from "../images/gmail.png";
 import tempo from "../images/tempo.png";
 
 export default function Clinicas() {
+    const navigate = useNavigate();
+
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedDoctor, setSelectedDoctor] = useState(null);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedHour, setSelectedHour] = useState(null);
+    const [selectedDate, setSelectedDate] = useState({});
+    const [selectedHour, setSelectedHour] = useState({});
     const [showAddress, setShowAddress] = useState({});
     const [showTeleconsulta, setShowTeleconsulta] = useState({});
 
-    // Dados dos médicos com informações completas
+    // 🔥 NOVOS STATES DO MODAL
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedDoctor, setSelectedDoctor] = useState(null);
+
     const doctors = [
         {
             id: 1,
@@ -34,12 +37,10 @@ export default function Clinicas() {
             specialty: "Dentista",
             rating: 4.9,
             reviews: 38,
-            enderecoCompleto: "Clínica Sul – Santa Casa São José dos Campos, Rua XV de Novembro, 123 - Centro, São José dos Campos - SP",
+            enderecoCompleto: "Clínica Sul – Santa Casa São José dos Campos",
             price: 90.00,
-            teleconsulta: true,
             avatar: marta,
-            coordinates: { lat: -23.1896, lng: -45.8841 }, // São José dos Campos
-            enderecoUrl: "https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Santa+Casa+São+José+dos+Campos",
+            coordinates: { lat: -23.1896, lng: -45.8841 }
         },
         {
             id: 2,
@@ -47,12 +48,10 @@ export default function Clinicas() {
             specialty: "Oftalmologista",
             rating: 4.9,
             reviews: 38,
-            enderecoCompleto: "Clínica Vision Care, Av. Dr. Nelson D'Ávila, 500 - Jardim São Dimas, São José dos Campos - SP",
+            enderecoCompleto: "Clínica Vision Care",
             price: 60.00,
-            teleconsulta: true,
             avatar: andrey,
-            coordinates: { lat: -23.1847, lng: -45.8865 },
-            enderecoUrl: "https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Av.+Dr.+Nelson+D'Ávila+500+São+José+dos+Campos",
+            coordinates: { lat: -23.1847, lng: -45.8865 }
         },
         {
             id: 3,
@@ -60,26 +59,18 @@ export default function Clinicas() {
             specialty: "Ginecologista",
             rating: 4.9,
             reviews: 38,
-            enderecoCompleto: "R Cal João Dias Guimarães, 45 - Centro, Caçapava - SP",
+            enderecoCompleto: "Centro, Caçapava",
             price: 60.00,
-            teleconsulta: true,
             avatar: sheila,
-            coordinates: { lat: -23.1005, lng: -45.7072 }, // Caçapava
-            enderecoUrl: "https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Rua+Cal+João+Dias+Guimarães+Caçapava",
-        },
+            coordinates: { lat: -23.1005, lng: -45.7072 }
+        }
     ];
 
     const horarios = ["09H30", "13H30", "11H00", "15H00"];
-    const weekDays = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
 
-    const generateCalendarDates = () => {
-        const days = [];
-        for (let i = 1; i <= 28; i++) {
-            days.push({ day: i, fullDate: `2026-03-${i < 10 ? "0" + i : i}` });
-        }
-        return days;
-    };
-    const calendarDays = generateCalendarDates();
+    const calendarDays = Array.from({ length: 14 }, (_, i) => ({
+        day: i + 1
+    }));
 
     const filteredDoctors = doctors.filter(
         (doc) =>
@@ -87,34 +78,44 @@ export default function Clinicas() {
             doc.specialty.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleSelectDoctor = (doc) => {
-        setSelectedDoctor(doc);
-        setSelectedDate(null);
-        setSelectedHour(null);
+    const toggleAddress = (id) => {
+        setShowAddress(prev => ({ ...prev, [id]: !prev[id] }));
+        setShowTeleconsulta(prev => ({ ...prev, [id]: false }));
     };
 
-    const handleSelectDate = (dateObj) => {
-        setSelectedDate(dateObj);
-        setSelectedHour(null);
+    const toggleTeleconsulta = (id) => {
+        setShowTeleconsulta(prev => ({ ...prev, [id]: !prev[id] }));
+        setShowAddress(prev => ({ ...prev, [id]: false }));
     };
 
-    const handleSelectHour = (hour) => {
-        setSelectedHour(hour);
-        alert(`Consulta agendada com ${selectedDoctor?.name}\n Dia: ${selectedDate?.day}/03/2026\n⏰ Horário: ${hour}\n💰 Valor: R$ ${selectedDoctor?.price.toFixed(2)}`);
+    const handleSelectDate = (doctorId, dateObj) => {
+        setSelectedDate(prev => ({
+            ...prev,
+            [doctorId]: dateObj
+        }));
+
+        setSelectedHour(prev => ({
+            ...prev,
+            [doctorId]: null
+        }));
     };
 
-    const toggleAddress = (doctorId) => {
-        setShowAddress(prev => ({ ...prev, [doctorId]: !prev[doctorId] }));
-        setShowTeleconsulta(prev => ({ ...prev, [doctorId]: false }));
-    };
+    const handleSelectHour = (doctorId, hour) => {
+        setSelectedHour(prev => ({
+            ...prev,
+            [doctorId]: hour
+        }));
 
-    const toggleTeleconsulta = (doctorId) => {
-        setShowTeleconsulta(prev => ({ ...prev, [doctorId]: !prev[doctorId] }));
-        setShowAddress(prev => ({ ...prev, [doctorId]: false }));
+        const doctor = doctors.find(d => d.id === doctorId);
+
+        alert(`Consulta agendada com ${doctor.name}
+Dia: ${selectedDate[doctorId]?.day}/03/2026
+⏰ Horário: ${hour}`);
     };
 
     return (
         <div>
+
             {/* HEADER */}
             <div className="header">
                 <img src={logo} className="logoclinicas" />
@@ -136,186 +137,211 @@ export default function Clinicas() {
 
             {/* HERO */}
             <div className="hero-clinicas">
-                <h1><span>CONHEÇA TODAS AS <br />
-                    CLÍNICAS</span> PRESENCIAIS</h1>
-                <p>Encontre especialistas próximos a você e agende<br /> sua consulta.</p>
+                <h1><span>CONHEÇA TODAS AS</span> CLÍNICAS PRESENCIAIS</h1>
+                <p>Encontre especialistas próximos a você</p>
             </div>
 
             {/* CONTEÚDO */}
             <div className="main-content">
-                <div className="search-section">
-                    <div className="section-header">
-                        <h2>Clínicas e especialistas para você</h2>
-                        <hr />
-                    </div>
 
-                    <div className="search-container">
-                        <div className="search-input-wrapper">
-                            <img src={lupa} alt="buscar" />
-                            <input
-                                type="text"
-                                placeholder="Procure clínicas ou especialistas..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <div className="filter-tags">
-                            <select>
-                                <option value="">Especialistas</option>
-                            </select>
-                            <span className="filter-tag">Caçapava, São Paulo - SP</span>
-                        </div>
+                {/* BUSCA */}
+                <div className="search-container">
+                    <div className="search-input-wrapper">
+                        <img src={lupa} />
+                        <input
+                            placeholder="Procure clínicas ou especialistas..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
                 </div>
 
-                <hr className="hr"/>
-
-                {/* GRID MÉDICOS */}
+                {/* CARDS */}
                 <div className="doctors">
                     {filteredDoctors.map((doc) => (
                         <div className="doctor-card" key={doc.id}>
 
-    {/* ESQUERDA */}
-    <div className="doctor-left">
-        <div className="doctor-header">
-            <div className="doctor-avatar">
-                <img src={doc.avatar} alt={doc.name} />
-            </div>
+                            {/* ESQUERDA */}
+                            <div className="doctor-left">
 
-            <div className="doctor-info">
-                <h3>{doc.name}</h3>
-                <div className="doctor-specialty">{doc.specialty}</div>
-                <div className="doctor-rating">
-                    ⭐ {doc.rating} ({doc.reviews} avaliações)
-                </div>
-            </div>
-        </div>
+                                <div className="doctor-header">
+                                    <img src={doc.avatar} className="doctor-avatar" />
 
-        <div className="buttons-row">
-            <button onClick={() => toggleAddress(doc.id)}>
-                Endereço
-            </button>
+                                    <div>
+                                        <h3>{doc.name}</h3>
+                                        <p className="doctor-specialty">{doc.specialty}</p>
 
-            <button onClick={() => toggleTeleconsulta(doc.id)}>
-                Teleconsulta
-            </button>
-        </div>
-
-        <p>{doc.enderecoCompleto}</p>
-
-        <div className="price-value">
-            Consulta: R${doc.price.toFixed(2)}
-        </div>
-
-        <button className="btn-schedule">
-            Agendar Consulta
-        </button>
-    </div>
-
-    {/* DIREITA */}
-    <div className="doctor-right">
-
-        {showAddress[doc.id] && (
-            <iframe
-                src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.01},${doc.coordinates.lat - 0.01},${doc.coordinates.lng + 0.01},${doc.coordinates.lat + 0.01}&layer=mapnik&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
-                title="mapa"
-            />
-        )}
-
-        {showTeleconsulta[doc.id] && (
-            <div className="teleconsulta-box">
-                <p>Teleconsulta disponível</p>
-                <p>⏱30 a 50 minutos</p>
-                <p>Dados protegidos</p>
-                <p>Celular ou computador</p>
-            </div>
-        )}
-
-    </div>
-</div>
-                    ))}
-                </div>
-
-                {/* CALENDÁRIO DE AGENDAMENTO */}
-                {selectedDoctor && (
-                    <div className="calendar-wrapper">
-                        <h3 style={{ marginBottom: "20px" }}>Agendar Consulta - {selectedDoctor.name}</h3>
-                        <div className="calendar-flex">
-                            <div className="calendar-section">
-                                <h4>ESCOLHA A DATA</h4>
-                                <div className="week-row">
-                                    {weekDays.map(d => <span key={d}>{d}</span>)}
-                                </div>
-                                <div className="dates-row">
-                                    {calendarDays.map((dateObj, idx) => (
-                                        <div
-                                            key={idx}
-                                            className={`date-item ${selectedDate?.day === dateObj.day ? "selected" : ""}`}
-                                            onClick={() => handleSelectDate(dateObj)}
-                                        >
-                                            {dateObj.day}
+                                        <div className="doctor-rating">
+                                            {[1,2,3,4,5].map(star => (
+                                                <span key={star} className={star <= Math.round(doc.rating) ? "filled" : ""}>★</span>
+                                            ))}
+                                            <span className="reviews">({doc.reviews})</span>
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
+
+                                <div className="buttons-row">
+                                    {/* 🔥 AGORA ABRE MODAL */}
+                                    <button
+                                        onClick={() => {
+                                            setSelectedDoctor(doc);
+                                            setModalOpen(true);
+                                        }}
+                                    >
+                                        Presencial
+                                    </button>
+
+                                    <button
+                                        className={showTeleconsulta[doc.id] ? "active" : ""}
+                                        onClick={() => toggleTeleconsulta(doc.id)}
+                                    >
+                                        Teleconsulta
+                                    </button>
+                                </div>
+
+                                <p>{doc.enderecoCompleto}</p>
+
+                                <div className="price-value">
+                                    R$ {doc.price.toFixed(2)}
+                                </div>
+
+                                <button className="btn-schedule">
+                                    Agendar Consulta
+                                </button>
                             </div>
 
-                            <div className="calendar-section">
-                                <h4>SELECIONE O HORÁRIO</h4>
-                                <div className="hours-list">
-                                    {horarios.map((hour) => (
-                                        <button
-                                            key={hour}
-                                            className={`hour-btn ${selectedHour === hour ? "selected" : ""}`}
-                                            onClick={() => handleSelectHour(hour)}
-                                            disabled={!selectedDate}
-                                            style={{ opacity: !selectedDate ? 0.5 : 1 }}
-                                        >
-                                            {hour}
-                                        </button>
-                                    ))}
-                                </div>
-                                {!selectedDate && (
-                                    <p style={{ fontSize: "12px", marginTop: "12px", color: "#dc2626" }}>
-                                        * Selecione uma data primeiro
-                                    </p>
+                            {/* DIREITA */}
+                            <div className="doctor-right">
+
+                                {showTeleconsulta[doc.id] && (
+                                    <div className="teleconsulta-box">
+                                        <p>✔ Teleconsulta disponível</p>
+                                        <p>⏱ 30 a 50 minutos</p>
+                                        <p>🔒 Dados protegidos</p>
+                                        <p>📱 Celular ou computador</p>
+                                    </div>
                                 )}
+
+                                {/* CALENDÁRIO */}
+                                <div className="mini-calendar">
+                                    <h4>Escolha a data</h4>
+
+                                    <div className="calendar-grid">
+                                        {calendarDays.map((d) => (
+                                            <div
+                                                key={d.day}
+                                                className={`mini-date ${selectedDate[doc.id]?.day === d.day ? "selected" : ""}`}
+                                                onClick={() => handleSelectDate(doc.id, d)}
+                                            >
+                                                {d.day}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="mini-hours">
+                                        {horarios.map((h) => (
+                                            <button
+                                                key={h}
+                                                className={`mini-hour ${selectedHour[doc.id] === h ? "selected" : ""}`}
+                                                onClick={() => handleSelectHour(doc.id, h)}
+                                            >
+                                                {h}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
-                    </div>
-                )}
+                    ))}
+                </div>
             </div>
+
+            {/* 🔥 MODAL */}
+            {modalOpen && selectedDoctor && (
+                <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+
+                        <h2>Agendar Consulta Presencial</h2>
+
+                        <div className="modal-doctor">
+                            <img src={selectedDoctor.avatar} />
+                            <div>
+                                <h3>{selectedDoctor.name}</h3>
+                                <p>{selectedDoctor.specialty}</p>
+                            </div>
+                        </div>
+
+                        <p className="modal-address">{selectedDoctor.enderecoCompleto}</p>
+
+                        <div className="mini-calendar">
+                            <h4>Escolha a data</h4>
+
+                            <div className="calendar-grid">
+                                {calendarDays.map((d) => (
+                                    <div
+                                        key={d.day}
+                                        className={`mini-date ${
+                                            selectedDate[selectedDoctor.id]?.day === d.day ? "selected" : ""
+                                        }`}
+                                        onClick={() => handleSelectDate(selectedDoctor.id, d)}
+                                    >
+                                        {d.day}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mini-hours">
+                                {horarios.map((h) => (
+                                    <button
+                                        key={h}
+                                        className={`mini-hour ${
+                                            selectedHour[selectedDoctor.id] === h ? "selected" : ""
+                                        }`}
+                                        onClick={() => handleSelectHour(selectedDoctor.id, h)}
+                                    >
+                                        {h}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button className="close-modal" onClick={() => setModalOpen(false)}>
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* FOOTER */}
             <footer className="footer">
-            
-                            <div className="footer-column">
-                                <h4>Serviços</h4>
-                                <ul>
-                                    <li><img src={certinho} /> Teleconsulta 24h</li>
-                                    <li><img src={certinho} /> Agendamento online</li>
-                                    <li><img src={certinho} /> Especialidades</li>
-                                    <li><img src={certinho} /> Perguntas frequentes</li>
-                                </ul>
-                            </div>
-                            <div className="footer-column">
-                                <h4>Virtual Health</h4>
-                                <p>Seu médico virtual 24h</p>
-                                <div className="social">
-                                    <img src={wats} />
-                                    <img src={insta} />
-                                </div>
-                            </div>
-                            <div className="footer-column">
-                                <h4>Contato</h4>
-                                <ul>
-                                    <li><img src={local} /> Endereço: Sesi Caçapava SP</li>
-                                    <li><img src={tell} /> Telefone: (12) 9966-9732</li>
-                                    <li><img src={gmail} /> Email: Virtualhealth@gmail.com</li>
-                                    <li><img src={tempo} /> Horário: 24h</li>
-                                </ul>
-                            </div>
-            
-                        </footer>
+                <div className="footer-column">
+                    <h4>Serviços</h4>
+                    <ul>
+                        <li><img src={certinho}/> Teleconsulta 24h</li>
+                        <li><img src={certinho}/> Agendamento online</li>
+                        <li><img src={certinho}/> Especialidades</li>
+                    </ul>
+                </div>
+
+                <div className="footer-column">
+                    <h4>Virtual Health</h4>
+                    <div className="social">
+                        <img src={wats}/>
+                        <img src={insta}/>
+                    </div>
+                </div>
+
+                <div className="footer-column">
+                    <h4>Contato</h4>
+                    <ul>
+                        <li><img src={local}/> Caçapava SP</li>
+                        <li><img src={tell}/> (12) 99999-9999</li>
+                        <li><img src={gmail}/> email@gmail.com</li>
+                        <li><img src={tempo}/> 24h</li>
+                    </ul>
+                </div>
+            </footer>
         </div>
     );
 }
