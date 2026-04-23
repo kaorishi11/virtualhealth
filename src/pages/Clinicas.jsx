@@ -21,14 +21,24 @@ export default function Clinicas() {
     const navigate = useNavigate();
 
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedDate, setSelectedDate] = useState({});
-    const [selectedHour, setSelectedHour] = useState({});
-    const [showAddress, setShowAddress] = useState({});
-    const [showTeleconsulta, setShowTeleconsulta] = useState({});
-
-    // 🔥 NOVOS STATES DO MODAL
+    const [selectedEspecialidade, setSelectedEspecialidade] = useState("");
+    const [selectedLocal, setSelectedLocal] = useState("Caçapava, São Paulo - SP");
+    const [activeTab, setActiveTab] = useState({});
+    
+    // States para Teleconsulta (agendamento direto no card)
+    const [selectedDateTele, setSelectedDateTele] = useState({});
+    const [selectedHourTele, setSelectedHourTele] = useState({});
+    const [showConfirmationTele, setShowConfirmationTele] = useState(false);
+    const [confirmationDetailsTele, setConfirmationDetailsTele] = useState({});
+    const [selectedDoctorTele, setSelectedDoctorTele] = useState(null);
+    
+    // States para Presencial (modal)
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedDoctor, setSelectedDoctor] = useState(null);
+    const [selectedDatePresencial, setSelectedDatePresencial] = useState({});
+    const [selectedHourPresencial, setSelectedHourPresencial] = useState({});
+    const [showConfirmationPresencial, setShowConfirmationPresencial] = useState(false);
+    const [confirmationDetailsPresencial, setConfirmationDetailsPresencial] = useState({});
 
     const doctors = [
         {
@@ -59,256 +69,466 @@ export default function Clinicas() {
             specialty: "Ginecologista",
             rating: 4.9,
             reviews: 38,
-            enderecoCompleto: "Centro, Caçapava",
+            enderecoCompleto: "R. Cel. João Dias Guimarães - Centro, Caçapava",
             price: 60.00,
             avatar: sheila,
             coordinates: { lat: -23.1005, lng: -45.7072 }
         }
     ];
 
-    const horarios = ["09H30", "13H30", "11H00", "15H00"];
-
-    const calendarDays = Array.from({ length: 14 }, (_, i) => ({
-        day: i + 1
-    }));
-
     const filteredDoctors = doctors.filter(
         (doc) =>
-            doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            doc.specialty.toLowerCase().includes(searchTerm.toLowerCase())
+            doc.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            (selectedEspecialidade === "" || doc.specialty === selectedEspecialidade)
     );
 
-    const toggleAddress = (id) => {
-        setShowAddress(prev => ({ ...prev, [id]: !prev[id] }));
-        setShowTeleconsulta(prev => ({ ...prev, [id]: false }));
-    };
-
-    const toggleTeleconsulta = (id) => {
-        setShowTeleconsulta(prev => ({ ...prev, [id]: !prev[id] }));
-        setShowAddress(prev => ({ ...prev, [id]: false }));
-    };
-
-    const handleSelectDate = (doctorId, dateObj) => {
-        setSelectedDate(prev => ({
+    // Handlers para Teleconsulta (direto no card)
+    const handleSelectDateTele = (doctorId, date) => {
+        setSelectedDateTele(prev => ({
             ...prev,
-            [doctorId]: dateObj
-        }));
-
-        setSelectedHour(prev => ({
-            ...prev,
-            [doctorId]: null
+            [doctorId]: date
         }));
     };
 
-    const handleSelectHour = (doctorId, hour) => {
-        setSelectedHour(prev => ({
+    const handleSelectHourTele = (doctorId, hour) => {
+        setSelectedHourTele(prev => ({
             ...prev,
             [doctorId]: hour
         }));
+    };
 
-        const doctor = doctors.find(d => d.id === doctorId);
+const handleAgendarTeleconsulta = (doc) => {
+    if (selectedDateTele[doc.id] && selectedHourTele[doc.id]) {
+        setConfirmationDetailsTele({
+            doctorName: doc.name,
+            specialty: doc.specialty,
+            date: selectedDateTele[doc.id],
+            hour: selectedHourTele[doc.id],
+            price: doc.price,
+            type: "Teleconsulta",
+            platform: "Virtual Health",
+            duration: "30 a 50 minutos"
+        });
+        setSelectedDoctorTele(doc);
+        setShowConfirmationTele(true);
+        // Removeu o setTimeout
+    } else {
+        alert("Por favor, selecione uma data e horário primeiro!");
+    }
+};
 
-        alert(`Consulta agendada com ${doctor.name}
-Dia: ${selectedDate[doctorId]?.day}/03/2026
-⏰ Horário: ${hour}`);
+    // Handlers para Presencial (modal)
+    const handleSelectDatePresencial = (doctorId, date) => {
+        setSelectedDatePresencial(prev => ({
+            ...prev,
+            [doctorId]: date
+        }));
+    };
+
+    const handleSelectHourPresencial = (doctorId, hour) => {
+        setSelectedHourPresencial(prev => ({
+            ...prev,
+            [doctorId]: hour
+        }));
+    };
+
+const handleConfirmPresencial = (doc) => {
+    if (selectedDatePresencial[doc.id] && selectedHourPresencial[doc.id]) {
+        setConfirmationDetailsPresencial({
+            doctorName: doc.name,
+            specialty: doc.specialty,
+            date: selectedDatePresencial[doc.id],
+            hour: selectedHourPresencial[doc.id],
+            address: doc.enderecoCompleto,
+            price: doc.price,
+            type: "Presencial"
+        });
+        setShowConfirmationPresencial(true);
+        // Removeu o setTimeout - o modal continua aberto mostrando a confirmação
+    } else {
+        alert("Por favor, selecione uma data e horário primeiro!");
+    }
+};
+
+    const handleAgendar = (doc) => {
+        if (activeTab[doc.id] === 'teleconsulta') {
+            handleAgendarTeleconsulta(doc);
+        } else {
+            setSelectedDoctor(doc);
+            setModalOpen(true);
+        }
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setShowConfirmationPresencial(false);
+        setSelectedDatePresencial({});
+        setSelectedHourPresencial({});
+        setConfirmationDetailsPresencial({});
+        setSelectedDoctor(null);
+    };
+
+    // Fechar confirmação da teleconsulta
+    const closeTeleConfirmation = () => {
+        setShowConfirmationTele(false);
+        setSelectedDateTele({});
+        setSelectedHourTele({});
+        setConfirmationDetailsTele({});
+        setSelectedDoctorTele(null);
     };
 
     return (
         <div>
-
             {/* HEADER */}
             <div className="header">
-                <img src={logo} className="logoclinicas" />
-
+                <img src={logo} className="logoclinicas" alt="logo" />
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
                 </div>
-
                 <button className="consulta-btn" onClick={() => navigate("/chat")}>
                     Fazer Consulta
                 </button>
-
                 <Link to="/perfil">
-                    <img src={email} className="email" />
+                    <img src={email} className="email" alt="perfil" />
                 </Link>
             </div>
 
             {/* HERO */}
             <div className="hero-clinicas">
                 <h1><span>CONHEÇA TODAS AS</span> CLÍNICAS PRESENCIAIS</h1>
-                <p>Encontre especialistas próximos a você</p>
+                <p>Encontre especialistas próximos a você e agende sua consulta.</p>
             </div>
 
-            {/* CONTEÚDO */}
             <div className="main-content">
+                {/* SEÇÃO COM TÍTULO */}
+                <div className="search-header">
+                    <h2>Clínicas e especialistas para você</h2>
+                </div>
 
-                {/* BUSCA */}
+                {/* BARRA DE BUSCA COM FILTROS */}
                 <div className="search-container">
                     <div className="search-input-wrapper">
-                        <img src={lupa} />
+                        <img src={lupa} alt="busca" />
                         <input
                             placeholder="Procure clínicas ou especialistas..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+                    
+                    <select 
+                        className="filter-select"
+                        value={selectedEspecialidade}
+                        onChange={(e) => setSelectedEspecialidade(e.target.value)}
+                    >
+                        <option value="">Especialista ▼</option>
+                        <option value="Dentista">Dentista</option>
+                        <option value="Oftalmologista">Oftalmologista</option>
+                        <option value="Ginecologista">Ginecologista</option>
+                    </select>
+                    
+                    <input 
+                        type="text" 
+                        className="location-input"
+                        placeholder="Caçapava, São Paulo - SP"
+                        value={selectedLocal}
+                        onChange={(e) => setSelectedLocal(e.target.value)}
+                    />
                 </div>
 
                 {/* CARDS */}
                 <div className="doctors">
                     {filteredDoctors.map((doc) => (
                         <div className="doctor-card" key={doc.id}>
-
-                            {/* ESQUERDA */}
+                            {/* LADO ESQUERDO - INFORMAÇÕES DO MÉDICO + BOTÕES */}
                             <div className="doctor-left">
-
                                 <div className="doctor-header">
-                                    <img src={doc.avatar} className="doctor-avatar" />
-
-                                    <div>
+                                    <img src={doc.avatar} className="doctor-avatar" alt={doc.name} />
+                                    <div className="doctor-info">
                                         <h3>{doc.name}</h3>
                                         <p className="doctor-specialty">{doc.specialty}</p>
-
                                         <div className="doctor-rating">
-                                            {[1,2,3,4,5].map(star => (
-                                                <span key={star} className={star <= Math.round(doc.rating) ? "filled" : ""}>★</span>
-                                            ))}
-                                            <span className="reviews">({doc.reviews})</span>
+                                            <span className="stars">★★★★★</span>
+                                            <span className="rating-value">({doc.rating} · {doc.reviews} avaliações)</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="buttons-row">
-                                    {/* 🔥 AGORA ABRE MODAL */}
-                                    <button
-                                        onClick={() => {
-                                            setSelectedDoctor(doc);
-                                            setModalOpen(true);
-                                        }}
+                                {/* BOTÕES PRESENCIAL E TELECONSULTA */}
+                                <div className="tabs-left">
+                                    <button 
+                                        className={`tab-btn-left ${activeTab[doc.id] !== 'teleconsulta' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab(prev => ({ ...prev, [doc.id]: 'presencial' }))}
                                     >
                                         Presencial
                                     </button>
-
-                                    <button
-                                        className={showTeleconsulta[doc.id] ? "active" : ""}
-                                        onClick={() => toggleTeleconsulta(doc.id)}
+                                    <button 
+                                        className={`tab-btn-left ${activeTab[doc.id] === 'teleconsulta' ? 'active' : ''}`}
+                                        onClick={() => setActiveTab(prev => ({ ...prev, [doc.id]: 'teleconsulta' }))}
                                     >
                                         Teleconsulta
                                     </button>
                                 </div>
 
-                                <p>{doc.enderecoCompleto}</p>
-
-                                <div className="price-value">
-                                    R$ {doc.price.toFixed(2)}
+                                <div className="address-section">
+                                    <strong>Endereço</strong>
+                                    <p>Teleconsulta</p>
+                                    <p className="address-full">{doc.enderecoCompleto}</p>
                                 </div>
 
-                                <button className="btn-schedule">
+                                {/* INFORMAÇÕES DA TELECONSULTA */}
+                                {activeTab[doc.id] === 'teleconsulta' && (
+                                    <div className="tele-info-left">
+                                        <p>⏱️ Duração média: 30 a 50 minutos</p>
+                                        <p>🔒 Dados protegidos pela LGPD</p>
+                                        <p>📱 Acesse pelo celular ou computador</p>
+                                    </div>
+                                )}
+
+                                <div className="price-value">
+                                    Consulta: <strong>R${doc.price.toFixed(2)}</strong>
+                                </div>
+
+                                <button 
+                                    className="btn-schedule"
+                                    onClick={() => handleAgendar(doc)}
+                                >
                                     Agendar Consulta
                                 </button>
                             </div>
 
-                            {/* DIREITA */}
+                            {/* LADO DIREITO - CONTEÚDO DINÂMICO */}
                             <div className="doctor-right">
+                                {activeTab[doc.id] === 'teleconsulta' ? (
+                                    <div className="teleconsulta-content">
+                                        <div className="calendar-section">
+                                            <h4>ESCOLHA A DATA</h4>
+                                            <div className="calendar">
+                                                <div className="calendar-weekdays">
+                                                    {["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"].map(day => (
+                                                        <span key={day}>{day}</span>
+                                                    ))}
+                                                </div>
+                                                <div className="calendar-dates">
+                                                    {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30].map((date) => (
+                                                        <div
+                                                            key={date}
+                                                            className={`date ${selectedDateTele[doc.id] === date ? 'selected' : ''}`}
+                                                            onClick={() => handleSelectDateTele(doc.id, date)}
+                                                        >
+                                                            {date}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                {showTeleconsulta[doc.id] && (
-                                    <div className="teleconsulta-box">
-                                        <p>✔ Teleconsulta disponível</p>
-                                        <p>⏱ 30 a 50 minutos</p>
-                                        <p>🔒 Dados protegidos</p>
-                                        <p>📱 Celular ou computador</p>
+                                        <div className="hours-section">
+                                            <h4>SELECIONE O HORÁRIO</h4>
+                                            <div className="hours-grid">
+                                                {["08H30 DA MANHÃ", "13H30 DA TARDE", "19H00 DA NOITE", "15H00 DA TARDE"].map(hour => (
+                                                    <button
+                                                        key={hour}
+                                                        className={`hour-btn ${selectedHourTele[doc.id] === hour ? 'selected' : ''}`}
+                                                        onClick={() => handleSelectHourTele(doc.id, hour)}
+                                                    >
+                                                        {hour}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="presencial-content">
+                                        <div className="nearby-dates">
+                                            <h4>Consultas Presenciais</h4>
+                                            <div className="dates-row">
+                                                <div className="date-badge">HOJE<br/>27/02</div>
+                                                <div className="date-badge">AMANHÃ<br/>28/02</div>
+                                                <div className="date-badge">DOMINGO<br/>01/03</div>
+                                                <div className="date-badge">SEGUNDA<br/>02/03</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="location-section">
+                                            <h4>Localização</h4>
+                                            <div className="map-placeholder">
+                                                <iframe
+                                                    title={`map-${doc.id}`}
+                                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.015},${doc.coordinates.lat - 0.015},${doc.coordinates.lng + 0.015},${doc.coordinates.lat + 0.015}&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
-
-                                {/* CALENDÁRIO */}
-                                <div className="mini-calendar">
-                                    <h4>Escolha a data</h4>
-
-                                    <div className="calendar-grid">
-                                        {calendarDays.map((d) => (
-                                            <div
-                                                key={d.day}
-                                                className={`mini-date ${selectedDate[doc.id]?.day === d.day ? "selected" : ""}`}
-                                                onClick={() => handleSelectDate(doc.id, d)}
-                                            >
-                                                {d.day}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="mini-hours">
-                                        {horarios.map((h) => (
-                                            <button
-                                                key={h}
-                                                className={`mini-hour ${selectedHour[doc.id] === h ? "selected" : ""}`}
-                                                onClick={() => handleSelectHour(doc.id, h)}
-                                            >
-                                                {h}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* 🔥 MODAL */}
+            {/* MODAL PARA PRESENCIAL */}
             {modalOpen && selectedDoctor && (
-                <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+                <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-
-                        <h2>Agendar Consulta Presencial</h2>
-
-                        <div className="modal-doctor">
-                            <img src={selectedDoctor.avatar} />
-                            <div>
-                                <h3>{selectedDoctor.name}</h3>
-                                <p>{selectedDoctor.specialty}</p>
-                            </div>
-                        </div>
-
-                        <p className="modal-address">{selectedDoctor.enderecoCompleto}</p>
-
-                        <div className="mini-calendar">
-                            <h4>Escolha a data</h4>
-
-                            <div className="calendar-grid">
-                                {calendarDays.map((d) => (
-                                    <div
-                                        key={d.day}
-                                        className={`mini-date ${
-                                            selectedDate[selectedDoctor.id]?.day === d.day ? "selected" : ""
-                                        }`}
-                                        onClick={() => handleSelectDate(selectedDoctor.id, d)}
-                                    >
-                                        {d.day}
+                        <button className="modal-close" onClick={closeModal}>✕</button>
+                        
+                        {!showConfirmationPresencial ? (
+                            <>
+                                <div className="modal-doctor">
+                                    <img src={selectedDoctor.avatar} alt={selectedDoctor.name} />
+                                    <div>
+                                        <h3>{selectedDoctor.name}</h3>
+                                        <p>{selectedDoctor.specialty}</p>
+                                        <div className="doctor-rating">
+                                            <span className="stars">★★★★★</span>
+                                            <span className="rating-value">({selectedDoctor.rating} · {selectedDoctor.reviews} avaliações)</span>
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
 
-                            <div className="mini-hours">
-                                {horarios.map((h) => (
-                                    <button
-                                        key={h}
-                                        className={`mini-hour ${
-                                            selectedHour[selectedDoctor.id] === h ? "selected" : ""
-                                        }`}
-                                        onClick={() => handleSelectHour(selectedDoctor.id, h)}
-                                    >
-                                        {h}
-                                    </button>
-                                ))}
+                                <div className="modal-address">
+                                    <strong>Endereço da Clínica</strong>
+                                    <p>{selectedDoctor.enderecoCompleto}</p>
+                                </div>
+
+                                <div className="modal-calendar-section">
+                                    <h4>ESCOLHA A DATA</h4>
+                                    <div className="calendar">
+                                        <div className="calendar-weekdays">
+                                            {["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"].map(day => (
+                                                <span key={day}>{day}</span>
+                                            ))}
+                                        </div>
+                                        <div className="calendar-dates">
+                                            {[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30].map((date) => (
+                                                <div
+                                                    key={date}
+                                                    className={`date ${selectedDatePresencial[selectedDoctor.id] === date ? 'selected' : ''}`}
+                                                    onClick={() => handleSelectDatePresencial(selectedDoctor.id, date)}
+                                                >
+                                                    {date}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="modal-hours-section">
+                                    <h4>SELECIONE O HORÁRIO</h4>
+                                    <div className="hours-grid">
+                                        {["08H30 DA MANHÃ", "13H30 DA TARDE", "19H00 DA NOITE", "15H00 DA TARDE"].map(hour => (
+                                            <button
+                                                key={hour}
+                                                className={`hour-btn ${selectedHourPresencial[selectedDoctor.id] === hour ? 'selected' : ''}`}
+                                                onClick={() => handleSelectHourPresencial(selectedDoctor.id, hour)}
+                                            >
+                                                {hour}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button 
+                                    className="confirm-btn"
+                                    onClick={() => handleConfirmPresencial(selectedDoctor)}
+                                >
+                                    Confirmar Agendamento
+                                </button>
+                            </>
+                        ) : (
+                            <div className="confirmation-message">
+                                <div className="success-animation">
+                                    <div className="checkmark">✓</div>
+                                </div>
+                                <h2>Consulta Agendada!</h2>
+                                <p className="confirmation-subtitle">Sua consulta presencial foi marcada com sucesso</p>
+                                
+                                <div className="confirmation-card">
+                                    <div className="confirmation-row">
+                                        <span className="confirmation-label">👨‍⚕️ Médico:</span>
+                                        <span className="confirmation-value">{confirmationDetailsPresencial.doctorName}</span>
+                                    </div>
+                                    <div className="confirmation-row">
+                                        <span className="confirmation-label">📋 Especialidade:</span>
+                                        <span className="confirmation-value">{confirmationDetailsPresencial.specialty}</span>
+                                    </div>
+                                    <div className="confirmation-row">
+                                        <span className="confirmation-label">📅 Data:</span>
+                                        <span className="confirmation-value">{confirmationDetailsPresencial.date}</span>
+                                    </div>
+                                    <div className="confirmation-row">
+                                        <span className="confirmation-label">⏰ Horário:</span>
+                                        <span className="confirmation-value">{confirmationDetailsPresencial.hour}</span>
+                                    </div>
+                                    <div className="confirmation-row">
+                                        <span className="confirmation-label">📍 Local:</span>
+                                        <span className="confirmation-value">{confirmationDetailsPresencial.address}</span>
+                                    </div>
+                                    <div className="confirmation-row">
+                                        <span className="confirmation-label">💰 Valor:</span>
+                                        <span className="confirmation-value highlight">R$ {confirmationDetailsPresencial.price.toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="confirmation-footer">
+                                    <p>🔔 Você receberá um lembrete por e-mail</p>
+                                    <div className="loader"></div>
+                                    <p className="auto-close">Fechando em 3 segundos...</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* MENSAGEM DE CONFIRMAÇÃO PARA TELECONSULTA (SEM MODAL) */}
+            {showConfirmationTele && selectedDoctorTele && (
+                <div className="confirmation-overlay" onClick={closeTeleConfirmation}>
+                    <div className="confirmation-popup" onClick={(e) => e.stopPropagation()}>
+                        <button className="confirmation-close" onClick={closeTeleConfirmation}>✕</button>
+                        <div className="success-animation">
+                            <div className="checkmark">✓</div>
+                        </div>
+                        <h2>Teleconsulta Agendada!</h2>
+                        <p className="confirmation-subtitle">Sua consulta online foi marcada com sucesso</p>
+                        
+                        <div className="confirmation-card">
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">👨‍⚕️ Médico:</span>
+                                <span className="confirmation-value">{confirmationDetailsTele.doctorName}</span>
+                            </div>
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">📋 Especialidade:</span>
+                                <span className="confirmation-value">{confirmationDetailsTele.specialty}</span>
+                            </div>
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">📅 Data:</span>
+                                <span className="confirmation-value">{confirmationDetailsTele.date}</span>
+                            </div>
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">⏰ Horário:</span>
+                                <span className="confirmation-value">{confirmationDetailsTele.hour}</span>
+                            </div>
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">💻 Plataforma:</span>
+                                <span className="confirmation-value">{confirmationDetailsTele.platform}</span>
+                            </div>
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">⏱️ Duração:</span>
+                                <span className="confirmation-value">{confirmationDetailsTele.duration}</span>
+                            </div>
+                            <div className="confirmation-row">
+                                <span className="confirmation-label">💰 Valor:</span>
+                                <span className="confirmation-value highlight">R$ {confirmationDetailsTele.price.toFixed(2)}</span>
                             </div>
                         </div>
 
-                        <button className="close-modal" onClick={() => setModalOpen(false)}>
-                            Fechar
-                        </button>
+                        <div className="confirmation-footer">
+                            <p>🔔 Você receberá o link da consulta por e-mail</p>
+                        </div>
                     </div>
                 </div>
             )}
@@ -318,27 +538,27 @@ Dia: ${selectedDate[doctorId]?.day}/03/2026
                 <div className="footer-column">
                     <h4>Serviços</h4>
                     <ul>
-                        <li><img src={certinho}/> Teleconsulta 24h</li>
-                        <li><img src={certinho}/> Agendamento online</li>
-                        <li><img src={certinho}/> Especialidades</li>
+                        <li><img src={certinho} alt="check" /> Teleconsulta 24h</li>
+                        <li><img src={certinho} alt="check" /> Agendamento online</li>
+                        <li><img src={certinho} alt="check" /> Especialidades</li>
                     </ul>
                 </div>
 
                 <div className="footer-column">
                     <h4>Virtual Health</h4>
                     <div className="social">
-                        <img src={wats}/>
-                        <img src={insta}/>
+                        <img src={wats} alt="whatsapp" />
+                        <img src={insta} alt="instagram" />
                     </div>
                 </div>
 
                 <div className="footer-column">
                     <h4>Contato</h4>
                     <ul>
-                        <li><img src={local}/> Caçapava SP</li>
-                        <li><img src={tell}/> (12) 99999-9999</li>
-                        <li><img src={gmail}/> email@gmail.com</li>
-                        <li><img src={tempo}/> 24h</li>
+                        <li><img src={local} alt="local" /> Caçapava SP</li>
+                        <li><img src={tell} alt="telefone" /> (12) 99999-9999</li>
+                        <li><img src={gmail} alt="email" /> email@gmail.com</li>
+                        <li><img src={tempo} alt="tempo" /> 24h</li>
                     </ul>
                 </div>
             </footer>
