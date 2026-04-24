@@ -105,7 +105,7 @@ export default function HomePa() {
                 </button>
 
                 <Link to="/perfil">
-                    <img src={email} className="email" />
+                    <img src={email} />
                 </Link>
             </div>
 
@@ -162,6 +162,7 @@ export default function HomePa() {
             <div className="purpose-section">
                 <h2>Nosso propósito</h2>
                 <hr />
+
                 <p>
                     Criamos uma plataforma acessível, humana e tecnológica que coloca o paciente no centro.
                 </p>
@@ -178,6 +179,8 @@ export default function HomePa() {
 
             {/* ESPECIALISTAS */}
             <div className="experts-section">
+                <h2>Dicas dos Especialistas</h2>
+                <hr />
                 <div className="carousel-container">
 
                 <button className="arrow left" onClick={prevDica}>❮</button>
@@ -186,7 +189,7 @@ export default function HomePa() {
                     {dicas.slice(indexDica, indexDica + 2).map((item, i) => (
                         <div className="expert-card" key={i}>
                             <p className="expert-text">{item.texto}</p>
-
+                            
                             <div className="expert-footer">
                                 <div className="perfil">
                                     <img src={item.img} />
@@ -194,7 +197,6 @@ export default function HomePa() {
                                         <strong>{item.nome}</strong>
                                     </div>
                                 </div>
-
                                 <div className="stars">★★★★★</div>
                             </div>
                         </div>
@@ -237,27 +239,27 @@ export default function HomePa() {
                 <div className="footer-column">
                     <h4>Serviços</h4>
                     <ul>
-                        <li><img src={certinho} /> Teleconsulta 24h</li>
-                        <li><img src={certinho} /> Agendamento online</li>
-                        <li><img src={certinho} /> Especialidades</li>
-                        <li><img src={certinho} /> Perguntas frequentes</li>
+                        <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
+                        <li><img src={certinho} className="certo"/> Agendamento online</li>
+                        <li><img src={certinho} className="certo"/> Especialidades</li>
+                        <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
                     </ul>
                 </div>
                 <div className="footer-column">
                     <h4>Virtual Health</h4>
                     <p>Seu médico virtual 24h</p>
                     <div className="social">
-                        <img src={wats} />
+                        <img src={wats} className="img"/>
                         <img src={insta} />
                     </div>
                 </div>
                 <div className="footer-column">
                     <h4>Contato</h4>
                     <ul>
-                        <li><img src={local} /> Endereço: Sesi Caçapava SP</li>
-                        <li><img src={tell} /> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} /> Email: Virtualhealth@gmail.com</li>
-                        <li><img src={tempo} /> Horário: 24h</li>
+                        <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
+                        <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
+                        <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
+                        <li><img src={tempo} className="certo"/> Horário: 24h</li>
                     </ul>
                 </div>
 

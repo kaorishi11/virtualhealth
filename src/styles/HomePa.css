@@ -29,7 +29,7 @@
 }
 
 .logopaciente {
-    height: 45px;
+    height: 48px;
     transform: scale(1.4);
     transform-origin: left center;
 }
@@ -78,7 +78,7 @@
 }
 
 .hero-text span {
-    color: #3a8dad;
+    color: #209FD5;
 }
 
 /* APP */
@@ -90,7 +90,7 @@
 .app-section hr {
     width: 250px;
     height: 4px;
-    background: #3a8dad;
+    background: #209FD5;
     margin: 10px auto;
     border: none;
 }
@@ -103,10 +103,11 @@
 }
 
 .card1, .card2 {
-    background: #ebecee;
+    background: #E6F2FF;
     padding: 20px;
     border-radius: 15px;
     width: 200px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
 .card1 img {
@@ -117,7 +118,7 @@
 }
 
 .card2 img {
-    background: #209FD5;
+    background: rgba(32, 159, 213, 0.5);
     padding: 15px;
     border-radius: 10px;
     height: 80px;
@@ -148,6 +149,7 @@
     width: 70%;
     border: 4px solid #0F5F9E;
     border-radius: 5px;
+    margin-top: 30px;
 }
 
 .hr1 {
@@ -186,7 +188,7 @@
 .experts-section hr {
     width: 250px;
     height: 4px;
-    background: #3a8dad;
+    background: #209FD5;
     margin: 10px auto 40px;
     border: none;
 }
@@ -218,9 +220,10 @@
 
 .expert-text {
     font-size: 15px;
-    color: #333;
+    color: #000000;
     text-align: center;
     line-height: 1.5;
+    font-style: italic;
 }
 
 .expert-footer {
@@ -235,8 +238,9 @@
 
 .perfil {
     display: flex;
-    align-items: center;
+    align-items: left;
     gap: 10px;
+    color: #209FD5;
 }
 
 .perfil img {
@@ -247,6 +251,9 @@
 
 .perfil strong {
     font-size: 12px;
+    position: relative;
+    top: 15px;
+    white-space: nowrap;
 }
 
 .perfil span {
@@ -256,6 +263,8 @@
 
 .stars {
     color: orange;
+    align-self: flex-start;
+    margin-top: -2px;
 }
 
 .arrow {
@@ -278,7 +287,7 @@
 }
 
 .faq-section hr {
-    width: 200px;
+    width: 240px;
     height: 4px;
     background: #3a8dad;
     border: none;
@@ -344,7 +353,14 @@
     width: 16px;
 }
 
+.img {
+    margin-left: 130px;
+}
+
+.certo {
+    margin-left: 60px;
+}
+
 .social img {
     width: 20px;
-    margin-right: 10px;
 }
