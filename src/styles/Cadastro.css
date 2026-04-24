@@ -99,19 +99,40 @@ form select {
   margin-bottom: 12px;
 }
 
+.row select {
+  flex: 1;
+  height: 44px;
+
+  background-color: #fff;
+  color: #555; /* mesma cor dos inputs */
+
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  padding: 0 12px;
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+.row select:focus {
+  outline: none;
+  border-color: #3a8dad;
+}
+
 .row input,
 .row select {
   flex: 1;
 }
 
-.input-group{
+.input-senha{
   position: relative;
 }
 
 .icon-eye {
   position: absolute;
   right: 12px;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
   width: 20px;
   height: 20px;

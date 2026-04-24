@@ -89,7 +89,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 5px;
 }
 
 .input-group input {
@@ -113,7 +113,7 @@
   width: 18px;
   height: 18px;
   pointer-events: none;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
 }
 
@@ -124,13 +124,8 @@
   height: 20px;
   cursor: pointer;
   z-index: 2;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
-  transition: opacity 0.3s ease;
-}
-
-.icon-eye:hover {
-  opacity: 0.7;
 }
 
 /* REMOVE OLHO DO CHROME */
@@ -151,7 +146,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 20px 0 25px 0;
+  margin: 0 0 20px 10px;
   font-size: 13px;
 }
 
@@ -224,6 +219,118 @@ form button:active {
 .links span:hover {
   color: #3a8dad;
   text-decoration: underline;
+}
+
+/* FUNDO ESCURO COM BLUR */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+
+  animation: fadeIn 0.3s ease;
+}
+
+/* CAIXA DO MODAL */
+.modal {
+  background: #fff;
+  padding: 30px 25px;
+  border-radius: 16px;
+  width: 320px;
+  text-align: center;
+
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  animation: scaleIn 0.25s ease;
+}
+
+/* TÍTULO */
+.modal h2 {
+  margin-bottom: 10px;
+  font-size: 20px;
+}
+
+/* TEXTO */
+.modal p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 15px;
+}
+
+/* INPUT */
+.modal input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  outline: none;
+  transition: 0.2s;
+}
+
+.modal input:focus {
+  border-color: #3a8dad;
+}
+
+/* BOTÕES */
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+/* BOTÃO ENVIAR */
+.modal-buttons button:first-child {
+  background: linear-gradient(135deg, #6ec1e4, #3a8dad);
+  color: white;
+}
+
+.modal-buttons button:first-child:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* BOTÃO CANCELAR */
+.modal-buttons button:last-child {
+  background: #eee;
+  color: #444;
+}
+
+.modal-buttons button:last-child:hover {
+  background: #ddd;
+}
+
+/* ANIMAÇÕES */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 900px) {

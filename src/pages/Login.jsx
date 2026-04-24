@@ -17,6 +17,8 @@ export default function Login() {
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [lembrar, setLembrar] = useState(false);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [emailRecuperacao, setEmailRecuperacao] = useState("");
 
   const navigate = useNavigate();
 
@@ -72,10 +74,17 @@ export default function Login() {
   }
 
   function esqueciSenha() {
-    const emailRecuperacao = prompt("Digite seu e-mail para recuperar a senha:");
-    if (emailRecuperacao) {
-      alert(`Instruções de recuperação enviadas para ${emailRecuperacao}`);
+    setMostrarModal(true);
+  }
+  function enviarRecuperacao(){
+    if(!emailRecuperacao){
+      alert("Digite um e-mail");
+      return;
     }
+
+    alert(`Instruções enviadas para ${emailRecuperacao}`);
+    setMostrarModal(false);
+    setEmailRecuperacao("");
   }
 
   return (
@@ -167,6 +176,26 @@ export default function Login() {
           </div>
         </div>
       </div>
+      {mostrarModal && (
+      <div className="modal-overlay">
+        <div className="modal">
+          <h2>Recuperar senha</h2>
+          <p>Digite seu e-mail para receber as instruções</p>
+
+          <input
+            type="email"
+            placeholder="Seu e-mail"
+            value={emailRecuperacao}
+            onChange={(e) => setEmailRecuperacao(e.target.value)}
+          />
+
+          <div className="modal-buttons">
+            <button onClick={enviarRecuperacao}>Enviar</button>
+            <button onClick={() => setMostrarModal(false)}>Cancelar</button>
+          </div>
+        </div>
+      </div>
+      )}
     </div>
   );
 }

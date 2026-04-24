@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import login from '../images/login.png';
 import medico from '../images/medico.png';
@@ -11,6 +12,12 @@ import "../styles/Cadastro.css";
 export default function Cadastro() {
   const [tipo, setTipo] = useState("paciente");
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const navigate = useNavigate();
+
+  function handleCadastro(e){
+    e.preventDefault();
+    navigate("/");
+  }
 
   return (
     <div className="container">
@@ -55,17 +62,17 @@ export default function Cadastro() {
             </button>
           </div>
 
-          <form>
+          <form onSubmit={handleCadastro}>
             {/*CAMPOS COMUNS */}
-            <input type="text" placeholder="Nome completo" />
-            <input type="email" placeholder="E-mail" />
+            <input type="text" placeholder="Nome completo" required/>
+            <input type="email" placeholder="E-mail" required/>
 
             {/*PACIENTE */}
             {tipo === "paciente" && (
               <>
                 <div className="row">
-                  <input type="text" placeholder="CEP" />
-                  <input type="text" placeholder="CPF" />
+                  <input type="text" placeholder="CEP" required/>
+                  <input type="text" placeholder="CPF" required/>
                 </div>
               </>
             )}
@@ -74,41 +81,40 @@ export default function Cadastro() {
             {tipo === "medico" && (
               <>
                 <div className="row">
-                  <input type="text" placeholder="Telefone" />
-                  <input type="text" placeholder="CPF" />
-                </div>
-
-                <div className="row">
-                  <input type="text" placeholder="CEP" />
-                  <input type="date" placeholder="Data de nascimento" />
-                </div>
-
-                <div className="row">
-                  <select>
-                    <option>Gênero</option>
-                  </select>
-
-                  <select>
-                    <option>Especialidade</option>
+                  <input type="text" placeholder="Telefone" required/>
+                  <select required>
+                    <option value="">Gênero</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="feminino">Feminino</option>
+                    <option value="nao_binario">Não-binário</option>
+                    <option value="outro">Outro</option>
+                    <option value="prefiro_nao_informar">Prefiro não informar</option>
                   </select>
                 </div>
 
                 <div className="row">
-                  <input type="text" placeholder="CRM" />
-                  <input type="text" placeholder="Universidade" />
+                  <input type="text" placeholder="CEP" required/>
+                  <input type="text" placeholder="CPF" required/>
                 </div>
 
                 <div className="row">
-                  <input type="text" placeholder="Ano de formação" />
+                  <input type="text" placeholder="Especialidade" required/>
+                  <input type="text" placeholder="CRM" required/>
+                </div>
+
+                <div className="row">
+                  <input type="text" placeholder="Universidade" required/>
+                  <input type="text" placeholder="Ano de formação" required/>
                 </div>
               </>
             )}
 
             {/* SENHA */}
-            <div className="input-group">
+            <div className="input-senha">
               <input
                 type={mostrarSenha ? "text" : "password"}
                 placeholder="Senha"
+                required
               />
 
               <img
