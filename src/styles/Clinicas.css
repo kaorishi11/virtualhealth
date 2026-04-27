@@ -229,12 +229,12 @@ body {
 .tabs-left {
     display: flex;
     gap: 12px;
-    margin: 20px 0;
+    margin: 20px 20px 0 20px;
 }
 .tab-btn-left {
     flex: 1;
-    padding: 10px;
-    border-radius: 30px;
+    padding: 8px;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -244,28 +244,31 @@ body {
     border: 1px solid #cbd5e1;
 }
 .tab-btn-left.active {
-    background: #2c7da0;
+    background: #218590;
     color: white;
     border: none;
 }
 .tab-btn-left:hover:not(.active) {
     background: #f8fafc;
-    border-color: #2c7da0;
+    border-color: #218590;
 }
 
-.address-section {
-    margin-bottom: 20px;
-}
 .address-section strong {
     display: block;
     font-size: 12px;
     color: #64748b;
-    margin-bottom: 4px;
 }
 .address-section p {
     font-size: 13px;
     color: #475569;
+    text-align: left;
     line-height: 1.4;
+}
+.address-section p img {
+    width: 30px;
+    height: auto;
+    margin-right: 6px;
+    margin-left: 15px;
 }
 .address-full {
     margin-top: 8px;
@@ -293,7 +296,7 @@ body {
     margin: 20px 0;
 }
 .price-value strong {
-    color: #2c7da0;
+    color: #000000;
     font-size: 18px;
 }
 .btn-schedule {

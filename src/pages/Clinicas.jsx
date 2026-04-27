@@ -15,6 +15,10 @@ import local from "../images/local.png";
 import tell from "../images/tel.png";
 import gmail from "../images/gmail.png";
 import tempo from "../images/tempo.png";
+import iconlocal from "../images/iconlocal.png";
+import icontempo from "../images/icontempo.png";
+import iconesc from "../images/iconesc.png";
+import iconcell from "../images/iconcell.png";
 
 export default function Clinicas() {
     const navigate = useNavigate();
@@ -272,18 +276,18 @@ const handleConfirmPresencial = (doc) => {
                                     </button>
                                 </div>
 
-                                <div className="address-section">
-                                    <strong>Endereço</strong>
-                                    <p>Teleconsulta</p>
-                                    <p className="address-full">{doc.enderecoCompleto}</p>
-                                </div>
+                                {activeTab[doc.id] === 'presencial' && (
+                                    <div className="address-section">
+                                        <p className="address-full"><img src={iconlocal} alt="Ícone de localização" />{doc.enderecoCompleto}</p>
+                                    </div>
+                                )}
 
                                 {/* INFORMAÇÕES DA TELECONSULTA */}
                                 {activeTab[doc.id] === 'teleconsulta' && (
                                     <div className="tele-info-left">
-                                        <p>Duração média: 30 a 50 minutos</p>
-                                        <p>Dados protegidos pela LGPD</p>
-                                        <p>Acesse pelo celular ou computador</p>
+                                        <p><img src={icontempo} alt="Ícone de tempo" /> Duração média: 30 a 50 minutos</p>
+                                        <p><img src={iconesc} alt="Ícone de segurança" /> Dados protegidos pela LGPD</p>
+                                        <p><img src={iconcell} alt="Ícone de celular" /> Acesse pelo celular ou computador</p>
                                     </div>
                                 )}
 
