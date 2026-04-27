@@ -67,14 +67,14 @@ body {
 }
 .hero-clinicas h1 {
     font-size: 46px;
-    font-weight: 800;
+    font-weight: 700;
     color: white;
     line-height: 1.2;
 }
 .hero-clinicas span { color: #2c7da0; }
 .hero-clinicas p {
     color: #2c7da0;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 /* MAIN */
@@ -107,16 +107,25 @@ body {
 .search-container {
     display: flex;
     gap: 15px;
-    margin-bottom: 40px;
+    margin-bottom: 60px;
     flex-wrap: wrap;
+}
+.hr{
+    width: 150%;
+    margin-left: -200px;
+    height: 2px;
+    background: #abadaf;
+    border: none;
+    box-shadow: 1px 2px rgba(0,0,0,0.1);
 }
 .search-input-wrapper {
     flex: 2;
     display: flex;
     align-items: center;
-    background: #e2e8f0;
+    background: #E6F2FF;
+    box-shadow: 1px 3px rgba(0,0,0,0.1);
     padding: 3px 10px;
-    border-radius: 20px;
+    border-radius: 12px;
     gap: 10px;
 }
 .search-input-wrapper input {
@@ -126,34 +135,41 @@ body {
     width: 100%;
     font-size: 14px;
 }
+.search-input-wrapper input ::placeholder{
+    color: #0853bd;
+}
 .filter-select {
     flex: 1;
     padding: 3px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
-    background: white;
+    border: none;
+    border-radius: 12px;
+    background: #E6F2FF;
+    box-shadow: 1px 3px rgba(0,0,0,0.1);
     font-size: 14px;
-    color: #4880bd;
+    color: #0F5F9E;
     cursor: pointer;
 }
 .location-input {
     flex: 1;
+    background: #E6F2FF;
+    border: none;
+    box-shadow: 1px 3px rgba(0,0,0,0.1);
     padding: 3px 10px;
     border: 1px solid #cbd5e1;
-    border-radius: 20px;
+    border-radius: 12px;
     font-size: 14px;
-    color: #557fad;
+    color: #0F5F9E;
 }
 
 /* CARDS */
 .doctors {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 35px;
 }
 .doctor-card {
     display: grid;
-    grid-template-columns: 340px 1fr;
+    grid-template-columns: 400px 1fr;
     background: white;
     border-radius: 20px;
     overflow: hidden;
@@ -173,8 +189,6 @@ body {
 }
 .doctor-header {
     display: flex;
-    gap: 15px;
-    align-items: flex-start;
     margin-bottom: 20px;
 }
 .doctor-avatar {
@@ -183,25 +197,33 @@ body {
     border-radius: 50%;
     object-fit: cover;
 }
+.doctor-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* força tudo pra esquerda */
+}
 .doctor-info { flex: 1; }
 .doctor-info h3 {
     font-size: 18px;
     color: #1e293b;
     margin-bottom: 4px;
+    text-align: left;
 }
 .doctor-specialty {
     font-size: 13px;
     color: #2c7da0;
     font-weight: 600;
     margin-bottom: 8px;
+    text-align: left;
 }
-.doctor-rating {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.stars {
+    display: inline-block;
 }
-.stars { color: #f59e0b; font-size: 13px; letter-spacing: 2px; }
-.rating-value { font-size: 12px; color: #64748b; }
+
+.rating-value {
+    font-size: 12px;
+    color: #64748b;
+}
 
 /* BOTÕES NO LADO ESQUERDO */
 .tabs-left {

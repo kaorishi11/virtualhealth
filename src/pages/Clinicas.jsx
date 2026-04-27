@@ -221,7 +221,7 @@ const handleConfirmPresencial = (doc) => {
                         value={selectedEspecialidade}
                         onChange={(e) => setSelectedEspecialidade(e.target.value)}
                     >
-                        <option value="">Especialista ▼</option>
+                        <option value="">Especialista</option>
                         <option value="Dentista">Dentista</option>
                         <option value="Oftalmologista">Oftalmologista</option>
                         <option value="Ginecologista">Ginecologista</option>
@@ -235,6 +235,8 @@ const handleConfirmPresencial = (doc) => {
                         onChange={(e) => setSelectedLocal(e.target.value)}
                     />
                 </div>
+
+                <hr className="hr"/>
 
                 {/* CARDS */}
                 <div className="doctors">
@@ -260,7 +262,7 @@ const handleConfirmPresencial = (doc) => {
                                         className={`tab-btn-left ${activeTab[doc.id] !== 'teleconsulta' ? 'active' : ''}`}
                                         onClick={() => setActiveTab(prev => ({ ...prev, [doc.id]: 'presencial' }))}
                                     >
-                                        Presencial
+                                        Endereço
                                     </button>
                                     <button 
                                         className={`tab-btn-left ${activeTab[doc.id] === 'teleconsulta' ? 'active' : ''}`}
