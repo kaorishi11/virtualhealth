@@ -4,7 +4,6 @@ import "../styles/Clinicas.css";
 
 // Imagens
 import logo from "../images/logo.png";
-import email from '../images/login (2).png';
 import lupa from "../images/lupa.png";
 import marta from "../images/med.png";
 import andrey from "../images/medi.png";
@@ -186,13 +185,11 @@ const handleConfirmPresencial = (doc) => {
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
+                    <Link to="/perfil">Meu Perfil</Link>
                 </div>
                 <button className="consulta-btn" onClick={() => navigate("/chat")}>
                     Fazer Consulta
                 </button>
-                <Link to="/perfil">
-                    <img src={email} className="email" alt="perfil" />
-                </Link>
             </div>
 
             {/* HERO */}
@@ -281,9 +278,9 @@ const handleConfirmPresencial = (doc) => {
                                 {/* INFORMAÇÕES DA TELECONSULTA */}
                                 {activeTab[doc.id] === 'teleconsulta' && (
                                     <div className="tele-info-left">
-                                        <p>⏱️ Duração média: 30 a 50 minutos</p>
-                                        <p>🔒 Dados protegidos pela LGPD</p>
-                                        <p>📱 Acesse pelo celular ou computador</p>
+                                        <p>Duração média: 30 a 50 minutos</p>
+                                        <p>Dados protegidos pela LGPD</p>
+                                        <p>Acesse pelo celular ou computador</p>
                                     </div>
                                 )}
 
@@ -448,33 +445,33 @@ const handleConfirmPresencial = (doc) => {
                                 
                                 <div className="confirmation-card">
                                     <div className="confirmation-row">
-                                        <span className="confirmation-label">👨‍⚕️ Médico:</span>
+                                        <span className="confirmation-label">Médico:</span>
                                         <span className="confirmation-value">{confirmationDetailsPresencial.doctorName}</span>
                                     </div>
                                     <div className="confirmation-row">
-                                        <span className="confirmation-label">📋 Especialidade:</span>
+                                        <span className="confirmation-label">Especialidade:</span>
                                         <span className="confirmation-value">{confirmationDetailsPresencial.specialty}</span>
                                     </div>
                                     <div className="confirmation-row">
-                                        <span className="confirmation-label">📅 Data:</span>
+                                        <span className="confirmation-label">Data:</span>
                                         <span className="confirmation-value">{confirmationDetailsPresencial.date}</span>
                                     </div>
                                     <div className="confirmation-row">
-                                        <span className="confirmation-label">⏰ Horário:</span>
+                                        <span className="confirmation-label">Horário:</span>
                                         <span className="confirmation-value">{confirmationDetailsPresencial.hour}</span>
                                     </div>
                                     <div className="confirmation-row">
-                                        <span className="confirmation-label">📍 Local:</span>
+                                        <span className="confirmation-label">Local:</span>
                                         <span className="confirmation-value">{confirmationDetailsPresencial.address}</span>
                                     </div>
                                     <div className="confirmation-row">
-                                        <span className="confirmation-label">💰 Valor:</span>
+                                        <span className="confirmation-label">Valor:</span>
                                         <span className="confirmation-value highlight">R$ {confirmationDetailsPresencial.price.toFixed(2)}</span>
                                     </div>
                                 </div>
 
                                 <div className="confirmation-footer">
-                                    <p>🔔 Você receberá um lembrete por e-mail</p>
+                                    <p>Você receberá um lembrete por e-mail</p>
                                     <div className="loader"></div>
                                     <p className="auto-close">Fechando em 3 segundos...</p>
                                 </div>
@@ -497,71 +494,73 @@ const handleConfirmPresencial = (doc) => {
                         
                         <div className="confirmation-card">
                             <div className="confirmation-row">
-                                <span className="confirmation-label">👨‍⚕️ Médico:</span>
+                                <span className="confirmation-label">Médico:</span>
                                 <span className="confirmation-value">{confirmationDetailsTele.doctorName}</span>
                             </div>
                             <div className="confirmation-row">
-                                <span className="confirmation-label">📋 Especialidade:</span>
+                                <span className="confirmation-label">Especialidade:</span>
                                 <span className="confirmation-value">{confirmationDetailsTele.specialty}</span>
                             </div>
                             <div className="confirmation-row">
-                                <span className="confirmation-label">📅 Data:</span>
+                                <span className="confirmation-label">Data:</span>
                                 <span className="confirmation-value">{confirmationDetailsTele.date}</span>
                             </div>
                             <div className="confirmation-row">
-                                <span className="confirmation-label">⏰ Horário:</span>
+                                <span className="confirmation-label">Horário:</span>
                                 <span className="confirmation-value">{confirmationDetailsTele.hour}</span>
                             </div>
                             <div className="confirmation-row">
-                                <span className="confirmation-label">💻 Plataforma:</span>
+                                <span className="confirmation-label">Plataforma:</span>
                                 <span className="confirmation-value">{confirmationDetailsTele.platform}</span>
                             </div>
                             <div className="confirmation-row">
-                                <span className="confirmation-label">⏱️ Duração:</span>
+                                <span className="confirmation-label">⏱Duração:</span>
                                 <span className="confirmation-value">{confirmationDetailsTele.duration}</span>
                             </div>
                             <div className="confirmation-row">
-                                <span className="confirmation-label">💰 Valor:</span>
+                                <span className="confirmation-label">Valor:</span>
                                 <span className="confirmation-value highlight">R$ {confirmationDetailsTele.price.toFixed(2)}</span>
                             </div>
                         </div>
 
                         <div className="confirmation-footer">
-                            <p>🔔 Você receberá o link da consulta por e-mail</p>
+                            <p>Você receberá o link da consulta por e-mail</p>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* FOOTER */}
-            <footer className="footer">
-                <div className="footer-column">
-                    <h4>Serviços</h4>
-                    <ul>
-                        <li><img src={certinho} alt="check" /> Teleconsulta 24h</li>
-                        <li><img src={certinho} alt="check" /> Agendamento online</li>
-                        <li><img src={certinho} alt="check" /> Especialidades</li>
-                    </ul>
-                </div>
-
-                <div className="footer-column">
-                    <h4>Virtual Health</h4>
-                    <div className="social">
-                        <img src={wats} alt="whatsapp" />
-                        <img src={insta} alt="instagram" />
-                    </div>
-                </div>
-
-                <div className="footer-column">
-                    <h4>Contato</h4>
-                    <ul>
-                        <li><img src={local} alt="local" /> Caçapava SP</li>
-                        <li><img src={tell} alt="telefone" /> (12) 99999-9999</li>
-                        <li><img src={gmail} alt="email" /> email@gmail.com</li>
-                        <li><img src={tempo} alt="tempo" /> 24h</li>
-                    </ul>
-                </div>
-            </footer>
+                        <footer className="footer">
+            
+                            <div className="footer-column">
+                                <h4>Serviços</h4>
+                                <ul>
+                                    <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
+                                    <li><img src={certinho} className="certo"/> Agendamento online</li>
+                                    <li><img src={certinho} className="certo"/> Especialidades</li>
+                                    <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
+                                </ul>
+                            </div>
+                            <div className="footer-column">
+                                <h4>Virtual Health</h4>
+                                <p>Seu médico virtual 24h</p>
+                                <div className="social">
+                                    <img src={wats} className="img"/>
+                                    <img src={insta} />
+                                </div>
+                            </div>
+                            <div className="footer-column">
+                                <h4>Contato</h4>
+                                <ul>
+                                    <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
+                                    <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
+                                    <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
+                                    <li><img src={tempo} className="certo"/> Horário: 24h</li>
+                                </ul>
+                            </div>
+            
+                        </footer>
         </div>
     );
 }

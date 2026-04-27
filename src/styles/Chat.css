@@ -37,7 +37,9 @@ body {
 }
 
 .logochat {
-    height: 40px;
+    height: 48px;
+    transform: scale(1.4);
+    transform-origin: left center;
 }
 
 .nav-links {

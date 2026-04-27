@@ -11,24 +11,33 @@ body {
 
 /* HEADER */
 .header {
-    position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
-    max-width: 1100px;
+    max-width: 1050px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
-    backdrop-filter: blur(12px);
+
+    padding: 5px 10px;
+    min-height: 60px;
+
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(10px);
+
     border-radius: 50px;
     z-index: 1000;
-    background: rgba(255,255,255,0.6);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-.logoclinicas { height: 45px; }
+.logoclinicas {
+    height: 48px;
+    transform: scale(1.4);
+    transform-origin: left center;
+}
+
 .nav-links { display: flex; gap: 28px; }
 .nav-links a {
     text-decoration: none;
