@@ -11,24 +11,33 @@ body {
 
 /* HEADER */
 .header {
-    position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
-    max-width: 1100px;
+    max-width: 1050px;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 20px;
-    backdrop-filter: blur(12px);
+
+    padding: 5px 10px;
+    min-height: 60px;
+
+    background: rgba(255, 255, 255, 0.01);
+    backdrop-filter: blur(10px);
+
     border-radius: 50px;
     z-index: 1000;
-    background: rgba(255,255,255,0.6);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-.logoclinicas { height: 45px; }
+.logoclinicas {
+    height: 48px;
+    transform: scale(1.4);
+    transform-origin: left center;
+}
+
 .nav-links { display: flex; gap: 28px; }
 .nav-links a {
     text-decoration: none;
@@ -53,18 +62,19 @@ body {
 .hero-clinicas {
     background: #dbe0e3 url('../images/clinicas.png') no-repeat right bottom;
     background-size: 750px;
-    padding: 120px 40px 80px;
+    padding: 80px 50px 65px;
+    text-align: left;
 }
 .hero-clinicas h1 {
     font-size: 46px;
-    font-weight: 800;
+    font-weight: 700;
     color: white;
+    line-height: 1.2;
 }
 .hero-clinicas span { color: #2c7da0; }
 .hero-clinicas p {
-    margin-top: 10px;
     color: #2c7da0;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 /* MAIN */
@@ -82,22 +92,40 @@ body {
     font-size: 20px;
     color: #1e293b;
     font-weight: 600;
+    text-align: left;
+}
+.search-header hr{
+    width: 290px;
+    height: 3px;
+    background: #209FD5;
+    margin: 10px auto;
+    border: none;
+    margin-left: 0;
 }
 
 /* SEARCH CONTAINER */
 .search-container {
     display: flex;
     gap: 15px;
-    margin-bottom: 40px;
+    margin-bottom: 60px;
     flex-wrap: wrap;
+}
+.hr{
+    width: 150%;
+    margin-left: -200px;
+    height: 2px;
+    background: #abadaf;
+    border: none;
+    box-shadow: 1px 2px rgba(0,0,0,0.1);
 }
 .search-input-wrapper {
     flex: 2;
     display: flex;
     align-items: center;
-    background: #e2e8f0;
-    padding: 12px 18px;
-    border-radius: 30px;
+    background: #E6F2FF;
+    box-shadow: 1px 3px rgba(0,0,0,0.1);
+    padding: 3px 10px;
+    border-radius: 12px;
     gap: 10px;
 }
 .search-input-wrapper input {
@@ -107,34 +135,41 @@ body {
     width: 100%;
     font-size: 14px;
 }
+.search-input-wrapper input ::placeholder{
+    color: #0853bd;
+}
 .filter-select {
     flex: 1;
-    padding: 12px 16px;
-    border: 1px solid #cbd5e1;
-    border-radius: 30px;
-    background: white;
+    padding: 3px 10px;
+    border: none;
+    border-radius: 12px;
+    background: #E6F2FF;
+    box-shadow: 1px 3px rgba(0,0,0,0.1);
     font-size: 14px;
-    color: #1e293b;
+    color: #0F5F9E;
     cursor: pointer;
 }
 .location-input {
     flex: 1;
-    padding: 12px 16px;
+    background: #E6F2FF;
+    border: none;
+    box-shadow: 1px 3px rgba(0,0,0,0.1);
+    padding: 3px 10px;
     border: 1px solid #cbd5e1;
-    border-radius: 30px;
+    border-radius: 12px;
     font-size: 14px;
-    color: #1e293b;
+    color: #0F5F9E;
 }
 
 /* CARDS */
 .doctors {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 35px;
 }
 .doctor-card {
     display: grid;
-    grid-template-columns: 340px 1fr;
+    grid-template-columns: 400px 1fr;
     background: white;
     border-radius: 20px;
     overflow: hidden;
@@ -154,8 +189,6 @@ body {
 }
 .doctor-header {
     display: flex;
-    gap: 15px;
-    align-items: flex-start;
     margin-bottom: 20px;
 }
 .doctor-avatar {
@@ -164,25 +197,33 @@ body {
     border-radius: 50%;
     object-fit: cover;
 }
+.doctor-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* força tudo pra esquerda */
+}
 .doctor-info { flex: 1; }
 .doctor-info h3 {
     font-size: 18px;
     color: #1e293b;
     margin-bottom: 4px;
+    text-align: left;
 }
 .doctor-specialty {
     font-size: 13px;
     color: #2c7da0;
     font-weight: 600;
     margin-bottom: 8px;
+    text-align: left;
 }
-.doctor-rating {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.stars {
+    display: inline-block;
 }
-.stars { color: #f59e0b; font-size: 13px; letter-spacing: 2px; }
-.rating-value { font-size: 12px; color: #64748b; }
+
+.rating-value {
+    font-size: 12px;
+    color: #64748b;
+}
 
 /* BOTÕES NO LADO ESQUERDO */
 .tabs-left {

@@ -98,15 +98,12 @@ export default function HomePa() {
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
+                    <Link to="/perfil">Meu Perfil</Link>
                 </div>
 
                 <button className="consulta-btn" onClick={() => navigate("/chat")}>
                     Fazer Consulta
                 </button>
-
-                <Link to="/perfil">
-                    <img src={email} />
-                </Link>
             </div>
 
             {/* HERO */}

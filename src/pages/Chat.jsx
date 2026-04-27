@@ -147,15 +147,12 @@ export default function ChatMedico() {
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
+                    <Link to="/perfil">Meu Perfil</Link>
                 </div>
             
                 <button className="consulta-btn" onClick={() => navigate("/chat")}>
                     Fazer Consulta
                 </button>
-            
-                <Link to="/perfil">
-                    <img src={email} className="email" />
-                </Link>
             </div>
             {/* CHAT PRINCIPAL */}
             <div className="chat-container">
@@ -232,36 +229,36 @@ export default function ChatMedico() {
             </div>
 
             {/* FOOTER */}
-            <footer className="footer">
-
-                <div className="footer-column">
-                    <h4>Serviços</h4>
-                    <ul>
-                        <li><img src={certinho} /> Teleconsulta 24h</li>
-                        <li><img src={certinho} /> Agendamento online</li>
-                        <li><img src={certinho} /> Especialidades</li>
-                        <li><img src={certinho} /> Perguntas frequentes</li>
-                    </ul>
-                </div>
-                <div className="footer-column">
-                    <h4>Virtual Health</h4>
-                    <p>Seu médico virtual 24h</p>
-                    <div className="social">
-                        <img src={wats} />
-                        <img src={insta} />
-                    </div>
-                </div>
-                <div className="footer-column">
-                    <h4>Contato</h4>
-                    <ul>
-                        <li><img src={local} /> Endereço: Sesi Caçapava SP</li>
-                        <li><img src={tell} /> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} /> Email: Virtualhealth@gmail.com</li>
-                        <li><img src={tempo} /> Horário: 24h</li>
-                    </ul>
-                </div>
-
-            </footer>
+                        <footer className="footer">
+            
+                            <div className="footer-column">
+                                <h4>Serviços</h4>
+                                <ul>
+                                    <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
+                                    <li><img src={certinho} className="certo"/> Agendamento online</li>
+                                    <li><img src={certinho} className="certo"/> Especialidades</li>
+                                    <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
+                                </ul>
+                            </div>
+                            <div className="footer-column">
+                                <h4>Virtual Health</h4>
+                                <p>Seu médico virtual 24h</p>
+                                <div className="social">
+                                    <img src={wats} className="img"/>
+                                    <img src={insta} />
+                                </div>
+                            </div>
+                            <div className="footer-column">
+                                <h4>Contato</h4>
+                                <ul>
+                                    <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
+                                    <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
+                                    <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
+                                    <li><img src={tempo} className="certo"/> Horário: 24h</li>
+                                </ul>
+                            </div>
+            
+                        </footer>
         </div>
     );
 }
