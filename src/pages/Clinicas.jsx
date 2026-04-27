@@ -194,7 +194,7 @@ const handleConfirmPresencial = (doc) => {
 
             {/* HERO */}
             <div className="hero-clinicas">
-                <h1><span>CONHEÇA TODAS AS</span> CLÍNICAS PRESENCIAIS</h1>
+                <h1><span>CONHEÇA TODAS AS <br />CLÍNICAS</span> PRESENCIAIS</h1>
                 <p>Encontre especialistas próximos a você e agende sua consulta.</p>
             </div>
 
@@ -202,6 +202,7 @@ const handleConfirmPresencial = (doc) => {
                 {/* SEÇÃO COM TÍTULO */}
                 <div className="search-header">
                     <h2>Clínicas e especialistas para você</h2>
+                    <hr />
                 </div>
 
                 {/* BARRA DE BUSCA COM FILTROS */}

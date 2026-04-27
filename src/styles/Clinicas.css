@@ -62,16 +62,17 @@ body {
 .hero-clinicas {
     background: #dbe0e3 url('../images/clinicas.png') no-repeat right bottom;
     background-size: 750px;
-    padding: 120px 40px 80px;
+    padding: 80px 50px 65px;
+    text-align: left;
 }
 .hero-clinicas h1 {
     font-size: 46px;
     font-weight: 800;
     color: white;
+    line-height: 1.2;
 }
 .hero-clinicas span { color: #2c7da0; }
 .hero-clinicas p {
-    margin-top: 10px;
     color: #2c7da0;
     font-weight: 500;
 }
@@ -91,6 +92,15 @@ body {
     font-size: 20px;
     color: #1e293b;
     font-weight: 600;
+    text-align: left;
+}
+.search-header hr{
+    width: 290px;
+    height: 3px;
+    background: #209FD5;
+    margin: 10px auto;
+    border: none;
+    margin-left: 0;
 }
 
 /* SEARCH CONTAINER */
@@ -105,8 +115,8 @@ body {
     display: flex;
     align-items: center;
     background: #e2e8f0;
-    padding: 12px 18px;
-    border-radius: 30px;
+    padding: 3px 10px;
+    border-radius: 20px;
     gap: 10px;
 }
 .search-input-wrapper input {
@@ -118,21 +128,21 @@ body {
 }
 .filter-select {
     flex: 1;
-    padding: 12px 16px;
+    padding: 3px 10px;
     border: 1px solid #cbd5e1;
-    border-radius: 30px;
+    border-radius: 20px;
     background: white;
     font-size: 14px;
-    color: #1e293b;
+    color: #4880bd;
     cursor: pointer;
 }
 .location-input {
     flex: 1;
-    padding: 12px 16px;
+    padding: 3px 10px;
     border: 1px solid #cbd5e1;
-    border-radius: 30px;
+    border-radius: 20px;
     font-size: 14px;
-    color: #1e293b;
+    color: #557fad;
 }
 
 /* CARDS */
