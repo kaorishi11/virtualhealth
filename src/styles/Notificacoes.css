@@ -23,6 +23,7 @@
 }
 
 .nav-title {
+    font-family: "Segoe UI", "Inter", system-ui, sans-serif;
     font-size: 14px;
     opacity: 0.9;
     margin-bottom: 20px;
@@ -42,15 +43,7 @@
 
 .navbar li {
     margin-bottom: 12px;
-}
-
-.navbar li.active {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-}
-
-.navbar li.active a {
-    font-weight: 600;
+    position: relative;
 }
 
 .navbar a {
@@ -76,6 +69,34 @@
     opacity: 0.85;
 }
 
+/* LINHA AZUL NO HOVER (estilo Figma) */
+.navbar li::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.navbar li:hover::after {
+    width: 70%;
+}
+
+/* Item ativo mantém a linha visível sempre */
+.navbar li.active::after {
+    width: 70%;
+}
+
+.navbar li.active a {
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .logout {
     margin-top: auto;
     font-size: 14px;
@@ -92,6 +113,11 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* Remove a linha do logout */
+.logout::after {
+    display: none;
+}
+
 /* ========== CONTEÚDO ========== */
 .notificacoes-content {
     flex: 1;
@@ -99,13 +125,26 @@
     overflow-y: auto;
 }
 
+/* LINHA AZUL NO TÍTULO */
 .notificacoes-content h1 {
     font-size: 22px;
     font-weight: 600;
     color: #1e293b;
-    border-left: 4px solid #2a7c80;
     padding-left: 16px;
     margin-bottom: 25px;
+    position: relative;
+    display: inline-block;
+}
+
+.notificacoes-content h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 16px;
+    width: 280px;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 3px;
 }
 
 /* ========== CARD DE NOTIFICAÇÕES ========== */
@@ -250,6 +289,10 @@ input:checked + .slider:before {
     .notificacao-info p {
         font-size: 12px;
     }
+    
+    .notificacoes-content h1::after {
+        width: 220px;
+    }
 }
 
 @media (max-width: 650px) {
@@ -294,9 +337,32 @@ input:checked + .slider:before {
         font-size: 12px;
     }
     
+    .navbar li::after {
+        bottom: -6px;
+        height: 2px;
+    }
+    
+    .navbar li:hover::after {
+        width: 50%;
+    }
+    
+    .navbar li.active::after {
+        width: 50%;
+    }
+    
     .logout {
         margin-top: 0;
         padding-top: 0;
+    }
+    
+    .notificacoes-content h1 {
+        font-size: 18px;
+    }
+    
+    .notificacoes-content h1::after {
+        width: 180px;
+        height: 2px;
+        bottom: -6px;
     }
     
     .notificacao-item {

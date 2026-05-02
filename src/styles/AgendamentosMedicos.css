@@ -23,6 +23,7 @@
 }
 
 .nav-title {
+    font-family: "Segoe UI", "Inter", system-ui, sans-serif;
     font-size: 14px;
     opacity: 0.9;
     margin-bottom: 20px;
@@ -42,15 +43,7 @@
 
 .navbar li {
     margin-bottom: 12px;
-}
-
-.navbar li.active {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-}
-
-.navbar li.active a {
-    font-weight: 600;
+    position: relative;
 }
 
 .navbar a {
@@ -76,6 +69,38 @@
     opacity: 0.85;
 }
 
+/* LINHA AZUL NO HOVER (estilo Figma) */
+.navbar li {
+    position: relative;
+}
+
+.navbar li::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.navbar li:hover::after {
+    width: 70%;
+}
+
+/* Item ativo mantém a linha visível sempre */
+.navbar li.active::after {
+    width: 70%;
+}
+
+.navbar li.active a {
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .logout {
     margin-top: auto;
     font-size: 14px;
@@ -92,6 +117,11 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
+/* Remove a linha do logout */
+.logout::after {
+    display: none;
+}
+
 /* ========== CONTEÚDO ========== */
 .agenda-content {
     flex: 1;
@@ -99,13 +129,26 @@
     overflow-y: auto;
 }
 
+/* TÍTULO COM LINHA AZUL */
 .agenda-content h1 {
     font-size: 22px;
     font-weight: 600;
     color: #1e293b;
-    border-left: 4px solid #2a7c80;
     padding-left: 16px;
     margin-bottom: 25px;
+    position: relative;
+    display: inline-block;
+}
+
+.agenda-content h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 16px;
+    width: 250px;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 3px;
 }
 
 /* ========== MÊS COM SETAS ========== */
@@ -391,9 +434,25 @@
         font-size: 12px;
     }
     
+    .active-indicator {
+        bottom: -8px;
+        width: 50%;
+        height: 2px;
+    }
+    
     .logout {
         margin-top: 0;
         padding-top: 0;
+    }
+    
+    .agenda-content h1 {
+        font-size: 18px;
+    }
+    
+    .agenda-content h1::after {
+        width: 50px;
+        height: 2px;
+        bottom: -6px;
     }
     
     .mes-container {

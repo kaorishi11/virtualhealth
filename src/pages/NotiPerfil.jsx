@@ -42,7 +42,12 @@ export default function Notificacoes() {
 
                 <h3>PREFERÊNCIAS</h3>
                 <ul>
-                    <li className="active"><Link to="/notificacoes"><img src={icon3} alt="icon"/> Notificações</Link></li>
+                    <li className="active">
+                        <Link to="/notificacoes">
+                            <img src={icon3} alt="icon"/> 
+                            Notificações
+                        </Link>
+                    </li>
                 </ul>
 
                 <h3>NAVEGAÇÕES</h3>

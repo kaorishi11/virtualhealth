@@ -47,24 +47,47 @@ export default function ConfigPerfil() {
                     <p className="nav-title">Configuração</p>
                 </div>
             
-                            <h3>CONTA</h3>
-                            <ul>
-                                <li className="active"><Link to="/perfil"><img src={icon1} alt="icon"/> Configuração de perfil</Link></li>
-                                <li ><Link to="/agendamento"><img src={icon2} alt="icon"/> Agendamentos médicos</Link></li>
-                            </ul>
+                <h3>CONTA</h3>
+                <ul>
+                    <li className="active">
+                        <Link to="/perfil">
+                            <img src={icon1} alt="icon"/> 
+                            Configuração de perfil
+                        </Link>
+                        <span className="active-indicator"></span>
+                    </li>
+                    <li>
+                        <Link to="/agendamento">
+                            <img src={icon2} alt="icon"/> 
+                            Agendamentos médicos
+                        </Link>
+                    </li>
+                </ul>
             
-                            <h3>PREFERÊNCIAS</h3>
-                            <ul>
-                                <li><Link to="/notificacoes"><img src={icon3} alt="icon"/> Notificações</Link></li>
-                            </ul>
+                <h3>PREFERÊNCIAS</h3>
+                <ul>
+                    <li>
+                        <Link to="/notificacoes">
+                            <img src={icon3} alt="icon"/> 
+                            Notificações
+                        </Link>
+                    </li>
+                </ul>
             
-                            <h3>NAVEGAÇÕES</h3>
-                            <ul>
-                                <li><Link to="/home-paciente"><img src={icon4} alt="icon"/> Voltar para o início</Link></li>
-                            </ul>
+                <h3>NAVEGAÇÕES</h3>
+                <ul>
+                    <li>
+                        <Link to="/home-paciente">
+                            <img src={icon4} alt="icon"/> 
+                            Voltar para o início
+                        </Link>
+                    </li>
+                </ul>
             
-                            <p className="logout"><Link to="/">Desconectar</Link></p>
-                        </div>
+                <p className="logout">
+                    <Link to="/">Desconectar</Link>
+                </p>
+            </div>
 
             {/* CONTEÚDO */}
             <div className="perfil-content">

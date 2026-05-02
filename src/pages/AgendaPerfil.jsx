@@ -11,7 +11,7 @@ import "../styles/AgendamentosMedicos.css";
 
 export default function AgendamentosMedicos() {
     const navigate = useNavigate();
-    const [currentMonth, setCurrentMonth] = useState(1); // 0 = Janeiro, 1 = Fevereiro, etc.
+    const [currentMonth, setCurrentMonth] = useState(1);
     
     const months = [
         "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO",
@@ -19,8 +19,8 @@ export default function AgendamentosMedicos() {
     ];
     
     const appointmentsByMonth = {
-        0: [], // Janeiro - sem agendamentos
-        1: [ // Fevereiro
+        0: [],
+        1: [
             {
                 id: 1,
                 dia: 1,
@@ -64,16 +64,7 @@ export default function AgendamentosMedicos() {
                 botaoAcao: "relatorio"
             }
         ],
-        2: [], // Março
-        3: [], // Abril
-        4: [], // Maio
-        5: [], // Junho
-        6: [], // Julho
-        7: [], // Agosto
-        8: [], // Setembro
-        9: [], // Outubro
-        10: [], // Novembro
-        11: []  // Dezembro
+        2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [], 11: []
     };
 
     const goToPreviousMonth = () => {
@@ -114,21 +105,44 @@ export default function AgendamentosMedicos() {
 
                 <h3>CONTA</h3>
                 <ul>
-                    <li><Link to="/perfil"><img src={icon1} alt="icon"/> Configuração de perfil</Link></li>
-                    <li className="active"><Link to="/agendamento"><img src={icon2} alt="icon"/> Agendamentos médicos</Link></li>
+                    <li>
+                        <Link to="/perfil">
+                            <img src={icon1} alt="icon"/> 
+                            Configuração de perfil
+                        </Link>
+                    </li>
+                    <li className="active">
+                        <Link to="/agendamento">
+                            <img src={icon2} alt="icon"/> 
+                            Agendamentos médicos
+                        </Link>
+                        <span className="active-indicator"></span>
+                    </li>
                 </ul>
 
                 <h3>PREFERÊNCIAS</h3>
                 <ul>
-                    <li><Link to="/notificacoes"><img src={icon3} alt="icon"/> Notificações</Link></li>
+                    <li>
+                        <Link to="/notificacoes">
+                            <img src={icon3} alt="icon"/> 
+                            Notificações
+                        </Link>
+                    </li>
                 </ul>
 
                 <h3>NAVEGAÇÕES</h3>
                 <ul>
-                    <li><Link to="/home-paciente"><img src={icon4} alt="icon"/> Voltar para o início</Link></li>
+                    <li>
+                        <Link to="/home-paciente">
+                            <img src={icon4} alt="icon"/> 
+                            Voltar para o início
+                        </Link>
+                    </li>
                 </ul>
 
-                <p className="logout"><Link to="/">Desconectar</Link></p>
+                <p className="logout">
+                    <Link to="/">Desconectar</Link>
+                </p>
             </div>
 
             {/* CONTEÚDO */}

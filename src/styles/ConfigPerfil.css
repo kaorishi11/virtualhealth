@@ -56,10 +56,36 @@
     margin: 0;
 }
 
+/* ========== ESTILO DOS ITENS DA NAVBAR COM LINHA AZUL NO HOVER ========== */
 .navbar li {
     margin-bottom: 4px;
     border-radius: 10px;
     transition: all 0.2s;
+    position: relative;
+}
+
+/* Linha azul que aparece no hover (estilo Figma) */
+.navbar li::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Hover - linha aparece */
+.navbar li:hover::after {
+    width: 70%;
+}
+
+/* Item ativo mantém a linha sempre visível */
+.navbar li.active::after {
+    width: 70%;
 }
 
 .navbar li.active {
@@ -90,10 +116,15 @@
     opacity: 0.85;
 }
 
+/* Logout não tem linha */
 .logout {
     margin-top: auto;
     padding: 20px 20px 30px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.logout::after {
+    display: none;
 }
 
 .logout a {
@@ -125,9 +156,21 @@
     font-size: 24px;
     font-weight: 700;
     color: #1e293b;
-    border-left: 4px solid #1a6b6f;
     padding-left: 16px;
     margin-bottom: 25px;
+    position: relative;
+    display: inline-block;
+}
+
+.perfil-content h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 16px;
+    width: 280px;
+    height: 3px;
+    background: #3b82f6;
+    border-radius: 3px;
 }
 
 /* ========== CARD PERFIL - FOTO CENTRALIZADA ========== */
@@ -464,6 +507,17 @@ input:focus {
     .navbar a {
         padding: 6px 12px;
         font-size: 12px;
+    }
+    /* Ajuste da linha no mobile */
+    .navbar li::after {
+        bottom: -4px;
+        height: 2px;
+    }
+    .navbar li:hover::after {
+        width: 50%;
+    }
+    .navbar li.active::after {
+        width: 50%;
     }
     .logout {
         margin-top: 0;
