@@ -26,6 +26,43 @@ import '../styles/HomePa.css';
 
 export default function HomePa() {
     const [openIndex, setOpenIndex] = useState(null);
+    
+    // STATES DAS NOTIFICAÇÕES
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([
+        {
+            id: 1,
+            title: "Nova consulta agendada",
+            message: "Sua consulta com Dr. Lucas Ferraz foi agendada para amanhã às 14h.",
+            time: "Há 2 horas",
+            read: false,
+            type: "consulta"
+        },
+        {
+            id: 2,
+            title: "Link para teleconsulta",
+            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
+            time: "2 min atrás",
+            read: true,
+            type: "teleconsulta"
+        },
+        {
+            id: 3,
+            title: "Confirme sua consulta",
+            message: "Por favor, confirme sua presença na consulta de amanhã.",
+            time: "Ontem",
+            read: true,
+            type: "lembrete"
+        },
+        {
+            id: 4,
+            title: "Novo especialista disponível",
+            message: "Agora você pode agendar consultas com Drª Ana Souza - Neurologista.",
+            time: "2 dias atrás",
+            read: true,
+            type: "sistema"
+        }
+    ]);
 
     const [indexDica, setIndexDica] = useState(0);
     const nextDica = () => {
@@ -34,29 +71,28 @@ export default function HomePa() {
     const prevDica = () => {
         setIndexDica((prev) => (prev === 0 ? dicas.length - 1 : prev - 1));
     };
+    
     const dicas = [
-  {
-    texto:
-      "Manter vínculos sociais ativos contribui para o bem-estar psicológico. Escrever pensamentos e sentimentos pode ser uma forma eficaz de organizar emoções e aliviar tensões. Buscar apoio profissional é sempre a melhor escolha.",
-    nome: "Dra. Beatriz Lacerda - Psicóloga",
-    img: doutora,
-  },
-  {
-    texto:
-      "Atividades de fortalecimento muscular duas vezes por semana ajudam a preservar massa magra e prevenir lesões. Respeitar os limites do próprio corpo e uma alimentação equilibrada são fundamentais.",
-    nome: "Dr. Lucas Ferraz - Medicina do Esporte",
-    img: doutor,
-  },
-  {
-  texto:
-    "A qualidade do sono impacta diretamente a memória, concentração e equilíbrio emocional. Manter uma rotina regular, evitar telas antes de dormir e criar um ambiente tranquilo são hábitos essenciais para uma boa saúde neurológica.",
-  nome: "Dra. Ana Souza - Neurologista",
-  img: doutora,
-}
-];
+        {
+            texto: "Manter vínculos sociais ativos contribui para o bem-estar psicológico. Escrever pensamentos e sentimentos pode ser uma forma eficaz de organizar emoções e aliviar tensões. Buscar apoio profissional é sempre a melhor escolha.",
+            nome: "Dra. Beatriz Lacerda - Psicóloga",
+            img: doutora,
+        },
+        {
+            texto: "Atividades de fortalecimento muscular duas vezes por semana ajudam a preservar massa magra e prevenir lesões. Respeitar os limites do próprio corpo e uma alimentação equilibrada são fundamentais.",
+            nome: "Dr. Lucas Ferraz - Medicina do Esporte",
+            img: doutor,
+        },
+        {
+            texto: "A qualidade do sono impacta diretamente a memória, concentração e equilíbrio emocional. Manter uma rotina regular, evitar telas antes de dormir e criar um ambiente tranquilo são hábitos essenciais para uma boa saúde neurológica.",
+            nome: "Dra. Ana Souza - Neurologista",
+            img: doutora,
+        }
+    ];
 
     const [openFaq, setOpenFaq] = useState(null);
     const navigate = useNavigate();
+    
     const faqs = [
         {
             question: "O que é a Virtual Health?",
@@ -83,14 +119,56 @@ export default function HomePa() {
             answer: "Sim! Seguimos a LGPD (Lei Geral de Proteção de Dados) e utilizamos criptografia para proteger todas as suas informações."
         }
     ];
+    
     function toggleFaq(index) {
-    setOpenFaq(openFaq === index ? null : index);
-}
+        setOpenFaq(openFaq === index ? null : index);
+    }
+
+    // FUNÇÕES DAS NOTIFICAÇÕES
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const handleNotificationClick = (id) => {
+        setNotifications(prev => 
+            prev.map(notif => 
+                notif.id === id ? { ...notif, read: true } : notif
+            )
+        );
+    };
+
+    const markAllAsRead = () => {
+        setNotifications(prev => 
+            prev.map(notif => ({ ...notif, read: true }))
+        );
+    };
+
+    const closeNotifications = () => {
+        setShowNotifications(false);
+    };
+
+    const getTypeIcon = (type) => {
+        switch(type) {
+            case 'consulta': return '🩺';
+            case 'lembrete': return '⏰';
+            case 'teleconsulta': return '🎁';
+            case 'sistema': return '📢';
+            default: return '📌';
+        }
+    };
+
+    const getTypeClass = (type) => {
+        switch(type) {
+            case 'consulta': return 'consulta';
+            case 'lembrete': return 'lembrete';
+            case 'teleconsulta': return 'teleconsulta';
+            case 'sistema': return 'sistema';
+            default: return 'sistema';
+        }
+    };
 
     return (
         <div className="home-container">
 
-            {/* HEADER */}
+            {/* HEADER COM ÍCONE DE NOTIFICAÇÃO */}
             <div className="header">
                 <img src={logo} className="logopaciente" />
 
@@ -99,12 +177,72 @@ export default function HomePa() {
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
                     <Link to="/perfil">Meu Perfil</Link>
+                    <Link to="/teleconsulta">Teleconsulta</Link>
                 </div>
 
-                <button className="consulta-btn" onClick={() => navigate("/chat")}>
-                    Fazer Consulta
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    {/* Ícone de notificação */}
+                    <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
+                        <div className="notification-icon">
+                            🔔
+                            {unreadCount > 0 && (
+                                <span className="notification-badge">{unreadCount}</span>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <button className="consulta-btn" onClick={() => navigate("/chat")}>
+                        Fazer Consulta
+                    </button>
+                </div>
             </div>
+
+            {/* MODAL DE NOTIFICAÇÕES */}
+            {showNotifications && (
+                <div className="notification-modal-overlay" onClick={closeNotifications}>
+                    <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="notification-modal-header">
+                            <h3>🔔 Notificações</h3>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                {unreadCount > 0 && (
+                                    <button className="mark-all-btn" onClick={markAllAsRead}>
+                                        Marcar todas
+                                    </button>
+                                )}
+                                <button className="close-modal-btn" onClick={closeNotifications}>
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="notification-list">
+                            {notifications.length > 0 ? (
+                                notifications.map((notif) => (
+                                    <div 
+                                        key={notif.id} 
+                                        className={`notification-item ${!notif.read ? 'unread' : ''}`}
+                                        onClick={() => handleNotificationClick(notif.id)}
+                                    >
+                                        <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>
+                                            {getTypeIcon(notif.type)}
+                                        </div>
+                                        <div className="notification-content">
+                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-message">{notif.message}</div>
+                                            <div className="notification-time">{notif.time}</div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="no-notifications">
+                                    <div className="no-notifications-icon">📭</div>
+                                    <p>Nenhuma notificação no momento</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* HERO */}
             <div className="hero">

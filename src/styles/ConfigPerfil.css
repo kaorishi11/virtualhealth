@@ -117,6 +117,7 @@
 }
 
 /* Logout não tem linha */
+/* Logout - cor vermelho claro (sem amarelo) */
 .logout {
     margin-top: auto;
     padding: 20px 20px 30px 20px;
@@ -131,7 +132,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #ffd966;
+    color: #ff9999;  /* Vermelho claro */
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -142,7 +143,7 @@
 
 .logout a:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #ffe6a3;
+    color: #ff6666;  /* Vermelho um pouco mais forte no hover */
 }
 
 /* ========== CONTEÚDO ========== */
@@ -154,7 +155,6 @@
 
 .perfil-content h1 {
     font-size: 24px;
-    font-weight: 700;
     color: #1e293b;
     padding-left: 16px;
     margin-bottom: 25px;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import logo from '../images/logo.png';
 import doutora from '../images/med.png';
@@ -8,16 +8,69 @@ import planisaude from '../images/planisaude.png';
 
 import foto1 from '../images/foto1.png';
 import foto2 from '../images/foto2.png';
+import foto3 from '../images/foto3.png';
 import foto4 from '../images/foto4.png';
 
 import '../styles/AgendaMe.css';
 
 export default function AgendaMe() {
+    const navigate = useNavigate();
     const [currentDate, setCurrentDate] = useState({
         diaSemana: "SEX",
         dia: 6,
         mes: "FEVEREIRO"
     });
+    const [filtroAtivo, setFiltroAtivo] = useState("Todos");
+
+    // Dados dos agendamentos - SOMENTE PARA O DIA 6
+    const agendamentosPorData = {
+        6: [
+            {
+                horario: "08H00",
+                duracao: "30 min",
+                paciente: "Maria Helena",
+                procedimento: "Revisão de lentes",
+                tipo: "1ª consulta",
+                modalidade: "Online",
+                status: "Confirmado", // Status Confirmado
+                botoes: ["Entrar"], // Botão Entrar que redireciona
+                foto: foto1
+            },
+            {
+                horario: "10H20",
+                duracao: "30 min",
+                paciente: "Gabriel Jorge",
+                procedimento: "Check-up visual - retorno",
+                tipo: "Retorno",
+                modalidade: "Presencial",
+                status: "Cancelado", // Status Cancelado
+                botoes: [], // Sem botões
+                foto: foto2
+            },
+            {
+                horario: "11H40",
+                duracao: "30 min",
+                paciente: "Maria Helena",
+                procedimento: "Revisão de lentes",
+                tipo: "1ª consulta",
+                modalidade: "Online",
+                status: "Realizada",
+                botoes: ["Prontuário"], // Apenas Prontuário
+                foto: foto3
+            },
+            {
+                horario: "14H00",
+                duracao: "30 min",
+                paciente: "Enaldo Santos",
+                procedimento: "Retorno - avaliação",
+                tipo: "Retorno",
+                modalidade: "Presencial",
+                status: "Confirmado", // Status Confirmado
+                botoes: [], // Sem botões
+                foto: foto4
+            }
+        ]
+    };
 
     // Funções para navegar entre as datas
     const voltarData = () => {
@@ -78,98 +131,85 @@ export default function AgendaMe() {
         });
     };
 
-    // Dados dos agendamentos
-    const agendamentos = [
-        {
-            horario: "08H00",
-            duracao: "30 min",
-            paciente: "Maria Helena",
-            procedimento: "Revisão de lentes",
-            tipo: "1ª consulta",
-            modalidade: "Online",
-            status: null,
-            botoes: [],
-            foto: foto1
-        },
-        {
-            horario: "10H20",
-            duracao: "30 min",
-            paciente: "Gabriel Jorge",
-            procedimento: "Check-up visual retorna",
-            tipo: "",
-            modalidade: "Presencial",
-            status: null,
-            botoes: ["Iniciar", "Cancelar"],
-            foto: foto2
-        },
-        {
-            horario: "11H40",
-            duracao: "30 min",
-            paciente: "Maria Helena",
-            procedimento: "Revisão de lentes",
-            tipo: "1ª consulta",
-            modalidade: "Online",
-            status: null,
-            botoes: ["Prontuário", "Realizada"],
-            foto: foto4
-        }
-    ];
+    // Buscar agendamentos da data atual
+    const agendamentosAtuais = agendamentosPorData[currentDate.dia] || [];
+
+    // Filtrar agendamentos por modalidade
+    const agendamentosFiltrados = agendamentosAtuais.filter(agenda => {
+        if (filtroAtivo === "Todos") return true;
+        if (filtroAtivo === "Online") return agenda.modalidade === "Online";
+        if (filtroAtivo === "Presencial") return agenda.modalidade === "Presencial";
+        return true;
+    });
 
     const handleBotaoClick = (botao, paciente) => {
-        alert(`${botao} clicado para ${paciente}`);
+        if (botao === "Entrar") {
+            // Redireciona para a página de consulta
+            navigate('/consulta');
+        } else if (botao === "Prontuário") {
+            alert(`📋 Abrindo prontuário de ${paciente}`);
+        }
     };
 
     const handleFiltroClick = (filtro) => {
-        alert(`Filtrar por: ${filtro}`);
+        setFiltroAtivo(filtro);
+    };
+
+    const getStatusClass = (status) => {
+        if (!status) return '';
+        switch(status) {
+            case 'Confirmado': return 'status-confirmado';
+            case 'Realizada': return 'status-realizada';
+            case 'Cancelado': return 'status-cancelado';
+            default: return '';
+        }
     };
 
     return (
         <div className="agenda-container">
             {/* SIDEBAR */}
-            <div className='sidebar'>
-                <div className="sidebar-logo">
-                    <img src={logo} alt='Logo' className='logo-medico' />
+            <div className="navbar">
+                <div className="nav-header">
+                    <img src={logo} alt="Logo" className="logoperfil" />
                 </div>
-                
-                <Link to="/perfil-medico" className="perfil-link">
-                    <div className='perfil-medico'>
-                        <img src={doutora} alt='Doutora' className='avatar-medico' />
-                        <h2>Dra. Marta</h2>
+
+                <div className="medico-section">
+                    <img src={doutora} alt="Dra. Marta" className="medico-img" />
+                    <div className="medico-info">
+                        <h4>Dra. Marta</h4>
                         <p>Dentista</p>
                     </div>
-                </Link>
+                </div>
 
-                <div className='menu-lateral'>
-                    <div className='menu-section'>
-                        <h3>GERAL</h3>
-                        <ul>
-                            <li><Link to="/home-medico">Visão geral</Link></li>
-                            <li className="active"><Link to="/agenda"><img src={planilha} alt="icon"/>Minha agenda</Link></li>
-                        </ul>
-                    </div>
+                <div className="nav-section">
+                    <h3>GERAL</h3>
+                    <ul>
+                        <li><Link to="/home-medico">Visão geral</Link></li>
+                        <li className="active"><Link to="/agenda">Minha agenda</Link></li>
+                    </ul>
+                </div>
 
-                    <div className='menu-section'>
-                        <h3>ATENDIMENTO</h3>
-                        <ul>
-                            <li><Link to="/consulta">Iniciar consulta</Link></li>
-                            <li><Link to="/dicas"><img src={planisaude} alt="icon"/>Dicas de saúde</Link></li>
-                        </ul>
-                    </div>
-                
-                    <div className="logout">
-                        <Link to="/">Desconectar</Link>
-                    </div>
+                <div className="nav-section">
+                    <h3>ATENDIMENTO</h3>
+                    <ul>
+                        <li><Link to="/consulta">Iniciar consulta</Link></li>
+                        <li><Link to="/dicas">Dicas de saúde</Link></li>
+                    </ul>
+                </div>
+
+                <div className="logout">
+                    <Link to="/">Desconectar</Link>
                 </div>
             </div>
 
             {/* CONTEÚDO PRINCIPAL */}
-            <div className='main-content'>
-                <div className='agenda-header'>
+            <div className="main-content">
+                <div className="agenda-header">
                     <h1>MINHA AGENDA</h1>
                 </div>
 
-                {/* SELETOR DE DATA COM SETINHAS FUNCIONAIS */}
-                <div className='data-selector'>
+                {/* SELETOR DE DATA */}
+                <div className="data-selector">
                     <button className="seta-btn" onClick={voltarData}>◀</button>
                     <div className="data-info">
                         <span className="dia-semana">{currentDate.diaSemana}</span>
@@ -180,53 +220,81 @@ export default function AgendaMe() {
                 </div>
 
                 {/* FILTROS */}
-                <div className='filtros'>
-                    <button className="filtro-btn" onClick={() => handleFiltroClick("Todos")}>Todos</button>
-                    <button className="filtro-btn online" onClick={() => handleFiltroClick("Online")}>Online</button>
-                    <button className="filtro-btn presencial" onClick={() => handleFiltroClick("Presencial")}>Presencial</button>
+                <div className="filtros">
+                    <button 
+                        className={`filtro-btn ${filtroAtivo === "Todos" ? 'active' : ''}`}
+                        onClick={() => handleFiltroClick("Todos")}
+                    >
+                        Todos
+                    </button>
+                    <button 
+                        className={`filtro-btn ${filtroAtivo === "Online" ? 'active' : ''}`}
+                        onClick={() => handleFiltroClick("Online")}
+                    >
+                        Online
+                    </button>
+                    <button 
+                        className={`filtro-btn ${filtroAtivo === "Presencial" ? 'active' : ''}`}
+                        onClick={() => handleFiltroClick("Presencial")}
+                    >
+                        Presencial
+                    </button>
                 </div>
 
                 {/* LISTA DE AGENDAMENTOS */}
-                <div className='agendamentos-lista'>
-                    {agendamentos.map((agenda, index) => (
-                        <div key={index} className='agendamento-card'>
-                            {/* Horário e duração */}
-                            <div className='agendamento-horario'>
-                                <span className="horario-principal">{agenda.horario}</span>
-                                <span className="duracao">{agenda.duracao}</span>
-                            </div>
+                <div className="agendamentos-lista">
+                    {agendamentosFiltrados.length > 0 ? (
+                        agendamentosFiltrados.map((agenda, index) => (
+                            <div key={index} className="agendamento-card">
+                                <div className="agendamento-horario">
+                                    <span className="horario-principal">{agenda.horario}</span>
+                                    <span className="duracao">{agenda.duracao}</span>
+                                </div>
 
-                            {/* Informações do paciente */}
-                            <div className='agendamento-paciente'>
-                                <img src={agenda.foto} alt={agenda.paciente} className="paciente-foto" />
-                                <div className="paciente-dados">
-                                    <h3>{agenda.paciente}</h3>
-                                    <p>{agenda.procedimento}</p>
+                                <div className="agendamento-paciente">
+                                    <img src={agenda.foto} alt={agenda.paciente} className="paciente-foto" />
+                                    <div className="paciente-dados">
+                                        <h3>{agenda.paciente}</h3>
+                                        <p>{agenda.procedimento}</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Tags e botões */}
-                            <div className='agendamento-footer'>
-                                <div className='agendamento-tags'>
-                                    {agenda.tipo && <span className="tag tipo">{agenda.tipo}</span>}
-                                    <span className={`tag modalidade ${agenda.modalidade.toLowerCase()}`}>
-                                        {agenda.modalidade}
-                                    </span>
-                                </div>
-                                <div className='agendamento-botoes'>
-                                    {agenda.botoes.map((botao, idx) => (
-                                        <button 
-                                            key={idx} 
-                                            className={`btn-agenda ${botao.toLowerCase()}`}
-                                            onClick={() => handleBotaoClick(botao, agenda.paciente)}
-                                        >
-                                            {botao}
-                                        </button>
-                                    ))}
+                                <div className="agendamento-footer">
+                                    <div className="agendamento-tags">
+                                        {agenda.tipo && <span className="tag tipo">{agenda.tipo}</span>}
+                                        <span className={`tag modalidade ${agenda.modalidade.toLowerCase()}`}>
+                                            {agenda.modalidade}
+                                        </span>
+                                        {agenda.status && (
+                                            <span className={`status-badge ${getStatusClass(agenda.status)}`}>
+                                                {agenda.status}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {/* Mostra botões apenas se houver */}
+                                    {agenda.botoes.length > 0 && (
+                                        <div className="agendamento-botoes">
+                                            {agenda.botoes.map((botao, idx) => (
+                                                <button 
+                                                    key={idx} 
+                                                    className={`btn-agenda ${botao.toLowerCase()}`}
+                                                    onClick={() => handleBotaoClick(botao, agenda.paciente)}
+                                                >
+                                                    {botao}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                        ))
+                    ) : (
+                        <div className="no-results">
+                            <div className="no-results-icon">📅</div>
+                            <h3>Nenhum agendamento</h3>
+                            <p>Não há consultas agendadas para {currentDate.diaSemana} - {currentDate.dia} de {currentDate.mes}</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         </div>

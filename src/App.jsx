@@ -18,6 +18,7 @@ import AgendaMe from "./pages/AgendaMe";
 import DicasMe from "./pages/DicasMe";
 import ConsultaMe from "./pages/ConsultaMe";
 import PerfilMe from "./pages/PerfilMe";
+import TeleconsultaPa from "./pages/TeleconsultaPa";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/perfil" element={< ConfigPerfil/>} />
         <Route path="/agendamento" element={< AgendaPerfil/>} />
         <Route path="/notificacoes" element={< NotiPerfil/>} />
+        <Route path="/teleconsulta" element={< TeleconsultaPa/>} />
 
         <Route path="/home-medico" element={< HomeMe/>} />
         <Route path="/agenda" element={< AgendaMe/>} />

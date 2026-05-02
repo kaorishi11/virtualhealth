@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/Chat.css";
 
 // Imagens
@@ -20,6 +20,8 @@ import saude from "../images/saude.png";
 import sintomas from "../images/sintomas.png";
 
 export default function ChatMedico() {
+    const navigate = useNavigate();
+    
     const [messages, setMessages] = useState([
         {
             id: 1,
@@ -31,6 +33,92 @@ export default function ChatMedico() {
     const [inputValue, setInputValue] = useState("");
     const [selectedTopics, setSelectedTopics] = useState([]);
     const messagesEndRef = useRef(null);
+
+    // STATES DAS NOTIFICAÇÕES
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([
+        {
+            id: 1,
+            title: "Nova consulta agendada",
+            message: "Sua consulta com Dr. Lucas Ferraz foi agendada para amanhã às 14h.",
+            time: "Há 2 horas",
+            read: false,
+            type: "consulta"
+        },
+        {
+            id: 2,
+            title: "Lembrete de medicação",
+            message: "Não se esqueça de tomar seu medicamento às 20h.",
+            time: "Há 5 horas",
+            read: false,
+            type: "lembrete"
+        },
+        {
+            id: 3,
+            title: "Link para teleconsulta",
+            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
+            time: "2 min atrás",
+            read: true,
+            type: "teleconsulta"
+        },
+        {
+            id: 4,
+            title: "Confirme sua consulta",
+            message: "Por favor, confirme sua presença na consulta de amanhã.",
+            time: "Ontem",
+            read: true,
+            type: "lembrete"
+        },
+        {
+            id: 5,
+            title: "Novo especialista disponível",
+            message: "Agora você pode agendar consultas com Drª Ana Souza - Neurologista.",
+            time: "2 dias atrás",
+            read: true,
+            type: "sistema"
+        }
+    ]);
+
+    // FUNÇÕES DAS NOTIFICAÇÕES
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const handleNotificationClick = (id) => {
+        setNotifications(prev => 
+            prev.map(notif => 
+                notif.id === id ? { ...notif, read: true } : notif
+            )
+        );
+    };
+
+    const markAllAsRead = () => {
+        setNotifications(prev => 
+            prev.map(notif => ({ ...notif, read: true }))
+        );
+    };
+
+    const closeNotifications = () => {
+        setShowNotifications(false);
+    };
+
+    const getTypeIcon = (type) => {
+        switch(type) {
+            case 'consulta': return '🩺';
+            case 'lembrete': return '⏰';
+            case 'teleconsulta': return '💻';
+            case 'sistema': return '📢';
+            default: return '📌';
+        }
+    };
+
+    const getTypeClass = (type) => {
+        switch(type) {
+            case 'consulta': return 'consulta';
+            case 'lembrete': return 'lembrete';
+            case 'teleconsulta': return 'teleconsulta';
+            case 'sistema': return 'sistema';
+            default: return 'sistema';
+        }
+    };
 
     const topics = [
         { id: "pressao", label: "Pressão arterial", img: coracao },
@@ -57,18 +145,15 @@ export default function ChatMedico() {
             }
         });
 
-        // Adiciona mensagem do usuário sobre o tópico selecionado
         const isSelected = selectedTopics.includes(topicId);
         
         if (!isSelected) {
-            // Usuário selecionou o tópico
             const userMessage = {
                 id: Date.now(),
                 type: "user",
                 text: topicLabel
             };
             
-            // Resposta do médico
             let doctorResponse = "";
             switch (topicId) {
                 case "pressao":
@@ -101,34 +186,33 @@ export default function ChatMedico() {
     };
 
     const handleSendMessage = () => {
-    if (inputValue.trim() === "") return;
+        if (inputValue.trim() === "") return;
 
-    const userMessage = {
-        id: Date.now(),
-        type: "user",
-        text: inputValue
-    };
+        const userMessage = {
+            id: Date.now(),
+            type: "user",
+            text: inputValue
+        };
 
-    let doctorResponse = "Obrigado por compartilhar. Estou analisando sua mensagem. Recomendo agendar uma consulta presencial ou por teleconsulta para uma avaliação mais detalhada. Como posso ajudar mais?";
+        let doctorResponse = "Obrigado por compartilhar. Estou analisando sua mensagem. Recomendo agendar uma consulta presencial ou por teleconsulta para uma avaliação mais detalhada. Como posso ajudar mais?";
 
-    if (selectedTopics.includes("sintomas")) {
-        const texto = inputValue.toLowerCase();
+        if (selectedTopics.includes("sintomas")) {
+            const texto = inputValue.toLowerCase();
 
-        if (texto.includes("dor de cabeça") || texto.includes("dores de cabeça")) {
-            doctorResponse = "Dores de cabeça podem ter várias causas, como estresse, falta de sono, desidratação ou até problemas de visão. É importante observar a frequência e intensidade. Se for algo constante ou muito forte, procure um médico para avaliação mais detalhada.";
+            if (texto.includes("dor de cabeça") || texto.includes("dores de cabeça")) {
+                doctorResponse = "Dores de cabeça podem ter várias causas, como estresse, falta de sono, desidratação ou até problemas de visão. É importante observar a frequência e intensidade. Se for algo constante ou muito forte, procure um médico para avaliação mais detalhada.";
+            }
         }
-    }
 
-    const doctorMessage = {
-        id: Date.now() + 1,
-        type: "doctor",
-        text: doctorResponse
+        const doctorMessage = {
+            id: Date.now() + 1,
+            type: "doctor",
+            text: doctorResponse
+        };
+
+        setMessages(prev => [...prev, userMessage, doctorMessage]);
+        setInputValue("");
     };
-
-    // 👇 ISSO FALTAVA
-    setMessages(prev => [...prev, userMessage, doctorMessage]);
-    setInputValue("");
-};
 
     const handleKeyPress = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -139,21 +223,82 @@ export default function ChatMedico() {
 
     return (
         <div>
-            {/* HEADER */}
+            {/* HEADER COM NOTIFICAÇÕES */}
             <div className="header">
-                <img src={logo} className="logochat"/>
-            
+                <img src={logo} className="logochat" alt="logo" />
+
                 <div className="nav-links">
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
                     <Link to="/perfil">Meu Perfil</Link>
+                    <Link to="/teleconsulta">Teleconsulta</Link>
                 </div>
-            
-                <button className="consulta-btn" onClick={() => navigate("/chat")}>
-                    Fazer Consulta
-                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    {/* Ícone de notificação */}
+                    <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
+                        <div className="notification-icon">
+                            🔔
+                            {unreadCount > 0 && (
+                                <span className="notification-badge">{unreadCount}</span>
+                            )}
+                        </div>
+                    </div>
+                    
+                    <button className="consulta-btn" onClick={() => navigate("/chat")}>
+                        Fazer Consulta
+                    </button>
+                </div>
             </div>
+
+            {/* MODAL DE NOTIFICAÇÕES */}
+            {showNotifications && (
+                <div className="notification-modal-overlay" onClick={closeNotifications}>
+                    <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="notification-modal-header">
+                            <h3>🔔 Notificações</h3>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                {unreadCount > 0 && (
+                                    <button className="mark-all-btn" onClick={markAllAsRead}>
+                                        Marcar todas
+                                    </button>
+                                )}
+                                <button className="close-modal-btn" onClick={closeNotifications}>
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="notification-list">
+                            {notifications.length > 0 ? (
+                                notifications.map((notif) => (
+                                    <div 
+                                        key={notif.id} 
+                                        className={`notification-item ${!notif.read ? 'unread' : ''}`}
+                                        onClick={() => handleNotificationClick(notif.id)}
+                                    >
+                                        <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>
+                                            {getTypeIcon(notif.type)}
+                                        </div>
+                                        <div className="notification-content">
+                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-message">{notif.message}</div>
+                                            <div className="notification-time">{notif.time}</div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="no-notifications">
+                                    <div className="no-notifications-icon">📭</div>
+                                    <p>Nenhuma notificação no momento</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* CHAT PRINCIPAL */}
             <div className="chat-container">
                 <div className="chat-card">
@@ -169,7 +314,7 @@ export default function ChatMedico() {
                             <div key={msg.id}>
                                 {msg.type === "doctor" ? (
                                     <div className="doctor-message">
-                                        <div className="doctor-avatar"><img src={robochat}/></div>
+                                        <div className="doctor-avatar"><img src={robochat} alt="avatar"/></div>
                                         <div className="message-bubble">
                                             <p>{msg.text}</p>
                                             <div className="doctor-name">Dr. Virtual Health</div>
@@ -229,36 +374,34 @@ export default function ChatMedico() {
             </div>
 
             {/* FOOTER */}
-                        <footer className="footer">
-            
-                            <div className="footer-column">
-                                <h4>Serviços</h4>
-                                <ul>
-                                    <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
-                                    <li><img src={certinho} className="certo"/> Agendamento online</li>
-                                    <li><img src={certinho} className="certo"/> Especialidades</li>
-                                    <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
-                                </ul>
-                            </div>
-                            <div className="footer-column">
-                                <h4>Virtual Health</h4>
-                                <p>Seu médico virtual 24h</p>
-                                <div className="social">
-                                    <img src={wats} className="img"/>
-                                    <img src={insta} />
-                                </div>
-                            </div>
-                            <div className="footer-column">
-                                <h4>Contato</h4>
-                                <ul>
-                                    <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
-                                    <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
-                                    <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
-                                    <li><img src={tempo} className="certo"/> Horário: 24h</li>
-                                </ul>
-                            </div>
-            
-                        </footer>
+            <footer className="footer">
+                <div className="footer-column">
+                    <h4>Serviços</h4>
+                    <ul>
+                        <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
+                        <li><img src={certinho} className="certo"/> Agendamento online</li>
+                        <li><img src={certinho} className="certo"/> Especialidades</li>
+                        <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
+                    </ul>
+                </div>
+                <div className="footer-column">
+                    <h4>Virtual Health</h4>
+                    <p>Seu médico virtual 24h</p>
+                    <div className="social">
+                        <img src={wats} className="img" alt="whatsapp"/>
+                        <img src={insta} alt="instagram"/>
+                    </div>
+                </div>
+                <div className="footer-column">
+                    <h4>Contato</h4>
+                    <ul>
+                        <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
+                        <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
+                        <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
+                        <li><img src={tempo} className="certo"/> Horário: 24h</li>
+                    </ul>
+                </div>
+            </footer>
         </div>
     );
 }
