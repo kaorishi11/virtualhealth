@@ -312,8 +312,8 @@ export default function ChatMedico() {
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
-                    <Link to="/perfil">Meu Perfil</Link>
                     <Link to="/teleconsulta">Teleconsulta</Link>
+                    <Link to="/perfil">Meu Perfil</Link>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
