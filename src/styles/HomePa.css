@@ -90,6 +90,7 @@
 .app-section {
     text-align: center;
     padding: 50px 20px;
+    display: flow-root; /* Isso ajuda a isolar a seção e posicionar a linha corretamente abaixo dela */
 }
 
 .app-section hr {
@@ -143,15 +144,6 @@
     border-radius: 10px;
 }
 
-.hr {
-    width: 90%;
-    max-width: 950px;
-    height: 1px;
-    background: #b8bfc6;
-    margin: 50px auto;
-    border: none;
-}
-
 /* PURPOSE */
 .purpose-section {
     text-align: center;
@@ -174,33 +166,44 @@
     margin-top: 30px;
 }
 
-.hr1 {
-    margin-top: 50px;
-    border: 2px solid;
-    border-image: repeating-linear-gradient(
-        to right,
-        #21907F 0,
-        #21907F 6px,
-        transparent 5px,
-        transparent 15px
-    ) 1;
+.hr {
+    width: 90%;
+    max-width: 950px;
+    height: 1px;
+    background: #b8bfc6;
+    margin: 40px auto; /* Reduzi um pouco a margem */
+    border: none;
+    display: block; /* Garante que ocupe sua própria linha */
 }
 
-.propaganda {
-    width: 85%;
-    max-width: 1000px;
-    margin-top: 50px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
+/* Linha sólida verde antes do FAQ */
 .hr2 {
     height: 2px;
     background: #21907F;
-    margin: 50px 0;
+    margin: 40px auto;
+    width: 90%;
+    max-width: 950px;
     border: none;
 }
+
+/* Adicione esta classe para a linha que você chamou de hr3 no JSX mas não tinha no CSS */
+.hr3 {
+    width: 90%;
+    max-width: 950px;
+    height: 1px;
+    background: #ddd;
+    margin: 40px auto;
+    border: none;
+}
+
+/* Correção da Imagem de Propaganda para não subir na linha */
+.propaganda {
+    width: 85%;
+    max-width: 1000px;
+    margin: 20px auto; /* Ajustado para centralizar e dar espaço */
+    display: block;
+}
+
 
 /* ===== EXPERTS (CARROSSEL) ===== */
 .experts-section {

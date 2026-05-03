@@ -327,7 +327,6 @@ export default function HomePa() {
                 </div>
             </div>
 
-            <hr className="hr"/>
 
             {/* PROPÓSITO */}
             <div className="purpose-section">

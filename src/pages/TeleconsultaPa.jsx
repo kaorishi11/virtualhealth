@@ -24,7 +24,7 @@ export default function TeleconsultaPa() {
         {
             id: 2,
             title: "Link de acesso disponível",
-            message: "Clique no card ao lado para entrar na sua teleconsulta.",
+            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
             time: "Há 30 minutos",
             read: false,
             type: "sistema"
@@ -238,8 +238,8 @@ export default function TeleconsultaPa() {
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
-                    <Link to="/perfil">Meu Perfil</Link>
                     <Link to="/teleconsulta">Teleconsulta</Link>
+                    <Link to="/perfil">Meu Perfil</Link>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
