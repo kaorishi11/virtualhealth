@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/AdmUsuario.css';
+import '../styles/AdminBase.css';
 
 import logo from '../images/logo.png';
-import iconUsers from '../images/icon1.png';
+import AdminSidebar from "../components/AdminSidebar";
 
 export default function AdminUsuarios() {
-    // Dados dos usuários
     const [usuarios, setUsuarios] = useState([
         { id: 1, nome: 'Vinícius Queiroz', email: 'vinicius@gmail.com', status: 'Inativo', data: '01/03/2026' },
         { id: 2, nome: 'Pedro Lucas', email: 'pedro@gmail.com', status: 'Ativo', data: '05/03/2026' },
@@ -16,9 +15,11 @@ export default function AdminUsuarios() {
 
     const [searchTerm, setSearchTerm] = useState('');
 
-    const getStatusClass = (status) => {
-        return status === 'Ativo' ? 'status-ativo' : 'status-inativo';
-    };
+    const totalUsuarios = usuarios.length;
+    const ativos = usuarios.filter(u => u.status === 'Ativo').length;
+    const inativos = usuarios.filter(u => u.status === 'Inativo').length;
+
+    const getStatusClass = (status) => status === 'Ativo' ? 'status-ativo' : 'status-inativo';
 
     const handleEdit = (id) => {
         const usuario = usuarios.find(u => u.id === id);
@@ -26,7 +27,7 @@ export default function AdminUsuarios() {
     };
 
     const handleDelete = (id) => {
-        if (window.confirm(`⚠️ Tem certeza que deseja excluir este usuário?`)) {
+        if (window.confirm('⚠️ Tem certeza que deseja excluir este usuário?')) {
             setUsuarios(usuarios.filter(u => u.id !== id));
             alert('Usuário excluído com sucesso!');
         }
@@ -43,98 +44,92 @@ export default function AdminUsuarios() {
 
     return (
         <div className="admin-container">
-            {/* Sidebar - mesmo estilo do AdminDashboard */}
-            <aside className="sidebar">
-                            <div className="sidebar-logo">
-                                <img src={logo} alt="Logo" className="logo-medico" />
-                            </div>
-            
-                            <div className='menu-lateral'>
-                                <div className='menu-section'>
-                                    <h3>GERAL</h3>
-                                    <ul>
-                                        <li><Link to="/admin">Visão geral</Link></li>
-                                        <li className="active"><Link to="/admusuarios">Usuários</Link></li>
-                                        <li><Link to="/admprofissionais">Profissionais</Link></li>
-                                        <li><Link to="/admconsultas">Consultas</Link></li>
-                                        <li><Link to="/admmensagens">Mensagens</Link></li>
-                                    </ul>
-                                </div>
-                            
-                                <div className="logout">
-                                    <Link to="/">Desconectar</Link>
-                                </div>
-                            </div>
-                        </aside>
-
-            {/* Main Content */}
+            <AdminSidebar />
             <main className="main-content">
-                {/* Welcome Section */}
-                <div className="welcome-section">
-                    <h1>Gerenciamento de Usuários</h1>
+                <div className="welcome-section"><h1>Gerenciamento de Usuários</h1></div>
+
+                <div className="stats-cards grid-3">
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <div className="stat-info">
+                            <h3>Total</h3>
+                            <div className="stat-number">{totalUsuarios}</div>
+                            <span className="stat-label">Cadastrados</span>
+                        </div>
+                    </div>
+
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        <div className="stat-info">
+                            <h3>Ativos</h3>
+                            <div className="stat-number">{ativos}</div>
+                            <span className="stat-label">Aprovados</span>
+                        </div>
+                    </div>
+
+                    <div className="stat-card">
+                        <div className="stat-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </div>
+                        <div className="stat-info">
+                            <h3>Inativos</h3>
+                            <div className="stat-number">{inativos}</div>
+                            <span className="stat-label">Reprovados</span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Tabela de Usuários */}
                 <div className="table-section">
                     <div className="table-header">
                         <h2>USUÁRIOS CADASTRADOS</h2>
                         <div className="search-wrapper">
-                            <input 
-                                type="text" 
-                                placeholder="Buscar usuário..." 
-                                className="search-input"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                            <input type="text" placeholder="Buscar usuário..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                         </div>
                     </div>
-
-                    <table className="users-table">
-                        <thead>
-                            <tr>
-                                <th>NOME</th>
-                                <th>E-MAIL</th>
-                                <th>STATUS</th>
-                                <th>DATA</th>
-                                <th>AÇÃO</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsuarios.map((usuario) => (
-                                <tr key={usuario.id}>
-                                    <td>{usuario.nome}</td>
-                                    <td>{usuario.email}</td>
-                                    <td>
-                                        <span className={getStatusClass(usuario.status)}>
-                                            {usuario.status}
-                                        </span>
-                                    </td>
-                                    <td>{usuario.data}</td>
-                                    <td className="action-buttons">
-                                        <button 
-                                            className="edit-btn"
-                                            onClick={() => handleEdit(usuario.id)}
-                                        >
-                                            Editar
-                                        </button>
-                                        <button 
-                                            className="delete-btn"
-                                            onClick={() => handleDelete(usuario.id)}
-                                        >
-                                            Excluir
-                                        </button>
-                                    </td>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table className="users-table">
+                            <thead>
+                                <tr>
+                                    <th>NOME</th>
+                                    <th>E-MAIL</th>
+                                    <th>STATUS</th>
+                                    <th>DATA</th>
+                                    <th>AÇÃO</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {/* Botão Novo Usuário */}
-                    <div className="new-user-btn">
-                        <button className="btn-primary" onClick={handleNovoUsuario}>
-                            + Novo Usuário
-                        </button>
+                            </thead>
+                            <tbody>
+                                {filteredUsuarios.map(u => (
+                                    <tr key={u.id}>
+                                        <td>{u.nome} </td>
+                                        <td>{u.email} </td>
+                                        <td><span className={getStatusClass(u.status)}>{u.status}</span> </td>
+                                        <td>{u.data} </td>
+                                        <td className="action-buttons">
+                                            <button className="edit-btn" onClick={() => handleEdit(u.id)}>Editar</button>
+                                            <button className="delete-btn" onClick={() => handleDelete(u.id)}>Excluir</button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
+                    <div className="new-user-btn"><button className="btn-primary" onClick={handleNovoUsuario}>+ Novo Usuário</button></div>
                 </div>
             </main>
         </div>

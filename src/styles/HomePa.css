@@ -7,21 +7,19 @@
 
 /* HEADER */
 .header {
+    position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
     max-width: 1050px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 5px 10px;
     min-height: 60px;
-
-    background: rgba(255, 255, 255, 0.01);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
-
     border-radius: 50px;
     z-index: 1000;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
@@ -33,13 +31,15 @@
     transform-origin: left center;
 }
 
-.header img {
-    height: 45px;
-}
-
 .nav-links {
     display: flex;
     gap: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
 }
 
 .consulta-btn {
@@ -48,15 +48,17 @@
     border: none;
     padding: 8px 20px;
     border-radius: 20px;
+    cursor: pointer;
 }
 
 /* HERO */
 .hero {
     background: #E7E8EA;
     background-image: url('../images/medicofoto.png');
-    padding: 100px 40px;
+    padding: 140px 40px 80px 40px;
     background-position: right center;
     background-repeat: no-repeat;
+    background-size: contain;
 }
 
 .hero-content {
@@ -66,13 +68,12 @@
 }
 
 .hero-text {
-    width: 60%;
+    width: 55%;
     text-align: left;
-    margin-left: 20px;
 }
 
 .hero-text h1 {
-    font-size: 50px;
+    font-size: 48px;
     line-height: 1.2;
 }
 
@@ -80,10 +81,15 @@
     color: #209FD5;
 }
 
+.hero-text p {
+    font-size: 16px;
+    margin-top: 16px;
+}
+
 /* APP */
 .app-section {
     text-align: center;
-    padding: 50px;
+    padding: 50px 20px;
 }
 
 .app-section hr {
@@ -94,37 +100,52 @@
     border: none;
 }
 
+.app-subtitle {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
 .cards {
     display: flex;
     justify-content: center;
-    gap: 40px;
+    gap: 30px;
     margin-top: 50px;
+    flex-wrap: wrap;
 }
 
 .card1, .card2 {
     background: #E6F2FF;
     padding: 20px;
     border-radius: 15px;
-    width: 200px;
+    width: 220px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.card1:hover, .card2:hover {
+    transform: translateY(-5px);
+}
+
+.card1 img, .card2 img {
+    height: 70px;
+    margin-bottom: 15px;
 }
 
 .card1 img {
     background: #B7EBE3;
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
-    height: 80px;
 }
 
 .card2 img {
     background: rgba(32, 159, 213, 0.5);
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
-    height: 80px;
 }
 
 .hr {
-    width: 950px;
+    width: 90%;
+    max-width: 950px;
     height: 1px;
     background: #b8bfc6;
     margin: 50px auto;
@@ -134,6 +155,7 @@
 /* PURPOSE */
 .purpose-section {
     text-align: center;
+    padding: 0 20px;
 }
 
 .purpose-section hr {
@@ -145,9 +167,10 @@
 }
 
 .video {
-    width: 70%;
+    width: 80%;
+    max-width: 800px;
     border: 4px solid #0F5F9E;
-    border-radius: 5px;
+    border-radius: 10px;
     margin-top: 30px;
 }
 
@@ -164,8 +187,12 @@
 }
 
 .propaganda {
-    width: 80%;
+    width: 85%;
+    max-width: 1000px;
     margin-top: 50px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .hr2 {
@@ -175,12 +202,12 @@
     border: none;
 }
 
-/* ===== EXPERTS (CARROSSEL CORRIGIDO) ===== */
+/* ===== EXPERTS (CARROSSEL) ===== */
 .experts-section {
     max-width: 1200px;
     margin: 0 auto;
     margin-bottom: 80px;
-    padding: 40px 24px;
+    padding: 40px 20px;
     text-align: center;
 }
 
@@ -196,30 +223,47 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 20px;
 }
 
 .experts-cards {
     display: flex;
     flex-direction: row;
-    gap: 30px;
+    gap: 25px;
+    overflow-x: auto;
+    padding: 10px;
+    scroll-behavior: smooth;
+}
+
+.experts-cards::-webkit-scrollbar {
+    height: 6px;
+}
+
+.experts-cards::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+.experts-cards::-webkit-scrollbar-thumb {
+    background: #209FD5;
+    border-radius: 10px;
 }
 
 .expert-card {
-    width: 380px;
+    width: 360px;
+    min-width: 320px;
     background: #f5f5f5;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
 .expert-text {
-    font-size: 15px;
-    color: #000000;
+    font-size: 14px;
+    color: #333;
     text-align: center;
     line-height: 1.5;
     font-style: italic;
@@ -229,60 +273,54 @@
     margin-top: 15px;
     padding-top: 10px;
     border-top: 1px solid #ddd;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .perfil {
     display: flex;
-    align-items: left;
+    align-items: center;
     gap: 10px;
     color: #209FD5;
 }
 
 .perfil img {
-    width: 55px;
-    height: 55px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
 }
 
 .perfil strong {
     font-size: 12px;
-    position: relative;
-    top: 15px;
-    white-space: nowrap;
-}
-
-.perfil span {
-    font-size: 12px;
-    color: #3b82f6;
 }
 
 .stars {
     color: orange;
-    align-self: flex-start;
-    margin-top: -2px;
 }
 
 .arrow {
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: none;
     background: #c7d7f2;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 18px;
+    transition: all 0.2s;
+    flex-shrink: 0;
 }
 
 .arrow:hover {
     background: #a5bde6;
+    transform: scale(1.05);
 }
 
 /* FAQ */
 .faq-section {
-    padding: 50px;
+    padding: 40px 30px;
 }
 
 .faq-section hr {
@@ -296,26 +334,43 @@
     text-align: left;
 }
 
+.faq-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
 .faq-item {
     border-bottom: 1px solid #ddd;
     padding: 15px 0;
+    cursor: pointer;
 }
 
 .faq-question {
     display: flex;
     justify-content: space-between;
-    cursor: pointer;
+    align-items: center;
+    font-weight: 600;
 }
 
 .faq-answer {
     max-height: 0;
     overflow: hidden;
     transition: 0.3s;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .faq-item.open .faq-answer {
-    max-height: 100px;
+    max-height: 200px;
     margin-top: 10px;
+}
+
+.plus-icon {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 /* FOOTER */
@@ -325,15 +380,23 @@
     padding: 40px;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
 }
 
 .footer-column {
     flex: 1;
-    padding: 10px 20px;
+    min-width: 200px;
+    padding: 0 10px;
 }
 
 .footer-column:not(:last-child) {
     border-right: 1px solid rgba(255,255,255,0.3);
+}
+
+.footer-column h4 {
+    font-size: 18px;
+    margin-bottom: 20px;
 }
 
 .footer-column ul {
@@ -343,29 +406,35 @@
 .footer-column li {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
     margin-bottom: 12px;
-    font-size: 14px;
+    font-size: 13px;
     word-break: break-word;
 }
+
 .footer-column img {
     width: 16px;
+    height: 16px;
 }
 
-.img {
-    margin-left: 130px;
-}
-
-.certo {
-    margin-left: 60px;
+.social {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
 }
 
 .social img {
-    width: 20px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
-/* ========== NOTIFICAÇÃO E MODAL ========== */
 
-/* Container do ícone de notificação */
+.social img:hover {
+    transform: scale(1.1);
+}
+
+/* ========== NOTIFICAÇÃO E MODAL ========== */
 .notification-wrapper {
     position: relative;
     cursor: pointer;
@@ -374,7 +443,6 @@
 }
 
 .notification-icon {
-    font-size: 22px;
     background: none;
     border: none;
     cursor: pointer;
@@ -385,14 +453,20 @@
     padding: 6px;
     border-radius: 50%;
     transition: all 0.2s;
+    color: #9A9A9A;
 }
 
 .notification-icon:hover {
-    background: rgba(15, 95, 158, 0.1);
+    background: rgba(154, 154, 154, 0.1);
     transform: scale(1.05);
 }
 
-/* Badge de notificações não lidas */
+.notification-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #9A9A9A;
+}
+
 .notification-badge {
     position: absolute;
     top: -4px;
@@ -411,7 +485,6 @@
     box-shadow: 0 0 0 2px white;
 }
 
-/* Modal de notificações */
 .notification-modal-overlay {
     position: fixed;
     top: 0;
@@ -468,7 +541,6 @@
     color: #1a2a3a;
 }
 
-/* Lista de notificações */
 .notification-list {
     flex: 1;
     overflow-y: auto;
@@ -504,27 +576,13 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 18px;
+    background: #f1f5f9;
 }
 
-.notification-icon-circle.consulta {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.notification-icon-circle.lembrete {
-    background: #fff3e0;
-    color: #ed6c02;
-}
-
-.notification-icon-circle.promocao {
-    background: #e8f5e9;
-    color: #388e3c;
-}
-
-.notification-icon-circle.sistema {
-    background: #f3e5f5;
-    color: #7b1fa2;
+.notification-icon-circle svg {
+    width: 20px;
+    height: 20px;
+    stroke: #9A9A9A;
 }
 
 .notification-content {
@@ -550,7 +608,6 @@
     color: #94a3b8;
 }
 
-/* Botão marcar todas como lidas */
 .mark-all-btn {
     background: none;
     border: none;
@@ -567,7 +624,6 @@
     background: #e3f2fd;
 }
 
-/* Modal de notificação sem itens */
 .no-notifications {
     text-align: center;
     padding: 48px 24px;
@@ -584,7 +640,6 @@
     font-size: 0.85rem;
 }
 
-/* Animações */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -601,8 +656,161 @@
     }
 }
 
-/* Responsividade do modal */
-@media (max-width: 600px) {
+/* ========== RESPONSIVIDADE CORRIGIDA ========== */
+@media (max-width: 1024px) {
+    .hero-text h1 {
+        font-size: 40px;
+    }
+    
+    .expert-card {
+        width: 320px;
+        min-width: 300px;
+    }
+}
+
+@media (max-width: 900px) {
+    .header {
+        width: 95%;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 10px 15px;
+    }
+    
+    .nav-links {
+        order: 2;
+        gap: 15px;
+    }
+    
+    .consulta-btn {
+        order: 3;
+    }
+    
+    .hero {
+        padding: 120px 20px 60px 20px;
+        background-size: cover;
+        background-position: center;
+    }
+    
+    .hero-text {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .hero-text h1 {
+        font-size: 32px;
+    }
+    
+    .cards {
+        gap: 20px;
+    }
+    
+    .card1, .card2 {
+        width: 180px;
+    }
+    
+    .faq-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .footer {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-column:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding-bottom: 20px;
+    }
+    
+    .footer-column li {
+        justify-content: center;
+    }
+    
+    .social {
+        justify-content: center;
+    }
+    
+    .hr {
+        width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        position: relative;
+        top: 0;
+        margin-top: 10px;
+    }
+    
+    .hero {
+        padding: 60px 20px;
+    }
+    
+    .hero-text h1 {
+        font-size: 28px;
+    }
+    
+    .hero-text p {
+        font-size: 14px;
+    }
+    
+    .app-section {
+        padding: 30px 15px;
+    }
+    
+    .app-section h2 {
+        font-size: 22px;
+    }
+    
+    .cards {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .card1, .card2 {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .video {
+        width: 95%;
+    }
+    
+    .carousel-container {
+        gap: 10px;
+    }
+    
+    .arrow {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+    }
+    
+    .expert-card {
+        width: 280px;
+        min-width: 260px;
+    }
+    
+    .expert-text {
+        font-size: 12px;
+    }
+    
+    .perfil img {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .perfil strong {
+        font-size: 10px;
+    }
+    
+    .faq-section {
+        padding: 30px 20px;
+    }
+    
     .notification-modal {
         width: 95%;
         max-height: 85vh;
@@ -616,7 +824,6 @@
     .notification-icon-circle {
         width: 36px;
         height: 36px;
-        font-size: 16px;
     }
     
     .notification-title {
@@ -625,5 +832,99 @@
     
     .notification-message {
         font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        flex-direction: column;
+        border-radius: 20px;
+    }
+    
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a {
+        font-size: 12px;
+    }
+    
+    .consulta-btn {
+        padding: 6px 16px;
+        font-size: 12px;
+    }
+    
+    .hero-text h1 {
+        font-size: 24px;
+    }
+    
+    .hero-text p {
+        font-size: 12px;
+    }
+    
+    .app-section h2 {
+        font-size: 20px;
+    }
+    
+    .app-section hr, .purpose-section hr, .experts-section hr {
+        width: 180px;
+    }
+    
+    .video {
+        width: 100%;
+    }
+    
+    .propaganda {
+        width: 95%;
+    }
+    
+    .expert-card {
+        width: 260px;
+        min-width: 240px;
+        padding: 15px;
+    }
+    
+    .arrow {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    .footer {
+        padding: 30px 20px;
+    }
+    
+    .footer-column li {
+        font-size: 12px;
+        gap: 8px;
+    }
+    
+    .social img {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .toast {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 380px) {
+    .hero-text h1 {
+        font-size: 20px;
+    }
+    
+    .expert-card {
+        width: 240px;
+        min-width: 220px;
+    }
+    
+    .perfil strong {
+        white-space: normal;
+        word-break: break-word;
     }
 }

@@ -7,24 +7,22 @@
 
 /* HEADER FIXO */
 .header {
+    position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
     max-width: 1050px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 5px 10px;
     min-height: 60px;
-
-    background: rgba(255, 255, 255, 0.01);
+    background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(10px);
-
     border-radius: 50px;
     z-index: 1000;
-    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.301);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .logopaciente {
@@ -65,8 +63,6 @@
 }
 
 /* ========== NOTIFICAÇÃO E MODAL ========== */
-
-/* Container do ícone de notificação */
 .notification-wrapper {
     position: relative;
     cursor: pointer;
@@ -75,7 +71,6 @@
 }
 
 .notification-icon {
-    font-size: 22px;
     background: none;
     border: none;
     cursor: pointer;
@@ -86,14 +81,20 @@
     padding: 6px;
     border-radius: 50%;
     transition: all 0.2s;
+    color: #9A9A9A;
 }
 
 .notification-icon:hover {
-    background: rgba(15, 95, 158, 0.1);
+    background: rgba(154, 154, 154, 0.1);
     transform: scale(1.05);
 }
 
-/* Badge de notificações não lidas */
+.notification-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke: #9A9A9A;
+}
+
 .notification-badge {
     position: absolute;
     top: -4px;
@@ -112,7 +113,6 @@
     box-shadow: 0 0 0 2px white;
 }
 
-/* Modal de notificações */
 .notification-modal-overlay {
     position: fixed;
     top: 0;
@@ -169,7 +169,6 @@
     color: #1a2a3a;
 }
 
-/* Lista de notificações */
 .notification-list {
     flex: 1;
     overflow-y: auto;
@@ -205,27 +204,13 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 18px;
+    background: #f1f5f9;
 }
 
-.notification-icon-circle.consulta {
-    background: #e3f2fd;
-    color: #1976d2;
-}
-
-.notification-icon-circle.lembrete {
-    background: #fff3e0;
-    color: #ed6c02;
-}
-
-.notification-icon-circle.promocao {
-    background: #e8f5e9;
-    color: #388e3c;
-}
-
-.notification-icon-circle.sistema {
-    background: #f3e5f5;
-    color: #7b1fa2;
+.notification-icon-circle svg {
+    width: 20px;
+    height: 20px;
+    stroke: #9A9A9A;
 }
 
 .notification-content {
@@ -251,7 +236,6 @@
     color: #94a3b8;
 }
 
-/* Botão marcar todas como lidas */
 .mark-all-btn {
     background: none;
     border: none;
@@ -268,7 +252,6 @@
     background: #e3f2fd;
 }
 
-/* Modal de notificação sem itens */
 .no-notifications {
     text-align: center;
     padding: 48px 24px;
@@ -285,7 +268,6 @@
     font-size: 0.85rem;
 }
 
-/* Animações */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -302,14 +284,14 @@
     }
 }
 
-/* HERO DA TELECONSULTA */
+/* HERO */
 .teleconsulta-hero {
     background: linear-gradient(135deg, #E7E8EA 0%, #d4d8dd 100%);
     background-image: url('../images/imagemTeleconsulta.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    padding: 120px 40px 80px 40px;
+    padding: 140px 40px 80px 40px;
     position: relative;
 }
 
@@ -325,34 +307,31 @@
 .teleconsulta-hero-content {
     position: relative;
     z-index: 1;
-    display: flex;
+    display: auto;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .teleconsulta-hero-text {
-    width: 60%;
+    
     text-align: left;
-    margin-left: 20px;
-    color: #0F5F9E;
+    color: rgb(78, 75, 75);
 }
 
 .teleconsulta-hero-text h1 {
+    font-weight: bold;
     font-size: 50px;
     line-height: 1.2;
     margin-bottom: 20px;
-}
-
-.teleconsulta-hero-text h1 span {
     color: #0F5F9E;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .teleconsulta-hero-text p {
     font-size: 1.1rem;
-    line-height: 1.5;
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
 /* MAIN CONTENT */
@@ -367,14 +346,13 @@
     padding: 40px 20px;
 }
 
-/* TÍTULO DA SEÇÃO */
 .section-title {
     text-align: center;
     margin-bottom: 40px;
 }
 
 .section-title h2 {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     color: #1a2a3a;
     margin-bottom: 10px;
 }
@@ -392,7 +370,6 @@
     font-size: 1rem;
 }
 
-/* GRID PRINCIPAL */
 .teleconsulta-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -403,25 +380,27 @@
 .link-card {
     background: white;
     border-radius: 20px;
-    padding: 30px;
+    padding: 35px;
+    height: 92%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border: 1px solid #eef2f6;
 }
 
 .link-card h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: #1a2a3a;
     margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    font-weight: 600;
 }
-
-.link-card h2::before {
-    content: "🔗";
-    font-size: 1.5rem;
+.link-card h2::after {
+    content: "";
+    display: block;
+    width: 280px;
+    height: 3px;
+    background: #209FD5;
+    margin: 8px auto 0;
+    border-radius: 2px;
 }
-
 .input-group {
     margin-bottom: 20px;
 }
@@ -430,7 +409,7 @@
     display: block;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #1a6b6f;
+    color: #6a7a8a;
     margin-bottom: 8px;
 }
 
@@ -472,65 +451,83 @@
 .btn-entrar:disabled {
     background: #94a3b8;
     cursor: not-allowed;
-    transform: none;
 }
 
-/* INFORMAÇÕES DA CONSULTA */
+/* CARD INFORMAÇÕES DA CONSULTA */
+/* CARD INFORMAÇÕES DA CONSULTA - TÍTULO NO TOPO */
 .info-card {
+    width: 90%;
     background: white;
     border-radius: 20px;
-    padding: 30px;
+    padding: 13px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     border: 1px solid #eef2f6;
+    overflow: hidden;
 }
-
-.info-card h2 {
-    font-size: 1.3rem;
-    color: #1a2a3a;
-    margin-bottom: 20px;
+.info-card-header {
+    padding-bottom: 12px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    text-align: center; /* CENTRALIZA O TÍTULO */
+    border-bottom: 3px solid #209FD5; /* linha mais clara embaixo */
 }
 
-.info-card h2::before {
-    content: "📋";
-    font-size: 1.5rem;
+.info-card-header h2 {
+    font-size: 1.1rem;
+    color: rgb(0, 0, 0);
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 1px;
 }
-
-.info-item {
+.info-card-body {
+    padding: 24px;
+}
+.info-title {
+    text-align: center;
+    font-size: 1.3rem;
     margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eef2f6;
+    position: relative;
+}
+.info-title::after {
+    content: "";
+    display: block;
+    width: 330px;
+    height: 3px;
+    background: #209FD5;
+    margin: 8px auto 0;
+    border-radius: 2px;
 }
 
-.info-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+/* CONTEÚDO SEPARADO */
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.info-item {
+    display: flex;
+    align-items: baseline;
 }
 
 .info-label {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #8a9aaa;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
+    color: #1a2a3a;
+    width: 120px;
+    flex-shrink: 0;
 }
 
 .info-value {
-    font-size: 1rem;
-    color: #1a2a3a;
-    font-weight: 500;
+    font-size: 0.9rem;
+    color: #6a7a8a;
+    font-weight: 400;
 }
 
 .info-value.destaque {
     color: #1a6b6f;
-    font-weight: 700;
+    font-weight: 500;
 }
 
-/* CARD DE VÍDEO (DEPOIS DE ENTRAR) */
+/* VÍDEO */
 .video-card {
     background: white;
     border-radius: 20px;
@@ -687,18 +684,8 @@
         font-size: 32px;
     }
     
-    .teleconsulta-hero-text p {
-        font-size: 14px;
-    }
-    
-    .teleconsulta-hero-text {
-        width: 100%;
-        text-align: center;
-        margin-left: 0;
-    }
-    
     .teleconsulta-hero {
-        padding: 100px 20px 60px 20px;
+        padding: 120px 20px 60px 20px;
     }
 }
 
@@ -722,16 +709,22 @@
     }
     
     .section-title h2 {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
     
     .teleconsulta-hero-text h1 {
         font-size: 24px;
     }
-}
-
-/* Responsividade do modal */
-@media (max-width: 600px) {
+    
+    .info-item {
+        flex-direction: column;
+    }
+    
+    .info-label {
+        width: auto;
+        margin-bottom: 4px;
+    }
+    
     .notification-modal {
         width: 95%;
         max-height: 85vh;
@@ -745,14 +738,10 @@
     .notification-icon-circle {
         width: 36px;
         height: 36px;
-        font-size: 16px;
     }
     
-    .notification-title {
-        font-size: 0.8rem;
-    }
-    
-    .notification-message {
-        font-size: 0.7rem;
+    .notification-icon-circle svg {
+        width: 16px;
+        height: 16px;
     }
 }

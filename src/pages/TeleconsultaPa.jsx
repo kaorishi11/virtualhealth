@@ -71,13 +71,46 @@ export default function TeleconsultaPa() {
         setShowNotifications(false);
     };
 
+    // Ícones SVG para cada tipo de notificação
     const getTypeIcon = (type) => {
         switch(type) {
-            case 'consulta': return '🩺';
-            case 'lembrete': return '⏰';
-            case 'teleconsulta': return '💻';
-            case 'sistema': return '📢';
-            default: return '📌';
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'lembrete':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            case 'sistema':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
         }
     };
 
@@ -168,7 +201,7 @@ export default function TeleconsultaPa() {
         }
         setCameraAtiva(false);
         setEmChamada(false);
-        showToast('📞 Chamada encerrada');
+        showToast('Chamada encerrada');
     };
 
     const handleEntrarConsulta = () => {
@@ -177,7 +210,6 @@ export default function TeleconsultaPa() {
             return;
         }
         
-        // Validar se é uma URL válida
         if (!linkConsulta.startsWith('http://') && !linkConsulta.startsWith('https://')) {
             showToast('Por favor, insira um link válido (começando com http:// ou https://)', true);
             return;
@@ -185,21 +217,20 @@ export default function TeleconsultaPa() {
         
         setEmChamada(true);
         iniciarCamera();
-        showToast('✅ Conectado à consulta! Ativando câmera...');
+        showToast('Conectado à consulta! Ativando câmera...');
     };
 
-    // Informações da consulta
     const consultaInfo = {
         medico: "Dra. Marta",
         especialidade: "Dentista",
         data: "06/02/2026",
         horario: "14h50",
-        paciente: "Enaldo Santos"
+        motivo: "Análise dentária"
     };
 
     return (
         <div>
-            {/* HEADER COM NOTIFICAÇÃO - COMPLETO */}
+            {/* HEADER COM NOTIFICAÇÃO */}
             <div className="header">
                 <img src={logo} className="logopaciente" alt="logo" />
 
@@ -212,10 +243,12 @@ export default function TeleconsultaPa() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    {/* Ícone de notificação */}
                     <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
                         <div className="notification-icon">
-                            🔔
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
                             {unreadCount > 0 && (
                                 <span className="notification-badge">{unreadCount}</span>
                             )}
@@ -233,7 +266,7 @@ export default function TeleconsultaPa() {
                 <div className="notification-modal-overlay" onClick={closeNotifications}>
                     <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="notification-modal-header">
-                            <h3>🔔 Notificações</h3>
+                            <h3>Notificações</h3>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 {unreadCount > 0 && (
                                     <button className="mark-all-btn" onClick={markAllAsRead}>
@@ -266,7 +299,7 @@ export default function TeleconsultaPa() {
                                 ))
                             ) : (
                                 <div className="no-notifications">
-                                    <div className="no-notifications-icon">📭</div>
+                                    <div className="no-notifications-icon"></div>
                                     <p>Nenhuma notificação no momento</p>
                                 </div>
                             )}
@@ -275,16 +308,12 @@ export default function TeleconsultaPa() {
                 </div>
             )}
 
-            {/* HERO DA TELECONSULTA COM IMAGEM */}
+            {/* HERO */}
             <div className="teleconsulta-hero">
                 <div className="teleconsulta-hero-content">
                     <div className="teleconsulta-hero-text">
-                        <h1>
-                            TELECONSULTA
-                        </h1>
-                        <p>
-                            Insira o link fornecido pelo seu médico para iniciar a consulta.
-                        </p>
+                        <h1>TELECONSULTA</h1>
+                        <p>Insira o link fornecido pelo seu médico para iniciar a consulta.</p>
                     </div>
                 </div>
             </div>
@@ -301,7 +330,7 @@ export default function TeleconsultaPa() {
                     <div className="teleconsulta-grid">
                         {/* CARD PARA INSERIR O LINK */}
                         <div className="link-card">
-                            <h2>Entrar na consulta</h2>
+                            <h2>ENTRAR NA TELECONSULTA</h2>
                             <div className="input-group">
                                 <label>Link da consulta</label>
                                 <input 
@@ -317,49 +346,45 @@ export default function TeleconsultaPa() {
                                 onClick={handleEntrarConsulta}
                                 disabled={emChamada}
                             >
-                                {emChamada ? "🔴 Em chamada..." : "🎥 Entrar na consulta"}
+                                {emChamada ? "Em chamada..." : "Entrar"}
                             </button>
                         </div>
 
-                        {/* INFORMAÇÕES DA CONSULTA - FORMATO VERTICAL */}
-                        <div className="info-card">
-                            <div className="info-card-header">
-                                <h2>Informações da consulta</h2>
-                            </div>
-                            <div className="info-card-body">
-                                <div className="info-card-item">
-                                    <div className="info-card-icon">👩‍⚕️</div>
-                                    <div className="info-card-content">
-                                        <div className="info-card-label">Médico(a)</div>
-                                        <div className="info-card-value destaque">{consultaInfo.medico}</div>
-                                    </div>
-                                </div>
-                                <div className="info-card-item">
-                                    <div className="info-card-icon">🏥</div>
-                                    <div className="info-card-content">
-                                        <div className="info-card-label">Especialidade</div>
-                                        <div className="info-card-value">{consultaInfo.especialidade}</div>
-                                    </div>
-                                </div>
-                                <div className="info-card-item">
-                                    <div className="info-card-icon">👤</div>
-                                    <div className="info-card-content">
-                                        <div className="info-card-label">Paciente</div>
-                                        <div className="info-card-value">{consultaInfo.paciente}</div>
-                                    </div>
-                                </div>
-                                <div className="info-card-item">
-                                    <div className="info-card-icon">📅</div>
-                                    <div className="info-card-content">
-                                        <div className="info-card-label">Data e horário</div>
-                                        <div className="info-card-value">{consultaInfo.data} • {consultaInfo.horario}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        {/* INFORMAÇÕES DA CONSULTA */}
+                      <div className="info-card">
+    
+    <div className="info-card-body">
 
-                    {/* CARD DE VÍDEO - APARECE QUANDO ENTRA NA CHAMADA */}
+        {/* TÍTULO SOZINHO */}
+        <h2 className="info-title">INFORMAÇÕES DA CONSULTA</h2>
+
+        {/* CONTEÚDO */}
+        <div className="info-content">
+            <div className="info-item">
+                <span className="info-label">Médico(a):</span>
+                <span className="info-value destaque">{consultaInfo.medico}</span>
+            </div>
+
+            <div className="info-item">
+                <span className="info-label">Especialidade:</span>
+                <span className="info-value">{consultaInfo.especialidade}</span>
+            </div>
+
+            <div className="info-item">
+                <span className="info-label">Data e hora:</span>
+                <span className="info-value">{consultaInfo.data}, {consultaInfo.horario}</span>
+            </div>
+
+            <div className="info-item">
+                <span className="info-label">Motivo:</span>
+                <span className="info-value">{consultaInfo.motivo}</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+                    {/* CARD DE VÍDEO */}
                     {emChamada && (
                         <div className="video-card">
                             <div className="video-container">

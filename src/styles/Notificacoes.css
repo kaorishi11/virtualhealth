@@ -127,23 +127,23 @@
 
 /* LINHA AZUL NO TÍTULO */
 .notificacoes-content h1 {
-    font-size: 22px;
-    font-weight: 600;
-    color: #1e293b;
-    padding-left: 16px;
-    margin-bottom: 25px;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: #000000;
+    margin-bottom: 28px;
     position: relative;
     display: inline-block;
+    padding-bottom: 8px;
 }
 
 .notificacoes-content h1::after {
     content: '';
     position: absolute;
-    bottom: -8px;
-    left: 16px;
-    width: 280px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     height: 3px;
-    background: #3b82f6;
+    background: #00ccff;
     border-radius: 3px;
 }
 

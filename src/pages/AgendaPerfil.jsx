@@ -32,8 +32,8 @@ export default function AgendamentosMedicos() {
                 local: "",
                 status: "confirmado",
                 statusText: "Confirmado",
-                botao: "Entrar",
-                botaoAcao: "entrar"
+                botao: "Copiar link",
+                botaoAcao: "Copiar link da teleconsulta"
             },
             {
                 id: 2,
@@ -80,8 +80,8 @@ export default function AgendamentosMedicos() {
     };
 
     const handleButtonClick = (acao, medico) => {
-        if (acao === "entrar") {
-            alert(`Entrando na consulta com ${medico}`);
+        if (acao === "Copiar link da teleconsulta") {
+            alert(`Link copiado da teleconsulta com ${medico}`);
         } else if (acao === "cancelar") {
             if (window.confirm(`Deseja cancelar a consulta com ${medico}?`)) {
                 alert(`Consulta com ${medico} cancelada`);

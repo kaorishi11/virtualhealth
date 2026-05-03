@@ -4,7 +4,6 @@ import "../styles/Chat.css";
 
 // Imagens
 import logo from "../images/logo.png";
-import email from '../images/login (2).png';
 import robochat from "../images/robochat.png";
 import certinho from "../images/certinho.png";
 import wats from "../images/wats.png";
@@ -13,11 +12,6 @@ import local from "../images/local.png";
 import tell from "../images/tel.png";
 import gmail from "../images/gmail.png";
 import tempo from "../images/tempo.png";
-
-import coracao from "../images/coracao.png";
-import exames from "../images/exames.png";
-import saude from "../images/saude.png";
-import sintomas from "../images/sintomas.png";
 
 export default function ChatMedico() {
     const navigate = useNavigate();
@@ -100,13 +94,46 @@ export default function ChatMedico() {
         setShowNotifications(false);
     };
 
+    // Ícones SVG para cada tipo de notificação
     const getTypeIcon = (type) => {
         switch(type) {
-            case 'consulta': return '🩺';
-            case 'lembrete': return '⏰';
-            case 'teleconsulta': return '💻';
-            case 'sistema': return '📢';
-            default: return '📌';
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'lembrete':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            case 'sistema':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
         }
     };
 
@@ -120,12 +147,66 @@ export default function ChatMedico() {
         }
     };
 
+    // TÓPICOS COM ÍCONES SVG PROFISSIONAIS
     const topics = [
-        { id: "pressao", label: "Pressão arterial", img: coracao },
-        { id: "sintomas", label: "Sintomas", img: sintomas },
-        { id: "exames", label: "Meus exames", img: exames },
-        { id: "agendar", label: "Agendar Consulta", img: exames },
-        { id: "dicas", label: "Dicas de saúde", img: saude }
+        { 
+            id: "pressao", 
+            label: "Pressão arterial", 
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+            )
+        },
+        { 
+            id: "sintomas", 
+            label: "Sintomas", 
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                    <path d="M5 3h14"/>
+                    <path d="M12 3v9"/>
+                </svg>
+            )
+        },
+        { 
+            id: "exames", 
+            label: "Meus exames", 
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+            )
+        },
+        { 
+            id: "agendar", 
+            label: "Agendar Consulta", 
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                    <circle cx="12" cy="15" r="1"/>
+                    <circle cx="16" cy="15" r="1"/>
+                    <circle cx="8" cy="15" r="1"/>
+                </svg>
+            )
+        },
+        { 
+            id: "dicas", 
+            label: "Dicas de saúde", 
+            icon: (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2z"/>
+                </svg>
+            )
+        }
     ];
 
     const scrollToBottom = () => {
@@ -236,10 +317,13 @@ export default function ChatMedico() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    {/* Ícone de notificação */}
+                    {/* Ícone de notificação - SVG */}
                     <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
                         <div className="notification-icon">
-                            🔔
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
                             {unreadCount > 0 && (
                                 <span className="notification-badge">{unreadCount}</span>
                             )}
@@ -257,7 +341,7 @@ export default function ChatMedico() {
                 <div className="notification-modal-overlay" onClick={closeNotifications}>
                     <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="notification-modal-header">
-                            <h3>🔔 Notificações</h3>
+                            <h3>Notificações</h3>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 {unreadCount > 0 && (
                                     <button className="mark-all-btn" onClick={markAllAsRead}>
@@ -303,7 +387,6 @@ export default function ChatMedico() {
             <div className="chat-container">
                 <div className="chat-card">
                     {/* HEADER DO CHAT */}
-                    
                     <div className="chat-header">
                         <h1>CONVERSE COM O SEU <span>MÉDICO VIRTUAL!</span></h1>
                     </div>
@@ -332,7 +415,7 @@ export default function ChatMedico() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* TÓPICOS/OPÇÕES */}
+                    {/* TÓPICOS/OPÇÕES COM ÍCONES SVG */}
                     <div className="topics-section">
                         <div className="topics-title">Escolha um dos temas abaixo ou me conte o que está sentindo:</div>
                         <div className="topics-grid">
@@ -342,7 +425,7 @@ export default function ChatMedico() {
                                     className={`topic-item ${selectedTopics.includes(topic.id) ? "selected" : ""}`}
                                     onClick={() => handleTopicToggle(topic.id, topic.label)}
                                 >
-                                    <img src={topic.img} alt={topic.label} />
+                                    <span className="topic-icon">{topic.icon}</span>
                                     <span>{topic.label}</span>
                                 </div>
                             ))}
@@ -361,6 +444,10 @@ export default function ChatMedico() {
                                 onKeyPress={handleKeyPress}
                             />
                             <button className="send-btn" onClick={handleSendMessage}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
                                 Enviar
                             </button>
                         </div>

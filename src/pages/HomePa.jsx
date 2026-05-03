@@ -145,13 +145,46 @@ export default function HomePa() {
         setShowNotifications(false);
     };
 
+    // Ícones SVG para cada tipo de notificação
     const getTypeIcon = (type) => {
         switch(type) {
-            case 'consulta': return '🩺';
-            case 'lembrete': return '⏰';
-            case 'teleconsulta': return '🎁';
-            case 'sistema': return '📢';
-            default: return '📌';
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'lembrete':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            case 'sistema':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
         }
     };
 
@@ -176,15 +209,18 @@ export default function HomePa() {
                     <Link to="/home-paciente">Início</Link>
                     <Link to="/clinicas">Clínicas</Link>
                     <Link to="/contato">Contato</Link>
-                    <Link to="/perfil">Meu Perfil</Link>
                     <Link to="/teleconsulta">Teleconsulta</Link>
+                    <Link to="/perfil">Meu Perfil</Link>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     {/* Ícone de notificação */}
                     <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
                         <div className="notification-icon">
-                            🔔
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                            </svg>
                             {unreadCount > 0 && (
                                 <span className="notification-badge">{unreadCount}</span>
                             )}
@@ -202,7 +238,7 @@ export default function HomePa() {
                 <div className="notification-modal-overlay" onClick={closeNotifications}>
                     <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="notification-modal-header">
-                            <h3>🔔 Notificações</h3>
+                            <h3>Notificações</h3>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 {unreadCount > 0 && (
                                     <button className="mark-all-btn" onClick={markAllAsRead}>

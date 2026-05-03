@@ -31,7 +31,7 @@
 }
 
 .login-card {
-  width: 400px;
+  width: 420px;
   background: #fff;
   padding: 40px 35px;
   border-radius: 20px;
@@ -85,47 +85,62 @@
   height: 20px;
 }
 
+/* ========== INPUT GROUP COM ESPAÇAMENTO PERFEITO ========== */
 .input-group {
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
 }
 
 .input-group input {
   width: 100%;
-  height: 48px;
-  padding: 0 45px 0 42px;
-  border-radius: 10px;
+  height: 52px;
+  padding: 0 45px 0 48px;
+  border-radius: 12px;
   border: 1px solid #ddd;
   font-size: 14px;
   transition: border-color 0.3s ease;
+  background: #fff;
 }
 
 .input-group input:focus {
   outline: none;
   border-color: #3a8dad;
+  box-shadow: 0 0 0 3px rgba(58, 141, 173, 0.1);
+}
+
+.input-group input::placeholder {
+  color: #aaa;
+  font-size: 13px;
 }
 
 .icon {
   position: absolute;
-  left: 14px;
-  width: 18px;
-  height: 18px;
+  left: 16px;
+  width: 20px;
+  height: 20px;
   pointer-events: none;
-  top: 40%;
+  top: 50%;
   transform: translateY(-50%);
+  opacity: 0.6;
 }
 
 .icon-eye {
   position: absolute;
-  right: 14px;
-  width: 20px;
-  height: 20px;
+  right: 16px;
+  width: 22px;
+  height: 22px;
   cursor: pointer;
   z-index: 2;
-  top: 40%;
+  top: 50%;
   transform: translateY(-50%);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.icon-eye:hover {
+  opacity: 1;
 }
 
 /* REMOVE OLHO DO CHROME */
@@ -146,7 +161,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 20px 10px;
+  margin: 5px 0 25px 0;
   font-size: 13px;
 }
 
@@ -155,6 +170,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   height: 16px;
   cursor: pointer;
   margin: 0;
+  accent-color: #3a8dad;
 }
 
 .lembrar label {
@@ -174,7 +190,7 @@ form button {
   font-size: 16px;
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
 }
 
 form button:hover {
@@ -187,7 +203,7 @@ form button:active {
 }
 
 .links {
-  margin-top: 20px;
+  margin-top: 5px;
 }
 
 .links p {
@@ -221,7 +237,7 @@ form button:active {
   text-decoration: underline;
 }
 
-/* FUNDO ESCURO COM BLUR */
+/* MODAL */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -234,37 +250,30 @@ form button:active {
   justify-content: center;
   align-items: center;
   z-index: 999;
-
   animation: fadeIn 0.3s ease;
 }
 
-/* CAIXA DO MODAL */
 .modal {
   background: #fff;
   padding: 30px 25px;
   border-radius: 16px;
   width: 320px;
   text-align: center;
-
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-
   animation: scaleIn 0.25s ease;
 }
 
-/* TÍTULO */
 .modal h2 {
   margin-bottom: 10px;
   font-size: 20px;
 }
 
-/* TEXTO */
 .modal p {
   font-size: 14px;
   color: #666;
   margin-bottom: 15px;
 }
 
-/* INPUT */
 .modal input {
   width: 100%;
   padding: 12px;
@@ -278,7 +287,6 @@ form button:active {
   border-color: #3a8dad;
 }
 
-/* BOTÕES */
 .modal-buttons {
   display: flex;
   gap: 10px;
@@ -295,7 +303,6 @@ form button:active {
   transition: 0.2s;
 }
 
-/* BOTÃO ENVIAR */
 .modal-buttons button:first-child {
   background: linear-gradient(135deg, #6ec1e4, #3a8dad);
   color: white;
@@ -306,7 +313,6 @@ form button:active {
   transform: translateY(-1px);
 }
 
-/* BOTÃO CANCELAR */
 .modal-buttons button:last-child {
   background: #eee;
   color: #444;
@@ -333,6 +339,7 @@ form button:active {
   }
 }
 
+/* RESPONSIVIDADE */
 @media (max-width: 900px) {
   .left {
     display: none;
@@ -347,5 +354,33 @@ form button:active {
     max-width: 400px;
     margin: 20px;
     padding: 30px 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 25px 20px;
+  }
+  
+  .toggle button {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  
+  .input-group input {
+    height: 48px;
+    padding: 0 40px 0 44px;
+  }
+  
+  .icon {
+    left: 14px;
+    width: 18px;
+    height: 18px;
+  }
+  
+  .icon-eye {
+    right: 14px;
+    width: 18px;
+    height: 18px;
   }
 }

@@ -7,20 +7,38 @@
 
 .dicas-container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     font-family: "Segoe UI", "Inter", system-ui, sans-serif;
     background: #f0f2f5;
 }
 
-/* ========== SIDEBAR ESTILO PERFIL DO PACIENTE ========== */
+/* ========== SIDEBAR - SEM ESPAÇO BRANCO ========== */
 .navbar {
     width: 260px;
+    min-width: 260px;
     background: linear-gradient(180deg, #1f7378 0%, #135b5f 100%);
     color: white;
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
     height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+/* Esconder scrollbar da sidebar */
+.navbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.navbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.navbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
 }
 
 .nav-header {
@@ -147,10 +165,16 @@
     opacity: 0.85;
 }
 
+/* Espaçador flexível - empurra o logout para o final */
+.navbar .spacer {
+    flex: 1;
+}
+
+/* Logout - agora no final */
 .logout {
-    margin-top: auto;
     padding: 20px 20px 30px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: auto;
 }
 
 .logout::after {
@@ -175,7 +199,7 @@
     color: #ff6666;
 }
 
-/* ========== MAIN CONTENT ========== */
+/* ========== MAIN CONTENT (COMO ESTAVA ANTES) ========== */
 .main-content {
     flex: 1;
     padding: 28px 36px;
@@ -273,8 +297,8 @@
 }
 
 .btn-publicar {
-    background: #ffd966;
-    color: #2d5a5e;
+    background: #21907F;
+    color: #ffffff;
     border: none;
     padding: 10px 32px;
     border-radius: 12px;
@@ -287,9 +311,9 @@
 }
 
 .btn-publicar:hover {
-    background: #ffcd4a;
+    background: #21907F;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 217, 102, 0.4);
+    box-shadow: 0 4px 12px rgba(33, 144, 127, 0.4);
 }
 
 /* ========== SEÇÃO ÚLTIMAS DICAS ========== */
@@ -564,6 +588,7 @@
         padding: 12px 20px;
         gap: 10px;
         height: auto;
+        position: relative;
     }
     
     .nav-header {
@@ -600,6 +625,19 @@
     .navbar a {
         padding: 6px 12px;
         font-size: 12px;
+    }
+    
+    .navbar li::after {
+        bottom: -4px;
+        height: 2px;
+    }
+    
+    .navbar li:hover::after {
+        width: 50%;
+    }
+    
+    .navbar li.active::after {
+        width: 50%;
     }
     
     .logout {

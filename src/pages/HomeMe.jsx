@@ -73,41 +73,47 @@ export default function HomeMe() {
         <div className="dashboard-container">
             {/* SIDEBAR ESTILO PERFIL DO PACIENTE */}
             <div className="navbar">
-                <div className="nav-header">
-                    <img src={logo} alt="Logo" className="logoperfil" />
-                </div>
+    <div className="navbar-inner">
+        <div className="nav-header">
+            <img src={logo} alt="Logo" className="logoperfil" />
+        </div>
 
-                {/* Seção do médico com foto - organizada */}
-                <div className="medico-section">
-                    <div className="medico-avatar">
-                        <img src={doutora} alt="Dra. Marta" className="medico-img" />
-                    </div>
-                    <div className="medico-info">
-                        <h4>Dra. Marta</h4>
-                        <p>Dentista</p>
-                    </div>
-                </div>
-
-                <div className="nav-section">
-                    <h3>GERAL</h3>
-                    <ul>
-                        <li className="active"><Link to="/home-medico">Visão geral</Link></li>
-                        <li><Link to="/agenda">Minha agenda</Link></li>
-                    </ul>
-                </div>
-
-                <div className="nav-section">
-                    <h3>ATENDIMENTO</h3>
-                    <ul>
-                        <li><Link to="/consulta">Iniciar consulta</Link></li>
-                        <li><Link to="/dicas">Dicas de saúde</Link></li>
-                    </ul>
-                </div>
-
-                <div className="logout">
-                    <Link to="/">Desconectar</Link>
-                </div>
+        <div className="medico-section">
+            <div className="medico-avatar">
+                <img src={doutora} alt="Dra. Marta" className="medico-img" />
             </div>
+            <div className="medico-info">
+                <h4>Dra. Marta</h4>
+                <p>Dentista</p>
+            </div>
+        </div>
+
+        <div className="menu-container">
+            <div className="nav-section">
+                <h3>GERAL</h3>
+                <ul>
+                    <li className="active"><Link to="/home-medico">Visão geral</Link></li>
+                    <li><Link to="/agenda">Minha agenda</Link></li>
+                </ul>
+            </div>
+
+            <div className="nav-section">
+                <h3>ATENDIMENTO</h3>
+                <ul>
+                    <li><Link to="/consulta">Iniciar consulta</Link></li>
+                    <li><Link to="/dicas">Dicas de saúde</Link></li>
+                </ul>
+            </div>
+
+            {/* Espaçador flexível - empurra o logout para baixo */}
+            <div className="spacer"></div>
+        </div>
+
+        <div className="logout">
+            <Link to="/">Desconectar</Link>
+        </div>
+    </div>
+</div>
 
             {/* MAIN CONTENT */}
             <div className="main-content">
@@ -139,8 +145,14 @@ export default function HomeMe() {
                         </div>
                     </div>
                     <div className="stat-card">
-                        <img src={atencao} alt="" />
-                        <div className="stat-info">
+    <div className="stat-icon">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+        <div className="stat-info">
                             <h4>Exames pendentes</h4>
                             <p>3</p>
                         </div>
@@ -245,11 +257,6 @@ export default function HomeMe() {
                                         </div>
                                     );
                                 })}
-                            </div>
-
-                            <div className="legendas-finais">
-                                <div className="legenda-final"><div className="legenda-cor presencial"></div><span>Presencial</span></div>
-                                <div className="legenda-final"><div className="legenda-cor tele"></div><span>Tele</span></div>
                             </div>
                         </div>
                     </div>

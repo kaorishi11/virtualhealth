@@ -87,38 +87,41 @@ export default function DicasMe() {
         <div className="dicas-container">
             {/* SIDEBAR */}
             <div className="navbar">
-                <div className="nav-header">
-                    <img src={logo} alt="Logo" className="logoperfil" />
-                </div>
+    <div className="nav-header">
+        <img src={logo} alt="Logo" className="logoperfil" />
+    </div>
 
-                <div className="medico-section">
-                    <img src={doutora} alt="Dra. Marta" className="medico-img" />
-                    <div className="medico-info">
-                        <h4>Dra. Marta</h4>
-                        <p>Dentista</p>
-                    </div>
-                </div>
+    <div className="medico-section">
+        <img src={doutora} alt="Dra. Marta" className="medico-img" />
+        <div className="medico-info">
+            <h4>Dra. Marta</h4>
+            <p>Dentista</p>
+        </div>
+    </div>
 
-                <div className="nav-section">
-                    <h3>GERAL</h3>
-                    <ul>
-                        <li><Link to="/home-medico">Visão geral</Link></li>
-                        <li><Link to="/agenda">Minha agenda</Link></li>
-                    </ul>
-                </div>
+    <div className="nav-section">
+        <h3>GERAL</h3>
+        <ul>
+            <li><Link to="/home-medico">Visão geral</Link></li>
+            <li><Link to="/agenda">Minha agenda</Link></li>
+        </ul>
+    </div>
 
-                <div className="nav-section">
-                    <h3>ATENDIMENTO</h3>
-                    <ul>
-                        <li><Link to="/consulta">Iniciar consulta</Link></li>
-                        <li className="active"><Link to="/dicas">Dicas de saúde</Link></li>
-                    </ul>
-                </div>
+    <div className="nav-section">
+        <h3>ATENDIMENTO</h3>
+        <ul>
+            <li><Link to="/consulta">Iniciar consulta</Link></li>
+            <li className="active"><Link to="/dicas">Dicas de saúde</Link></li>
+        </ul>
+    </div>
 
-                <div className="logout">
-                    <Link to="/">Desconectar</Link>
-                </div>
-            </div>
+    {/* ESPAÇADOR FLEXÍVEL - EMPURRA O LOGOUT PARA O FINAL */}
+    <div className="spacer"></div>
+
+    <div className="logout">
+        <Link to="/">Desconectar</Link>
+    </div>
+</div>
 
             {/* CONTEÚDO PRINCIPAL */}
             <div className="main-content">
@@ -151,12 +154,17 @@ export default function DicasMe() {
                         {dicas.map((dica) => (
                             <div key={dica.id} className="dica-card">
                                 <button 
-                                    className="btn-excluir"
-                                    onClick={() => handleExcluirClick(dica)}
-                                    title="Excluir dica"
-                                >
-                                    🗑️
-                                </button>
+    className="btn-excluir"
+    onClick={() => handleExcluirClick(dica)}
+    title="Excluir dica"
+>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6h18"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <line x1="10" y1="11" x2="10" y2="17"/>
+        <line x1="14" y1="11" x2="14" y2="17"/>
+    </svg>
+</button>
                                 <p className="dica-texto">{dica.texto}</p>
                                 <div className="dica-footer">
                                     <div className="dica-autor">
@@ -177,7 +185,14 @@ export default function DicasMe() {
             {modalExcluir && (
                 <div className="modal-overlay" onClick={handleCancelarExcluir}>
                     <div className="modal-confirmar" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-confirmar-icon">🗑️</div>
+                        <div className="modal-confirmar-icon">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#ef4444', margin: '0 auto' }}>
+        <path d="M3 6h18"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <line x1="10" y1="11" x2="10" y2="17"/>
+        <line x1="14" y1="11" x2="14" y2="17"/>
+    </svg>
+</div>
                         <h3>Excluir Dica</h3>
                         <p>Tem certeza que deseja excluir esta dica?</p>
                         <div className="modal-botoes">

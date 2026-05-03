@@ -7,21 +7,38 @@
 
 .dashboard-container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     font-family: "Segoe UI", "Inter", system-ui, sans-serif;
     background: #f0f2f5;
 }
 
-/* ========== SIDEBAR ESTILO PERFIL DO PACIENTE ========== */
+/* ========== SIDEBAR FIXA - SEM ESPAÇO BRANCO ========== */
 .navbar {
     width: 260px;
-    height: 870px;
-    background: #1a6b6f;
+    min-width: 260px;
     background: linear-gradient(180deg, #1f7378 0%, #135b5f 100%);
     color: white;
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+/* Esconder scrollbar mas manter funcional */
+.navbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.navbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.navbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
 }
 
 .nav-header {
@@ -51,7 +68,7 @@
     height: auto;
 }
 
-/* Seção do médico com foto - estilo igual ao perfil do paciente */
+/* Seção do médico com foto */
 .medico-section {
     padding: 0 20px 20px 20px;
     margin-bottom: 20px;
@@ -111,7 +128,12 @@
     margin: 0;
 }
 
-/* ========== ESTILO DOS ITENS DA NAVBAR COM LINHA AZUL NO HOVER ========== */
+/* Espaçador flexível para empurrar o logout para o final */
+.navbar .spacer {
+    flex: 1;
+}
+
+/* ESTILO DOS ITENS DA NAVBAR COM LINHA AZUL NO HOVER */
 .navbar li {
     margin-bottom: 6px;
     border-radius: 10px;
@@ -119,7 +141,7 @@
     position: relative;
 }
 
-/* Linha azul que aparece no hover (estilo Figma) */
+/* Linha azul que aparece no hover */
 .navbar li::after {
     content: '';
     position: absolute;
@@ -171,11 +193,11 @@
     opacity: 0.85;
 }
 
-/* Logout não tem linha */
+/* Logout - fica no final da sidebar */
 .logout {
-    margin-top: auto;
     padding: 20px 20px 30px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: auto;
 }
 
 .logout::after {
@@ -200,7 +222,7 @@
     color: #ff6666;
 }
 
-/* ========== MAIN CONTENT ========== */
+/* ========== MAIN CONTENT (COMO ESTAVA ANTES) ========== */
 .main-content {
     flex: 1;
     padding: 24px 32px;
@@ -245,6 +267,8 @@
 }
 
 /* ========== STATS CARDS ========== */
+/* ========== STATS CARDS ========== */
+/* ========== STATS CARDS ========== */
 .stats-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -269,22 +293,21 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-.stat-card img {
+/* Aplica a cor #21907F a todos os ícones */
+/* Estilo para o ícone SVG dos cards */
+.stat-icon {
     width: 42px;
     height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #21907F;
 }
 
-.stat-info h4 {
-    font-size: 0.7rem;
-    color: #8a9aaa;
-    margin-bottom: 4px;
-}
-
-.stat-info p {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #1a6b6f;
-    line-height: 1;
+.stat-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: #21907F;
 }
 
 /* ========== CONSULTAS E CALENDÁRIO ========== */
@@ -413,16 +436,6 @@
     font-weight: 600;
 }
 
-.modalidade.online {
-    background: #e0f2fe;
-    color: #0284c7;
-}
-
-.modalidade.presencial {
-    background: #dcfce7;
-    color: #16a34a;
-}
-
 .btn-consulta {
     padding: 5px 16px;
     border: none;
@@ -434,12 +447,12 @@
 }
 
 .btn-consulta.iniciar {
-    background: #2d5a5e;
-    color: #fdfdfd;
+    background: #21907F;
+    color: #ffffff;
 }
 
 .btn-consulta.iniciar:hover {
-    background: rgb(19, 49, 109);
+    background: #21907F;
     transform: scale(1.02);
 }
 
@@ -813,13 +826,16 @@
 }
 
 @media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    
     .navbar {
         width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        padding: 12px 20px;
-        gap: 10px;
+        min-width: auto;
+        height: auto;
+        position: relative;
+        padding: 20px 24px;
     }
     
     .nav-header {
@@ -832,10 +848,6 @@
         padding: 0;
         border-bottom: none;
         margin-bottom: 0;
-    }
-    
-    .logoperfil {
-        width: 55px;
     }
     
     .nav-section {

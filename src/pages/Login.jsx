@@ -120,7 +120,6 @@ export default function Login() {
 
           <form onSubmit={handleLogin}>
             <div className="input-group">
-              <img src={emailIcon} className="icon" alt="email" />
               <input
                 type="email"
                 placeholder="E-mail"
@@ -131,7 +130,7 @@ export default function Login() {
             </div>
 
             <div className="input-group">
-              <img src={senhaIcon} className="icon" alt="senha" />
+              
               <input
                 type={mostrarSenha ? "text" : "password"}
                 placeholder="Senha"

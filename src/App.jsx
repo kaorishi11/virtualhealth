@@ -19,6 +19,7 @@ import DicasMe from "./pages/DicasMe";
 import ConsultaMe from "./pages/ConsultaMe";
 import PerfilMe from "./pages/PerfilMe";
 import TeleconsultaPa from "./pages/TeleconsultaPa";
+import AdminSidebar from "./components/AdminSidebar";
 
 export default function App() {
   return (

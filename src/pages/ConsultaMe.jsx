@@ -198,40 +198,42 @@ export default function ConsultaMe() {
     return (
         <div className="consulta-container">
             {/* SIDEBAR */}
-            <div className="navbar">
-                <div className="nav-header">
-                    <img src={logo} alt="Logo" className="logoperfil" />
-                </div>
+<div className="navbar">
+    <div className="nav-header">
+        <img src={logo} alt="Logo" className="logoperfil" />
+    </div>
 
-                <div className="medico-section">
-                    <img src={doutora} alt="Dra. Marta" className="medico-img" />
-                    <div className="medico-info">
-                        <h4>Dra. Marta</h4>
-                        <p>Dentista</p>
-                    </div>
-                </div>
+    <div className="medico-section">
+        <img src={doutora} alt="Dra. Marta" className="medico-img" />
+        <div className="medico-info">
+            <h4>Dra. Marta</h4>
+            <p>Dentista</p>
+        </div>
+    </div>
 
-                <div className="nav-section">
-                    <h3>GERAL</h3>
-                    <ul>
-                        <li><Link to="/home-medico">Visão geral</Link></li>
-                        <li><Link to="/agenda">Minha agenda</Link></li>
-                    </ul>
-                </div>
+    <div className="nav-section">
+        <h3>GERAL</h3>
+        <ul>
+            <li><Link to="/home-medico">Visão geral</Link></li>
+            <li><Link to="/agenda">Minha agenda</Link></li>
+        </ul>
+    </div>
 
-                <div className="nav-section">
-                    <h3>ATENDIMENTO</h3>
-                    <ul>
-                        <li className="active"><Link to="/consulta">Iniciar consulta</Link></li>
-                        <li><Link to="/dicas">Dicas de saúde</Link></li>
-                    </ul>
-                </div>
+    <div className="nav-section">
+        <h3>ATENDIMENTO</h3>
+        <ul>
+            <li className="active"><Link to="/consulta">Iniciar consulta</Link></li>
+            <li><Link to="/dicas">Dicas de saúde</Link></li>
+        </ul>
+    </div>
 
-                <div className="logout">
-                    <Link to="/">Desconectar</Link>
-                </div>
-            </div>
+    {/* ESPAÇADOR FLEXÍVEL - EMPURRA O LOGOUT PARA O FINAL */}
+    <div className="spacer"></div>
 
+    <div className="logout">
+        <Link to="/">Desconectar</Link>
+    </div>
+</div>
             {/* CONTEÚDO PRINCIPAL */}
             <div className="main-content">
                 <div className="consulta-header">
@@ -375,7 +377,6 @@ export default function ConsultaMe() {
             {/* TOAST DE NOTIFICAÇÃO */}
             {toast && (
                 <div className="toast-notification success">
-                    <span className="toast-icon">{toast.type === 'success' ? '✓' : '📞'}</span>
                     <span>{toast.message}</span>
                 </div>
             )}
