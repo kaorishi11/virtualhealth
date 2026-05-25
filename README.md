@@ -36,4 +36,5 @@ Pagamento via PIX (simulado)
 Dashboard administrativo
 Gerenciamento de usuários e profissionais
 
-
+###API DO CHATBOT:
+local pego: https://openrouter.ai/workspaces/default/keys
