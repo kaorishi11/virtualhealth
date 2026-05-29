@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2';
+import { supabase } from '../services/supabase';
 
 import login from '../images/login.png';
 import paciente from '../images/paciente.png';
 import medico from '../images/medico.png';
-import emailIcon from '../images/email.png';
-import senhaIcon from '../images/cadeado.png';
 import olhoAberto from '../images/olho.png';
 import olhoFechado from '../images/fechado.png';
 
@@ -25,64 +25,148 @@ export default function Login() {
   // Carregar dados salvos ao iniciar
   useEffect(() => {
     try {
-      const savedEmail = localStorage.getItem("savedEmail");
-      const savedSenha = localStorage.getItem("savedSenha");
-      const savedTipo = localStorage.getItem("savedTipo");
-      const lembrarSalvo = localStorage.getItem("lembrar");
+      const savedEmail =
+        localStorage.getItem("savedEmail");
+
+      const lembrarSalvo =
+        localStorage.getItem("lembrar");
 
       if (lembrarSalvo === "true") {
-        if (savedEmail) setEmail(savedEmail);
-        if (savedSenha) setSenha(savedSenha);
-        if (savedTipo) setTipo(savedTipo);
+        if (savedEmail) {
+          setEmail(savedEmail);
+        }
+
         setLembrar(true);
       }
     } catch (error) {
-      console.error("Erro ao carregar dados:", error);
+      console.error(
+        "Erro ao carregar dados:",
+        error
+      );
     }
   }, []);
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
 
     try {
-      // Salvar dados se "lembrar de mim" estiver marcado
+      // lembrar de mim
       if (lembrar) {
         localStorage.setItem("savedEmail", email);
-        localStorage.setItem("savedSenha", senha);
         localStorage.setItem("savedTipo", tipo);
         localStorage.setItem("lembrar", "true");
       } else {
         localStorage.removeItem("savedEmail");
-        localStorage.removeItem("savedSenha");
         localStorage.removeItem("savedTipo");
         localStorage.setItem("lembrar", "false");
       }
-    } catch (error) {
-      console.error("Erro ao salvar dados:", error);
-    }
 
-    if (email === "admin@gmail.com" && senha === "123456") {
-      navigate("/admin");
-      return;
-    }
+      // LOGIN SUPABASE AUTH
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password: senha,
+        });
 
-    if (tipo === "paciente") {
-      navigate("/home-paciente");
-    } else {
-      navigate("/home-medico");
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Login inválido',
+          text: 'Email ou senha inválidos',
+          confirmButtonText: 'Tentar novamente',
+        });
+        return;
+      }
+
+      const user = data.user;
+
+      // BUSCAR PERFIL
+      const {
+        data: usuario,
+        error: usuarioError,
+      } = await supabase
+        .from("usuarios")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (usuarioError || !usuario) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro',
+          text: 'Perfil do usuário não encontrado',
+          confirmButtonText: 'Tentar novamente',
+        });
+        return;
+      }
+
+      // REDIRECIONAMENTO AUTOMÁTICO
+      switch (usuario.tipo) {
+        case "admin":
+          navigate("/admin");
+          break;
+
+        case "medico":
+          navigate("/home-medico");
+          break;
+
+        case "paciente":
+          navigate("/home-paciente");
+          break;
+
+        default:
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Tipo de usuário inválido',
+            confirmButtonText: 'Tentar novamente',
+          });
+      }
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: 'Erro ao fazer login',
+        confirmButtonText: 'Tentar novamente',
+      });
     }
   }
 
   function esqueciSenha() {
     setMostrarModal(true);
   }
-  function enviarRecuperacao(){
-    if(!emailRecuperacao){
-      alert("Digite um e-mail");
+  async function enviarRecuperacao() {
+    if (!emailRecuperacao) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo obrigatório',
+        text: 'Digite um e-mail',
+      });
       return;
     }
-
-    alert(`Instruções enviadas para ${emailRecuperacao}`);
+    const { error } =
+      await supabase.auth.resetPasswordForEmail(emailRecuperacao,
+        {
+          redirectTo:`${window.location.origin}/redefinir-senha`
+        }
+      );
+    if (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro ao enviar e-mail',
+        text: error.message,
+        confirmButtonText: 'Tentar novamente',
+      });
+      return;
+    }
+    Swal.fire({
+      icon: 'success',
+      title: 'E-mail enviado',
+      text:
+        'Enviamos um link de recuperação para seu e-mail.',
+    });
     setMostrarModal(false);
     setEmailRecuperacao("");
   }
@@ -155,8 +239,6 @@ export default function Login() {
                   setLembrar(e.target.checked);
                   if (!e.target.checked) {
                     localStorage.removeItem("savedEmail");
-                    localStorage.removeItem("savedSenha");
-                    localStorage.removeItem("savedTipo");
                     localStorage.setItem("lembrar", "false");
                   }
                 }}

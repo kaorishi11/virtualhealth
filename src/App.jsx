@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
+import RedefinirSenha from './pages/RedefinirSenha';
+
 import HomePa from './pages/HomePa';
 import Clinicas from './pages/Clinicas';
 import Contato from "./pages/Contato";
@@ -8,17 +10,21 @@ import Chat from './pages/Chat';
 import ConfigPerfil from "./pages/ConfigPerfil";
 import AgendaPerfil from "./pages/AgendaPerfil";
 import NotiPerfil from "./pages/NotiPerfil";
+
 import Admin from "./pages/Admin";
 import AdmUsuario from "./pages/AdmUsuario";
 import AdmProfissional from "./pages/AdmProfissional";
 import AdmConsulta from "./pages/AdmConsulta";
 import AdmMensagem from "./pages/AdmMensagem";
+
 import HomeMe from "./pages/HomeMe";
 import AgendaMe from "./pages/AgendaMe";
 import DicasMe from "./pages/DicasMe";
 import ConsultaMe from "./pages/ConsultaMe";
 import PerfilMe from "./pages/PerfilMe";
+
 import TeleconsultaPa from "./pages/TeleconsultaPa";
+
 import AdminSidebar from "./components/AdminSidebar";
 
 export default function App() {
@@ -27,6 +33,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />}/>
+
         <Route path="/home-paciente" element={< HomePa/>} />
         <Route path="/clinicas" element={< Clinicas/>} />
         <Route path="/contato" element={< Contato/>} />
