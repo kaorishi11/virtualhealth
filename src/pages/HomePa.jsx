@@ -1,5 +1,7 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "../services/supabase";
+
 
 import logo from '../images/logo.png';
 import email from '../images/login (2).png';
@@ -7,9 +9,6 @@ import cell from '../images/cell.png';
 import escudo from '../images/escudo.png';
 import robo from '../images/robo.png';
 import msg from '../images/msg.png';
-
-import doutora from '../images/Dra. Beatriz.png';
-import doutor from '../images/Dr. Lucas.png';
 
 import video from '../images/video.mp4';
 import home from '../images/homepac.png';
@@ -25,119 +24,167 @@ import tempo from '../images/tempo.png';
 import '../styles/HomePa.css';
 
 export default function HomePa() {
-    const [openIndex, setOpenIndex] = useState(null);
-    
-    // STATES DAS NOTIFICAÇÕES
     const [showNotifications, setShowNotifications] = useState(false);
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            title: "Nova consulta agendada",
-            message: "Sua consulta com Dr. Lucas Ferraz foi agendada para amanhã às 14h.",
-            time: "Há 2 horas",
-            read: false,
-            type: "consulta"
-        },
-        {
-            id: 2,
-            title: "Link para teleconsulta",
-            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
-            time: "2 min atrás",
-            read: true,
-            type: "teleconsulta"
-        },
-        {
-            id: 3,
-            title: "Confirme sua consulta",
-            message: "Por favor, confirme sua presença na consulta de amanhã.",
-            time: "Ontem",
-            read: true,
-            type: "lembrete"
-        },
-        {
-            id: 4,
-            title: "Novo especialista disponível",
-            message: "Agora você pode agendar consultas com Drª Ana Souza - Neurologista.",
-            time: "2 dias atrás",
-            read: true,
-            type: "sistema"
-        }
-    ]);
+    const [usuario, setUsuario] = useState(null);
+    const [openIndex, setOpenIndex] = useState(null);
+    const [notifications, setNotifications] = useState([]);
+    const [faqs, setFaqs] = useState([]);
+    const [dicas, setDicas] = useState([]);
 
     const [indexDica, setIndexDica] = useState(0);
+
     const nextDica = () => {
-        setIndexDica((prev) => (prev === dicas.length - 1 ? 0 : prev + 1));
+        setIndexDica((prev) =>
+            prev >= dicas.length - 2
+                ? 0
+                : prev + 1
+        );
     };
     const prevDica = () => {
-        setIndexDica((prev) => (prev === 0 ? dicas.length - 1 : prev - 1));
+        setIndexDica((prev) =>
+            prev === 0
+                ? Math.max(dicas.length - 2, 0)
+                : prev - 1
+        );
     };
-    
-    const dicas = [
-        {
-            texto: "Manter vínculos sociais ativos contribui para o bem-estar psicológico. Escrever pensamentos e sentimentos pode ser uma forma eficaz de organizar emoções e aliviar tensões. Buscar apoio profissional é sempre a melhor escolha.",
-            nome: "Dra. Beatriz Lacerda - Psicóloga",
-            img: doutora,
-        },
-        {
-            texto: "Atividades de fortalecimento muscular duas vezes por semana ajudam a preservar massa magra e prevenir lesões. Respeitar os limites do próprio corpo e uma alimentação equilibrada são fundamentais.",
-            nome: "Dr. Lucas Ferraz - Medicina do Esporte",
-            img: doutor,
-        },
-        {
-            texto: "A qualidade do sono impacta diretamente a memória, concentração e equilíbrio emocional. Manter uma rotina regular, evitar telas antes de dormir e criar um ambiente tranquilo são hábitos essenciais para uma boa saúde neurológica.",
-            nome: "Dra. Ana Souza - Neurologista",
-            img: doutora,
-        }
-    ];
 
     const [openFaq, setOpenFaq] = useState(null);
     const navigate = useNavigate();
-    
-    const faqs = [
-        {
-            question: "O que é a Virtual Health?",
-            answer: "A Virtual Health é uma plataforma de telemedicina que conecta pacientes a médicos especialistas de forma rápida, segura e acessível, 24 horas por dia."
-        },
-        {
-            question: "A Virtual Health substitui um médico presencial?",
-            answer: "A Virtual Health complementa o atendimento médico, oferecendo consultas online para casos que não necessitam de exames físicos presenciais. Em casos de emergência, procure um serviço presencial."
-        },
-        {
-            question: "Preciso pagar para usar?",
-            answer: "Sim, as consultas têm um valor acessível a partir de R$60,00. Não há mensalidade, você paga apenas pelas consultas que realizar."
-        },
-        {
-            question: "Posso usar para qualquer sintoma?",
-            answer: "Nossos médicos podem ajudar com diversos sintomas. Porém, em casos de emergência (dor no peito, falta de ar, etc), procure imediatamente um serviço de emergência presencial."
-        },
-        {
-            question: "Como funciona o agendamento?",
-            answer: "Você pode agendar sua consulta diretamente pelo site, escolhendo o especialista, data e horário disponível. O link da teleconsulta será enviado por email."
-        },
-        {
-            question: "Meus dados estão seguros?",
-            answer: "Sim! Seguimos a LGPD (Lei Geral de Proteção de Dados) e utilizamos criptografia para proteger todas as suas informações."
+
+    useEffect(() => {
+        async function carregarDados() {
+
+            const {
+                data: { user }
+            } = await supabase.auth.getUser();
+
+            if (!user) {
+                navigate("/");
+                return;
+            }
+
+            setUsuario(user);
+
+            await buscarNotificacoes(user.id);
+
+            await buscarFaqs();
+            await buscarDicas();
         }
-    ];
+
+        carregarDados();
+    }, []);
+
     
+    async function buscarNotificacoes(userId) {
+        const { data, error } = await supabase
+            .from("notificacoes")
+            .select("*")
+            .eq("usuario_id", userId)
+            .order("created_at", {
+            ascending: false
+            });
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        setNotifications(data);
+    }
+
+    async function buscarFaqs() {
+        const { data, error } = await supabase
+            .from("faq")
+            .select("*");
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        setFaqs(data);
+    }
+
+    async function buscarDicas() {
+        const { data, error } = await supabase
+            .from("dicas")
+            .select(`
+                id,
+                titulo,
+                texto,
+                usuarios (
+                    nome,
+                    especialidade,
+                    foto
+                )
+            `)
+            .order("created_at", {
+                ascending: false
+            });
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        const dicasFormatadas = data.map(item => ({
+        titulo: item.titulo,
+        texto: item.texto,
+
+        nome:
+            item.usuarios?.nome ||
+            "Médico",
+
+        especialidade:
+            item.usuarios?.especialidade ||
+            "",
+
+        imagem:
+            item.usuarios?.foto ||
+            doutor
+    }));
+
+        setDicas(dicasFormatadas);
+    }
+
     function toggleFaq(index) {
         setOpenFaq(openFaq === index ? null : index);
     }
 
     // FUNÇÕES DAS NOTIFICAÇÕES
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const unreadCount = notifications.filter(n => !n.lida).length;
 
-    const handleNotificationClick = (id) => {
-        setNotifications(prev => 
-            prev.map(notif => 
-                notif.id === id ? { ...notif, read: true } : notif
+    const handleNotificationClick = async (id) => {
+        await supabase
+            .from("notificacoes")
+            .update({
+                lida: true
+            })
+            .eq("id", id);
+
+        setNotifications(prev =>
+            prev.map(notif =>
+                notif.id === id
+                    ? {
+                        ...notif,
+                        lida: true
+                    }
+                    : notif
             )
         );
     };
 
-    const markAllAsRead = () => {
-        setNotifications(prev => 
-            prev.map(notif => ({ ...notif, read: true }))
+    const markAllAsRead = async () => {
+        await supabase
+            .from("notificacoes")
+            .update({ lida: true })
+            .eq("usuario_id", usuario.id);
+
+        setNotifications(prev =>
+            prev.map(notif => ({
+                ...notif,
+                lida: true
+            }))
         );
     };
 
@@ -256,7 +303,7 @@ export default function HomePa() {
                                 notifications.map((notif) => (
                                     <div 
                                         key={notif.id} 
-                                        className={`notification-item ${!notif.read ? 'unread' : ''}`}
+                                        className={`notification-item ${!notif.lida ? 'unread' : ''}`}
                                         onClick={() => handleNotificationClick(notif.id)}
                                     >
                                         <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>
@@ -265,7 +312,10 @@ export default function HomePa() {
                                         <div className="notification-content">
                                             <div className="notification-title">{notif.title}</div>
                                             <div className="notification-message">{notif.message}</div>
-                                            <div className="notification-time">{notif.time}</div>
+                                            <div className="notification-time">
+                                                {new Date(notif.created_at)
+                                                    .toLocaleDateString("pt-BR")}
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -358,16 +408,21 @@ export default function HomePa() {
                 <div className="experts-cards">
                     {dicas.slice(indexDica, indexDica + 2).map((item, i) => (
                         <div className="expert-card" key={i}>
-                            <p className="expert-text">{item.texto}</p>
+
+                            <h3 className="expert-title">
+                                {item.titulo}
+                            </h3>
+                            <p className="expert-text">
+                                {item.texto}
+                            </p>
                             
                             <div className="expert-footer">
                                 <div className="perfil">
-                                    <img src={item.img} />
-                                    <div>
-                                        <strong>{item.nome}</strong>
-                                    </div>
+                                    <img src={item.imagem} />
+                                    <strong>
+                                        {item.nome} - {item.especialidade}
+                                    </strong>
                                 </div>
-                                <div className="stars">★★★★★</div>
                             </div>
                         </div>
                     ))}
@@ -392,11 +447,11 @@ export default function HomePa() {
                                 onClick={() => toggleFaq(index)}
                             >
                                 <div className="faq-question">
-                                    {faq.question}
+                                    {faq.pergunta}
                                     <span className="plus-icon">+</span>
                                 </div>
                                 <div className="faq-answer">
-                                    {faq.answer}
+                                    {faq.resposta}
                                 </div>
                             </div>
                         ))}
@@ -428,7 +483,7 @@ export default function HomePa() {
                     <ul>
                         <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
                         <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
+                        <li><img src={gmail} className="certo"/> Email: virtualhealth@gmail.com</li>
                         <li><img src={tempo} className="certo"/> Horário: 24h</li>
                     </ul>
                 </div>

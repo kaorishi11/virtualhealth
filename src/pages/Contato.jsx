@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabase";
+
 import "../styles/Contato.css";
 
 // Imagens
@@ -17,46 +19,39 @@ export default function Contato() {
     const navigate = useNavigate();
 
     const [nome, setNome] = useState("");
+    const [email, setEmail] = useState("");
     const [mensagem, setMensagem] = useState("");
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
 
     // STATES DAS NOTIFICAÇÕES
     const [showNotifications, setShowNotifications] = useState(false);
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            title: "Nova consulta agendada",
-            message: "Sua consulta com Dr. Lucas Ferraz foi agendada para amanhã às 14h.",
-            time: "Há 2 horas",
-            read: false,
-            type: "consulta"
-        },
-        {
-            id: 2,
-            title: "Link para teleconsulta",
-            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
-            time: "2 min atrás",
-            read: true,
-            type: "teleconsulta"
-        },
-        {
-            id: 3,
-            title: "Confirme sua consulta",
-            message: "Por favor, confirme sua presença na consulta de amanhã.",
-            time: "Ontem",
-            read: true,
-            type: "lembrete"
-        },
-        {
-            id: 4,
-            title: "Novo especialista disponível",
-            message: "Agora você pode agendar consultas com Drª Ana Souza - Neurologista.",
-            time: "2 dias atrás",
-            read: true,
-            type: "sistema"
-        }
-    ]);
+    const [notifications, setNotifications] = useState([]);
+
+    useEffect(() => {
+    buscarUsuario();
+}, []);
+
+async function buscarUsuario() {
+    const {
+        data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    setEmail(user.email || "");
+
+    // busca nome na tabela usuarios
+    const { data } = await supabase
+        .from("usuarios")
+        .select("nome")
+        .eq("id", user.id)
+        .single();
+
+    if (data) {
+        setNome(data.nome);
+    }
+}
 
     // FUNÇÕES DAS NOTIFICAÇÕES
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -141,19 +136,32 @@ export default function Contato() {
         }, 3000);
     };
 
-    const handleSubmit = () => {
-        if (!nome || !mensagem) {
-            showToastMessage("Preencha todos os campos!", true);
-            return;
-        }
+    const handleSubmit = async () => {
+    if (!mensagem) {
+        showToastMessage("Digite uma mensagem!", true);
+        return;
+    }
 
-        // Animação de sucesso
-        showToastMessage("Mensagem enviada com sucesso!");
-        
-        // Limpar campos
-        setNome("");
-        setMensagem("");
-    };
+    const { error } = await supabase
+        .from("contatos")
+        .insert([
+            {
+                nome,
+                email,
+                mensagem
+            }
+        ]);
+
+    if (error) {
+        console.error(error);
+        showToastMessage("Erro ao enviar mensagem!", true);
+        return;
+    }
+
+    showToastMessage("Mensagem enviada com sucesso!");
+
+    setMensagem("");
+};
 
     return (
         <div>
@@ -269,6 +277,13 @@ export default function Contato() {
                         value={nome}
                         onChange={(e) => setNome(e.target.value)}
                         placeholder="Digite seu nome completo"
+                    />
+
+                    <label>EMAIL</label>
+                    <input
+                        type="email"
+                        value={email}
+                        readOnly
                     />
 
                     <label>SUA MENSAGEM</label>

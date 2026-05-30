@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabase";
+
 import "../styles/Clinicas.css";
 
 // Imagens
@@ -30,41 +32,9 @@ export default function Clinicas() {
     const [activeTab, setActiveTab] = useState({});
     
     // STATES DAS NOTIFICAÇÕES
+    const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            title: "Nova consulta agendada",
-            message: "Sua consulta com Dr. Lucas Ferraz foi agendada para amanhã às 14h.",
-            time: "Há 2 horas",
-            read: false,
-            type: "consulta"
-        },
-        {
-            id: 2,
-            title: "Link para teleconsulta",
-            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
-            time: "2 min atrás",
-            read: true,
-            type: "teleconsulta"
-        },
-        {
-            id: 3,
-            title: "Confirme sua consulta",
-            message: "Por favor, confirme sua presença na consulta de amanhã.",
-            time: "Ontem",
-            read: true,
-            type: "lembrete"
-        },
-        {
-            id: 4,
-            title: "Novo especialista disponível",
-            message: "Agora você pode agendar consultas com Drª Ana Souza - Neurologista.",
-            time: "2 dias atrás",
-            read: true,
-            type: "sistema"
-        }
-    ]);
+    const [doctors, setDoctors] = useState([]);
     
     // States para Teleconsulta (com pagamento)
     const [selectedDateTele, setSelectedDateTele] = useState({});
@@ -84,6 +54,104 @@ export default function Clinicas() {
     const [selectedHourPresencial, setSelectedHourPresencial] = useState({});
     const [showConfirmationPresencial, setShowConfirmationPresencial] = useState(false);
     const [confirmationDetailsPresencial, setConfirmationDetailsPresencial] = useState({});
+
+    useEffect(() => {
+        buscarMedicos();
+    }, []);
+
+   async function buscarMedicos() {
+    const { data, error } = await supabase
+        .from("usuarios")
+        .select(`
+            id,
+            nome,
+            especialidade,
+            foto,
+            clinica_id,
+            clinicas (
+                nome,
+                logradouro,
+                bairro,
+                cidade,
+                estado
+            )
+        `)
+        .eq("tipo", "medico");
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const medicosFormatados =
+        await Promise.all(
+            data.map(async (medico) => {
+
+                let lat = -23.1005;
+                let lng = -45.7072;
+
+                if (medico.clinicas) {
+                    const endereco = `
+                        ${medico.clinicas.logradouro},
+                        ${medico.clinicas.bairro},
+                        ${medico.clinicas.cidade},
+                        ${medico.clinicas.estado}
+                    `;
+
+                    try {
+                        const response =
+                            await fetch(
+                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`
+                            );
+
+                        const geoData =
+                            await response.json();
+
+                        if (geoData.length > 0) {
+                            lat = Number(geoData[0].lat);
+                            lng = Number(geoData[0].lon);
+                        }
+                    } catch (err) {
+                        console.error(
+                            "Erro ao buscar localização:",
+                            err
+                        );
+                    }
+                }
+
+                return {
+                    id: medico.id,
+
+                    name: medico.nome,
+
+                    specialty:
+                        medico.especialidade ||
+                        "Especialista",
+
+                    rating: 4.9,
+                    reviews: 38,
+
+                    enderecoCompleto:
+                        medico.clinicas
+                            ? `${medico.clinicas.nome} - ${medico.clinicas.logradouro}, ${medico.clinicas.bairro}, ${medico.clinicas.cidade} - ${medico.clinicas.estado}`
+                            : "Clínica não informada",
+
+                    price: 90,
+
+                    avatar:
+                        medico.foto ||
+                        "https://placehold.co/300x300",
+
+                    coordinates: {
+                        lat,
+                        lng
+                    }
+                };
+            })
+        );
+
+    setDoctors(medicosFormatados);
+}
 
     // FUNÇÕES DAS NOTIFICAÇÕES
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -158,42 +226,6 @@ export default function Clinicas() {
             default: return 'sistema';
         }
     };
-
-    const doctors = [
-        {
-            id: 1,
-            name: "Dra Marta",
-            specialty: "Dentista",
-            rating: 4.9,
-            reviews: 38,
-            enderecoCompleto: "Clínica Sul – Santa Casa São José dos Campos",
-            price: 90.00,
-            avatar: marta,
-            coordinates: { lat: -23.1896, lng: -45.8841 }
-        },
-        {
-            id: 2,
-            name: "Dr Andrey",
-            specialty: "Oftalmologista",
-            rating: 4.9,
-            reviews: 38,
-            enderecoCompleto: "Clínica Vision Care",
-            price: 60.00,
-            avatar: andrey,
-            coordinates: { lat: -23.1847, lng: -45.8865 }
-        },
-        {
-            id: 3,
-            name: "Dra Sheila",
-            specialty: "Ginecologista",
-            rating: 4.9,
-            reviews: 38,
-            enderecoCompleto: "R. Cel. João Dias Guimarães - Centro, Caçapava",
-            price: 60.00,
-            avatar: sheila,
-            coordinates: { lat: -23.1005, lng: -45.7072 }
-        }
-    ];
 
     const filteredDoctors = doctors.filter(
         (doc) =>
@@ -546,7 +578,13 @@ export default function Clinicas() {
                                             <div className="map-placeholder">
                                                 <iframe
                                                     title={`map-${doc.id}`}
-                                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.015},${doc.coordinates.lat - 0.015},${doc.coordinates.lng + 0.015},${doc.coordinates.lat + 0.015}&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
+                                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${
+                                                    doc.coordinates.lng - 0.015},${
+                                                    doc.coordinates.lat - 0.015},${
+                                                    doc.coordinates.lng + 0.015},${
+                                                    doc.coordinates.lat + 0.015}&marker=${
+                                                    doc.coordinates.lat},${
+                                                    doc.coordinates.lng}`}
                                                 />
                                             </div>
                                         </div>

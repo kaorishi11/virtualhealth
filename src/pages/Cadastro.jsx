@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { supabase } from '../services/supabase';
@@ -15,6 +15,24 @@ export default function Cadastro() {
   const [tipo, setTipo] = useState("paciente");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    buscarClinicas();
+  }, []);
+
+  async function buscarClinicas() {
+    const { data, error } = await supabase
+      .from("clinicas")
+      .select("*")
+      .order("nome");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setClinicas(data);
+  }
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -33,6 +51,9 @@ export default function Cadastro() {
   const [universidade, setUniversidade] = useState("");
 
   const [anoFormacao, setAnoFormacao] = useState("");
+
+  const [clinicas, setClinicas] = useState([]);
+  const [clinicaId, setClinicaId] = useState("");
 
   const [logradouro, setLogradouro] =  useState("");
   const [bairro, setBairro] = useState("");
@@ -161,6 +182,11 @@ export default function Cadastro() {
               ano_formacao:
                 tipo === "medico"
                   ? Number(anoFormacao)
+                  : null,
+
+              clinica_id:
+                tipo === "medico"
+                  ? clinicaId || null
                   : null,
             },
           ]);
@@ -468,6 +494,26 @@ export default function Cadastro() {
                     required
                   />
                 </div>
+
+                <select
+                    value={clinicaId}
+                    onChange={(e) =>
+                        setClinicaId(e.target.value)
+                    }
+                >
+                    <option value="">
+                        Nenhuma clínica
+                    </option>
+
+                    {clinicas.map((clinica) => (
+                        <option
+                            key={clinica.id}
+                            value={clinica.id}
+                        >
+                            {clinica.nome}
+                        </option>
+                    ))}
+                </select>
               </>
             )}
 
