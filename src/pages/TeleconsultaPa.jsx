@@ -1,14 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from '../lib/supabase';
+import VideoCall from '../components/VideoCall';
 
 import logo from '../images/logo.png';
 import '../styles/TeleconsultaPa.css';
 
 export default function TeleconsultaPa() {
     const navigate = useNavigate();
-    const [linkConsulta, setLinkConsulta] = useState("");
-    const [emChamada, setEmChamada] = useState(false);
+    const [codigoBusca, setCodigoBusca] = useState("");
+    const [roomUrl, setRoomUrl] = useState(null);
+    const [emChamadaVideo, setEmChamadaVideo] = useState(false);
     const [toast, setToast] = useState(null);
+    const [carregando, setCarregando] = useState(false);
     
     // Estados das notificações
     const [showNotifications, setShowNotifications] = useState(false);
@@ -39,18 +43,65 @@ export default function TeleconsultaPa() {
         }
     ]);
 
-    // Estados da câmera
-    const [cameraAtiva, setCameraAtiva] = useState(false);
-    const [microfoneAtivo, setMicrofoneAtivo] = useState(true);
-    const [cameraPermissao, setCameraPermissao] = useState(false);
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
-
     const unreadCount = notifications.filter(n => !n.read).length;
 
     const showToast = (message, isError = false) => {
         setToast({ message, isError });
         setTimeout(() => setToast(null), 3000);
+    };
+
+    const buscarConsultaPorCodigo = async (codigo) => {
+        setCarregando(true);
+        try {
+            const { data, error } = await supabase
+                .from('consulta_salas')
+                .select('sala_url, status, medico_id')
+                .eq('codigo', codigo)
+                .single();
+
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    showToast('Código inválido! Verifique e tente novamente.', true);
+                } else {
+                    throw error;
+                }
+                return false;
+            }
+            
+            if (data.status === 'aguardando') {
+                setRoomUrl(data.sala_url);
+                return true;
+            } else if (data.status === 'encerrada') {
+                showToast('Esta consulta já foi encerrada!', true);
+                return false;
+            } else {
+                showToast('Esta consulta já está em andamento!', true);
+                return false;
+            }
+        } catch (error) {
+            console.error('Erro ao buscar consulta:', error);
+            showToast('Erro ao conectar. Tente novamente.', true);
+            return false;
+        } finally {
+            setCarregando(false);
+        }
+    };
+
+    const handleEntrarComCodigo = async () => {
+        if (!codigoBusca.trim()) {
+            showToast('Digite o código da consulta!', true);
+            return;
+        }
+
+        if (codigoBusca.length !== 6 || !/^\d+$/.test(codigoBusca)) {
+            showToast('Código inválido! Digite 6 dígitos numéricos.', true);
+            return;
+        }
+
+        const encontrada = await buscarConsultaPorCodigo(codigoBusca);
+        if (encontrada) {
+            setEmChamadaVideo(true);
+        }
     };
 
     const handleNotificationClick = (id) => {
@@ -71,12 +122,11 @@ export default function TeleconsultaPa() {
         setShowNotifications(false);
     };
 
-    // Ícones SVG para cada tipo de notificação
     const getTypeIcon = (type) => {
         switch(type) {
             case 'consulta':
                 return (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M22 12h-4l-3 9H9l-3-9H2"/>
                         <path d="M5 3h14"/>
                         <path d="M12 3v9"/>
@@ -84,28 +134,14 @@ export default function TeleconsultaPa() {
                 );
             case 'lembrete':
                 return (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10"/>
                         <polyline points="12 6 12 12 16 14"/>
                     </svg>
                 );
-            case 'teleconsulta':
-                return (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="4" width="20" height="16" rx="2"/>
-                        <path d="m9 8 5 4-5 4V8z"/>
-                    </svg>
-                );
-            case 'sistema':
-                return (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                );
             default:
                 return (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <circle cx="12" cy="12" r="10"/>
                         <line x1="12" y1="8" x2="12" y2="12"/>
                         <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -118,106 +154,8 @@ export default function TeleconsultaPa() {
         switch(type) {
             case 'consulta': return 'consulta';
             case 'lembrete': return 'lembrete';
-            case 'teleconsulta': return 'teleconsulta';
-            case 'sistema': return 'sistema';
             default: return 'sistema';
         }
-    };
-
-    // Iniciar câmera
-    const iniciarCamera = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: true, 
-                audio: true 
-            });
-            
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-            
-            streamRef.current = stream;
-            setCameraAtiva(true);
-            setMicrofoneAtivo(true);
-            setCameraPermissao(true);
-            
-        } catch (error) {
-            console.error('Erro ao acessar câmera:', error);
-            setCameraPermissao(false);
-            setCameraAtiva(false);
-            
-            if (error.name === 'NotAllowedError') {
-                showToast('Permissão negada. Por favor, permita acesso à câmera.', true);
-            } else {
-                showToast('Não foi possível acessar a câmera.', true);
-            }
-        }
-    };
-
-    const desligarCamera = () => {
-        if (streamRef.current) {
-            const videoTrack = streamRef.current.getVideoTracks()[0];
-            if (videoTrack) {
-                videoTrack.enabled = false;
-                setCameraAtiva(false);
-            }
-        }
-    };
-
-    const ligarCamera = () => {
-        if (streamRef.current) {
-            const videoTrack = streamRef.current.getVideoTracks()[0];
-            if (videoTrack) {
-                videoTrack.enabled = true;
-                setCameraAtiva(true);
-            }
-        } else {
-            iniciarCamera();
-        }
-    };
-
-    const alternarCamera = () => {
-        if (cameraAtiva) {
-            desligarCamera();
-        } else {
-            ligarCamera();
-        }
-    };
-
-    const alternarMicrofone = () => {
-        if (streamRef.current) {
-            const audioTrack = streamRef.current.getAudioTracks()[0];
-            if (audioTrack) {
-                audioTrack.enabled = !microfoneAtivo;
-                setMicrofoneAtivo(!microfoneAtivo);
-            }
-        }
-    };
-
-    const encerrarChamada = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-        }
-        setCameraAtiva(false);
-        setEmChamada(false);
-        showToast('Chamada encerrada');
-    };
-
-    const handleEntrarConsulta = () => {
-        if (!linkConsulta.trim()) {
-            showToast('Por favor, insira o link da consulta!', true);
-            return;
-        }
-        
-        if (!linkConsulta.startsWith('http://') && !linkConsulta.startsWith('https://')) {
-            showToast('Por favor, insira um link válido (começando com http:// ou https://)', true);
-            return;
-        }
-        
-        setEmChamada(true);
-        iniciarCamera();
-        showToast('Conectado à consulta! Ativando câmera...');
     };
 
     const consultaInfo = {
@@ -245,7 +183,7 @@ export default function TeleconsultaPa() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
                         <div className="notification-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                             </svg>
@@ -299,7 +237,6 @@ export default function TeleconsultaPa() {
                                 ))
                             ) : (
                                 <div className="no-notifications">
-                                    <div className="no-notifications-icon"></div>
                                     <p>Nenhuma notificação no momento</p>
                                 </div>
                             )}
@@ -313,7 +250,7 @@ export default function TeleconsultaPa() {
                 <div className="teleconsulta-hero-content">
                     <div className="teleconsulta-hero-text">
                         <h1>TELECONSULTA</h1>
-                        <p>Insira o link fornecido pelo seu médico para iniciar a consulta.</p>
+                        <p>Digite o código fornecido pelo seu médico para iniciar a consulta.</p>
                     </div>
                 </div>
             </div>
@@ -321,111 +258,78 @@ export default function TeleconsultaPa() {
             {/* MAIN CONTENT */}
             <div className="main-content">
                 <div className="teleconsulta-container">
-                    <div className="section-title">
-                        <h2>ORIENTAÇÕES</h2>
-                        <hr />
-                        <p>Certifique-se de estar em um ambiente tranquilo e com boa iluminação para uma melhor experiência.</p>
-                    </div>
-
-                    <div className="teleconsulta-grid">
-                        {/* CARD PARA INSERIR O LINK */}
-                        <div className="link-card">
-                            <h2>ENTRAR NA TELECONSULTA</h2>
-                            <div className="input-group">
-                                <label>Link da consulta</label>
-                                <input 
-                                    type="text"
-                                    placeholder="https://virtualhealth.com/consulta/..."
-                                    value={linkConsulta}
-                                    onChange={(e) => setLinkConsulta(e.target.value)}
-                                    disabled={emChamada}
-                                />
+                    {!emChamadaVideo ? (
+                        <>
+                            <div className="section-title">
+                                <h2>ORIENTAÇÕES</h2>
+                                <hr />
+                                <p>Certifique-se de estar em um ambiente tranquilo e com boa iluminação para uma melhor experiência.</p>
                             </div>
-                            <button 
-                                className="btn-entrar" 
-                                onClick={handleEntrarConsulta}
-                                disabled={emChamada}
-                            >
-                                {emChamada ? "Em chamada..." : "Entrar"}
-                            </button>
-                        </div>
 
-                        {/* INFORMAÇÕES DA CONSULTA */}
-                      <div className="info-card">
-    
-    <div className="info-card-body">
-
-        {/* TÍTULO SOZINHO */}
-        <h2 className="info-title">INFORMAÇÕES DA CONSULTA</h2>
-
-        {/* CONTEÚDO */}
-        <div className="info-content">
-            <div className="info-item">
-                <span className="info-label">Médico(a):</span>
-                <span className="info-value destaque">{consultaInfo.medico}</span>
-            </div>
-
-            <div className="info-item">
-                <span className="info-label">Especialidade:</span>
-                <span className="info-value">{consultaInfo.especialidade}</span>
-            </div>
-
-            <div className="info-item">
-                <span className="info-label">Data e hora:</span>
-                <span className="info-value">{consultaInfo.data}, {consultaInfo.horario}</span>
-            </div>
-
-            <div className="info-item">
-                <span className="info-label">Motivo:</span>
-                <span className="info-value">{consultaInfo.motivo}</span>
-            </div>
-        </div>
-
-    </div>
-</div>
-</div>
-                    {/* CARD DE VÍDEO */}
-                    {emChamada && (
-                        <div className="video-card">
-                            <div className="video-container">
-                                {cameraPermissao ? (
-                                    <>
-                                        <video 
-                                            ref={videoRef} 
-                                            autoPlay 
-                                            playsInline 
-                                            muted
-                                            id="pacienteVideo"
+                            <div className="teleconsulta-grid">
+                                {/* CARD PARA INSERIR O CÓDIGO */}
+                                <div className="link-card">
+                                    <h2>ENTRAR NA TELECONSULTA</h2>
+                                    <div className="input-group">
+                                        <label>Código da consulta (6 dígitos)</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="Ex: 123456"
+                                            value={codigoBusca}
+                                            onChange={(e) => setCodigoBusca(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                            maxLength="6"
+                                            disabled={carregando}
                                         />
-                                        <div className="doctor-pip">
-                                            <video 
-                                                ref={videoRef} 
-                                                autoPlay 
-                                                playsInline 
-                                                muted
-                                            />
-                                            <div className="doctor-label">Você</div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="video-placeholder">
-                                        <div className="video-placeholder-icon"></div>
-                                        <p>Aguardando conexão com a câmera...</p>
                                     </div>
-                                )}
+                                    <button 
+                                        className="btn-entrar" 
+                                        onClick={handleEntrarComCodigo}
+                                        disabled={carregando || !codigoBusca}
+                                    >
+                                        {carregando ? "🔍 Verificando..." : "🎥 Entrar na consulta"}
+                                    </button>
+                                </div>
+
+                                {/* INFORMAÇÕES DA CONSULTA */}
+                                <div className="info-card">
+                                    <div className="info-card-body">
+                                        <h2 className="info-title">INFORMAÇÕES DA CONSULTA</h2>
+                                        <div className="info-content">
+                                            <div className="info-item">
+                                                <span className="info-label">Médico(a):</span>
+                                                <span className="info-value destaque">{consultaInfo.medico}</span>
+                                            </div>
+
+                                            <div className="info-item">
+                                                <span className="info-label">Especialidade:</span>
+                                                <span className="info-value">{consultaInfo.especialidade}</span>
+                                            </div>
+
+                                            <div className="info-item">
+                                                <span className="info-label">Data e hora:</span>
+                                                <span className="info-value">{consultaInfo.data}, {consultaInfo.horario}</span>
+                                            </div>
+
+                                            <div className="info-item">
+                                                <span className="info-label">Motivo:</span>
+                                                <span className="info-value">{consultaInfo.motivo}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="video-controls">
-                                <button className="control-btn" onClick={alternarCamera}>
-                                    {cameraAtiva ? 'Desligar Câmera' : 'Ligar Câmera'}
-                                </button>
-                                <button className="control-btn" onClick={alternarMicrofone}>
-                                    {microfoneAtivo ? 'Desligar Micro' : 'Ligar Micro'}
-                                </button>
-                                <button className="control-btn end-call" onClick={encerrarChamada}>
-                                    Encerrar
-                                </button>
-                            </div>
-                        </div>
+                        </>
+                    ) : (
+                        <VideoCall 
+                            roomUrl={roomUrl}
+                            userName="Enaldo Santos"
+                            isDoctor={false}
+                            onCallEnd={() => {
+                                setEmChamadaVideo(false);
+                                setRoomUrl(null);
+                                setCodigoBusca('');
+                            }}
+                        />
                     )}
                 </div>
             </div>
