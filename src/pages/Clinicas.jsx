@@ -410,7 +410,6 @@ export default function Clinicas() {
                                 ))
                             ) : (
                                 <div className="no-notifications">
-                                    <div className="no-notifications-icon">📭</div>
                                     <p>Nenhuma notificação no momento</p>
                                 </div>
                             )}

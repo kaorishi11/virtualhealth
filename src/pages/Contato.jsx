@@ -235,7 +235,6 @@ async function buscarUsuario() {
                                 ))
                             ) : (
                                 <div className="no-notifications">
-                                    <div className="no-notifications-icon">📭</div>
                                     <p>Nenhuma notificação no momento</p>
                                 </div>
                             )}
