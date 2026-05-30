@@ -416,52 +416,53 @@ export default function ConfigPerfil() {
     };
 
     const handleDeleteAccount = async () => {
-        const result = await Swal.fire({
-            title: 'Tem certeza?',
-            text: 'A exclusão é permanente! Todos os seus dados, agendamentos e histórico médico serão removidos.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#6366f1',
-            confirmButtonText: 'Sim, excluir minha conta',
-            cancelButtonText: 'Cancelar'
+    const result = await Swal.fire({
+        title: 'Tem certeza?',
+        text: 'A exclusão é permanente! Todos os seus dados serão removidos.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6366f1',
+        confirmButtonText: 'Sim, excluir minha conta',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        setLoading(true);
+
+        const { data, error } = await supabase.functions.invoke("delete-account");
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        await supabase.auth.signOut();
+
+        await Swal.fire({
+            icon: 'success',
+            title: 'Conta excluída!',
+            text: 'Sua conta foi removida com sucesso.',
+            confirmButtonColor: '#6366f1'
         });
 
-        if (result.isConfirmed) {
-            try {
-                setLoading(true);
-                
-                const { error } = await supabase
-                    .from('usuarios')
-                    .delete()
-                    .eq('id', user.id);
+        navigate('/');
 
-                if (error) throw error;
+    } catch (error) {
+        console.error('Erro ao excluir conta:', error);
 
-                await supabase.auth.signOut();
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Conta excluída!',
-                    text: 'Sua conta foi excluída com sucesso.',
-                    confirmButtonColor: '#6366f1'
-                });
-                
-                navigate('/');
-                
-            } catch (error) {
-                console.error('Erro ao excluir:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Erro!',
-                    text: 'Erro ao excluir conta: ' + error.message,
-                    confirmButtonColor: '#6366f1'
-                });
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro!',
+            text: error.message || 'Erro ao excluir conta',
+            confirmButtonColor: '#6366f1'
+        });
+
+    } finally {
+        setLoading(false);
+    }
+};
 
     const handleCancel = () => {
         if (user) {
@@ -489,10 +490,6 @@ export default function ConfigPerfil() {
         }
     };
 
-    if (loading && !userData.nome) {
-        return <div className="loading">Carregando perfil...</div>;
-    }
-
     return (
         <div className="perfil-container">
             <div className="navbar">
@@ -505,14 +502,14 @@ export default function ConfigPerfil() {
                     <li className="active">
                         <Link to="/perfil">
                             <img src={icon1} alt="icon"/> 
-                            Configuração de perfil
+                            Configurações
                         </Link>
                         <span className="active-indicator"></span>
                     </li>
                     <li>
                         <Link to="/agendamento">
                             <img src={icon2} alt="icon"/> 
-                            Agendamentos médicos
+                            Agendamentos
                         </Link>
                     </li>
                 </ul>

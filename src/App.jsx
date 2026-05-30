@@ -21,6 +21,7 @@ import HomeMe from "./pages/HomeMe";
 import AgendaMe from "./pages/AgendaMe";
 import DicasMe from "./pages/DicasMe";
 import ConsultaMe from "./pages/ConsultaMe";
+import Disponibilidade from './pages/Disponibilidade'
 import PerfilMe from "./pages/PerfilMe";
 
 import TeleconsultaPa from "./pages/TeleconsultaPa";
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/agenda" element={< AgendaMe/>} />
         <Route path="/consulta" element={< ConsultaMe/>} />
         <Route path="/dicas" element={< DicasMe/>} />
+        <Route path="/disponibilidade" element={< Disponibilidade/>} />
         <Route path="/perfil-medico" element={< PerfilMe/>} />
 
         <Route path="/admin" element={< Admin/>} />

@@ -7,12 +7,12 @@
 
 .dicas-container {
     display: flex;
-    min-height: 100vh;
+    min-height: 100%;
     font-family: "Segoe UI", "Inter", system-ui, sans-serif;
     background: #f0f2f5;
 }
 
-/* ========== SIDEBAR - SEM ESPAÇO BRANCO ========== */
+/* ========== SIDEBAR ========== */
 .navbar {
     width: 260px;
     min-width: 260px;
@@ -21,13 +21,12 @@
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
-    height: 100vh;
+    height: 100%;
     position: sticky;
     top: 0;
     overflow-y: auto;
 }
 
-/* Esconder scrollbar da sidebar */
 .navbar::-webkit-scrollbar {
     width: 4px;
 }
@@ -55,42 +54,76 @@
     height: auto;
 }
 
+/* Seção do médico - NOME COM QUEBRA DE LINHA */
 .medico-section {
     padding: 0 20px 20px 20px;
     margin-bottom: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
-.medico-img {
+.medico-img-wrapper {
     width: 55px;
     height: 55px;
     border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.medico-img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 2px solid #ffd966;
+}
+
+.medico-img-iniciais {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-transform: uppercase;
+}
+
+.medico-info {
+    flex: 1;
 }
 
 .medico-info h4 {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
-    margin: 0 0 4px 0;
+    margin: 0 0 2px 0;
     color: white;
+    line-height: 1.3;
+}
+
+/* Nome com quebra de linha */
+.medico-info h4 .primeiro-nome {
+    display: block;
+}
+
+.medico-info h4 .sobrenome {
+    display: block;
 }
 
 .medico-info p {
-    font-size: 11px;
+    font-size: 10px;
     opacity: 0.8;
-    margin: 0;
+    margin: 4px 0 0 0;
     background: rgba(255, 255, 255, 0.15);
     display: inline-block;
-    padding: 2px 10px;
+    padding: 2px 8px;
     border-radius: 20px;
 }
 
+/* Centralizar itens da navbar */
 .nav-section {
-    padding: 0 20px;
+    padding: 0 16px;
     margin-bottom: 24px;
 }
 
@@ -98,15 +131,19 @@
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 1.5px;
-    margin: 0 0 12px 4px;
+    margin: 0 0 12px 0;
     opacity: 0.7;
     text-transform: uppercase;
+    text-align: center;
 }
 
 .navbar ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .navbar li {
@@ -114,6 +151,8 @@
     border-radius: 10px;
     transition: all 0.2s;
     position: relative;
+    width: 100%;
+    max-width: 200px;
 }
 
 .navbar li::after {
@@ -130,11 +169,11 @@
 }
 
 .navbar li:hover::after {
-    width: 70%;
+    width: 50%;
 }
 
 .navbar li.active::after {
-    width: 70%;
+    width: 50%;
 }
 
 .navbar li.active {
@@ -148,14 +187,16 @@
 .navbar a {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 10px;
     color: white;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 450;
     padding: 10px 12px;
     border-radius: 10px;
     transition: 0.2s;
+    text-align: center;
 }
 
 .navbar a img {
@@ -165,33 +206,30 @@
     opacity: 0.85;
 }
 
-/* Espaçador flexível - empurra o logout para o final */
 .navbar .spacer {
     flex: 1;
 }
 
-/* Logout - agora no final */
+/* Logout centralizado */
 .logout {
     padding: 20px 20px 30px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     margin-top: auto;
 }
 
-.logout::after {
-    display: none;
-}
-
 .logout a {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 10px;
     color: #ff9999;
     text-decoration: none;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     padding: 10px 12px;
     border-radius: 10px;
     transition: 0.2s;
+    text-align: center;
 }
 
 .logout a:hover {
@@ -199,12 +237,13 @@
     color: #ff6666;
 }
 
-/* ========== MAIN CONTENT (COMO ESTAVA ANTES) ========== */
+/* ========== MAIN CONTENT ========== */
 .main-content {
     flex: 1;
-    padding: 28px 36px;
+    padding: 28px 40px;
     overflow-y: auto;
     background: #f5f7fa;
+    max-width: calc(100% - 260px);
 }
 
 .main-content::-webkit-scrollbar {
@@ -264,6 +303,32 @@
     margin-bottom: 16px;
     letter-spacing: 1px;
     text-transform: uppercase;
+    text-align: center;
+}
+
+.titulo-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid #e0e8ee;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    font-weight: 500;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+    background: #fafcfd;
+}
+
+.titulo-input:focus {
+    outline: none;
+    border-color: #1a6b6f;
+    box-shadow: 0 0 0 3px rgba(26, 107, 111, 0.08);
+    background: white;
+}
+
+.titulo-input::placeholder {
+    color: #b0c0ce;
+    font-weight: 400;
 }
 
 .editor-area textarea {
@@ -291,29 +356,41 @@
     font-size: 0.9rem;
 }
 
+/* BOTÃO PUBLICAR CENTRALIZADO */
 .btn-publicar-wrapper {
-    margin-top: 20px;
-    text-align: right;
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
 }
 
 .btn-publicar {
-    background: #21907F;
-    color: #ffffff;
+    background: #1a6b6f;
+    color: white;
     border: none;
-    padding: 10px 32px;
+    padding: 12px 48px;
     border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
 }
 
 .btn-publicar:hover {
-    background: #21907F;
+    background: #0f5559;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(33, 144, 127, 0.4);
+    box-shadow: 0 6px 16px rgba(26, 107, 111, 0.3);
+}
+
+.btn-publicar:active {
+    transform: translateY(0);
+}
+
+.btn-publicar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* ========== SEÇÃO ÚLTIMAS DICAS ========== */
@@ -353,6 +430,17 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
+.dica-titulo {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a6b6f;
+    margin: 0 0 12px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eef2f6;
+    font-family: inherit;
+    padding-right: 40px;
+}
+
 .dica-texto {
     font-size: 0.9rem;
     line-height: 1.6;
@@ -360,28 +448,33 @@
     margin-bottom: 20px;
     text-align: justify;
     flex: 1;
-    padding-right: 40px;
+    font-family: inherit;
 }
 
-/* Botão excluir */
 .btn-excluir {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: none;
+    background: transparent;
     border: none;
-    font-size: 1.1rem;
     cursor: pointer;
     color: #cbd5e1;
     transition: all 0.2s;
-    padding: 4px 8px;
+    padding: 8px;
     border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-excluir:hover {
     color: #ef4444;
     background: #fef2f2;
-    transform: scale(1.05);
+}
+
+.btn-excluir svg {
+    width: 18px;
+    height: 18px;
 }
 
 .dica-footer {
@@ -426,7 +519,22 @@
     color: #fbbf24;
 }
 
-/* Modal de confirmação de exclusão */
+.nenhuma-dica {
+    grid-column: span 2;
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #eef2f6;
+}
+
+.nenhuma-dica p {
+    color: #8a9aaa;
+    font-size: 0.9rem;
+    margin: 5px 0;
+}
+
+/* Modal */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -439,7 +547,6 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn 0.2s ease;
 }
 
 .modal-confirmar {
@@ -449,12 +556,10 @@
     max-width: 400px;
     padding: 28px;
     text-align: center;
-    animation: slideUp 0.3s ease;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
-.modal-confirmar-icon {
-    font-size: 48px;
+.modal-confirmar-icon svg {
     margin-bottom: 16px;
 }
 
@@ -486,7 +591,6 @@
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
 .btn-cancelar:hover {
@@ -502,36 +606,17 @@
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
 .btn-confirmar-excluir:hover {
     background: #dc2626;
-    transform: scale(1.02);
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* ========== TOAST ========== */
 .toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    background: #22c55e;
     color: white;
     padding: 12px 20px;
     border-radius: 12px;
@@ -539,56 +624,62 @@
     font-weight: 500;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     z-index: 1100;
-    animation: slideInRight 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .toast.error {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    background: #ef4444;
 }
 
-.toast .toast-icon {
-    font-size: 1.1rem;
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    background: #f5f7fa;
 }
 
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #1a6b6f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-        visibility: hidden;
-    }
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* ========== RESPONSIVIDADE ========== */
 @media (max-width: 900px) {
     .dicas-cards-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
+    }
+    
+    .nenhuma-dica {
+        grid-column: span 1;
     }
 }
 
 @media (max-width: 768px) {
+    .dicas-container {
+        flex-direction: column;
+    }
+    
     .navbar {
         width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        padding: 12px 20px;
-        gap: 10px;
         height: auto;
         position: relative;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 12px 20px;
+        gap: 10px;
+        align-self: stretch;
     }
     
     .nav-header {
@@ -597,14 +688,13 @@
         margin-bottom: 0;
     }
     
+    .nav-header img {
+        width: 50px;
+    }
+    
     .medico-section {
         padding: 0;
         border-bottom: none;
-        margin-bottom: 0;
-    }
-    
-    .nav-section {
-        padding: 0;
         margin-bottom: 0;
     }
     
@@ -620,24 +710,12 @@
     
     .navbar li {
         margin-bottom: 0;
+        max-width: none;
     }
     
     .navbar a {
         padding: 6px 12px;
         font-size: 12px;
-    }
-    
-    .navbar li::after {
-        bottom: -4px;
-        height: 2px;
-    }
-    
-    .navbar li:hover::after {
-        width: 50%;
-    }
-    
-    .navbar li.active::after {
-        width: 50%;
     }
     
     .logout {
@@ -648,54 +726,36 @@
     
     .main-content {
         padding: 20px;
-    }
-    
-    .dicas-header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .publicar-dica {
-        padding: 20px;
-    }
-    
-    .btn-publicar {
-        width: 100%;
-        text-align: center;
-    }
-    
-    .dica-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .dica-texto {
-        padding-right: 30px;
+        max-width: 100%;
     }
 }
 
 @media (max-width: 480px) {
-    .publicar-dica h2, .ultimas-dicas-section h2 {
-        font-size: 0.8rem;
+    .main-content {
+        padding: 16px;
+    }
+    
+    .publicar-dica {
+        padding: 16px;
     }
     
     .dica-card {
         padding: 16px;
     }
     
-    .dica-texto {
-        font-size: 0.85rem;
-        padding-right: 25px;
+    .dica-titulo {
+        font-size: 1rem;
+        padding-right: 30px;
     }
     
-    .btn-excluir {
-        top: 12px;
-        right: 12px;
+    .btn-publicar {
+        width: 100%;
+        padding: 12px 20px;
     }
     
     .toast {
         left: 16px;
         right: 16px;
         bottom: 16px;
-        justify-content: center;
     }
 }

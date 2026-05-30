@@ -265,13 +265,13 @@ export default function AgendamentosMedicos() {
                     <li>
                         <Link to="/perfil">
                             <img src={icon1} alt="icon"/> 
-                            Configuração de perfil
+                            Configurações
                         </Link>
                     </li>
                     <li className="active">
                         <Link to="/agendamento">
                             <img src={icon2} alt="icon"/> 
-                            Agendamentos médicos
+                            Agendamentos
                         </Link>
                         <span className="active-indicator"></span>
                     </li>

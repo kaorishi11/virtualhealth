@@ -1,11 +1,26 @@
-/* BASE */
-.perfil-container {
-    display: flex;
-    height: 100vh;
-    font-family: "Segoe UI", "Inter", system-ui, sans-serif;
-    background: #f0f2f5;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.perfil-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* CORREÇÃO 1: Navbar ocupando toda altura */
 .navbar {
     width: 200px;
     background: #1a6b6f;
@@ -14,6 +29,8 @@
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
+    min-height: 100vh; /* Garante altura mínima total */
+    height: 100%; /* Ocupa toda altura disponível */
 }
 
 .nav-header {
@@ -41,6 +58,7 @@
 }
 
 .navbar h3 {
+    margin-top: 20px;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 1.5px;
@@ -56,7 +74,6 @@
     margin: 0;
 }
 
-/* ========== ESTILO DOS ITENS DA NAVBAR COM LINHA AZUL NO HOVER ========== */
 .navbar li {
     margin-bottom: 4px;
     border-radius: 10px;
@@ -64,7 +81,6 @@
     position: relative;
 }
 
-/* Linha azul que aparece no hover (estilo Figma) */
 .navbar li::after {
     content: '';
     position: absolute;
@@ -78,12 +94,10 @@
     transition: width 0.3s ease;
 }
 
-/* Hover - linha aparece */
 .navbar li:hover::after {
     width: 70%;
 }
 
-/* Item ativo mantém a linha sempre visível */
 .navbar li.active::after {
     width: 70%;
 }
@@ -116,8 +130,6 @@
     opacity: 0.85;
 }
 
-/* Logout não tem linha */
-/* Logout - cor vermelho claro (sem amarelo) */
 .logout {
     margin-top: auto;
     padding: 20px 20px 30px 20px;
@@ -132,7 +144,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    color: #ff9999;  /* Vermelho claro */
+    color: #ff9999;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
@@ -143,23 +155,101 @@
 
 .logout a:hover {
     background: rgba(255, 255, 255, 0.1);
-    color: #ff6666;  /* Vermelho um pouco mais forte no hover */
+    color: #ff6666;
 }
 
-/* ========== CONTEÚDO ========== */
+/* CORREÇÃO 2: Conteúdo sem espaços laterais e ocupando resto */
+.perfil-content {
+    flex: 1;
+    padding: 24px;
+    width: 100%;
+    box-sizing: border-box;
+    background: #f5f7fa; /* Fundo suave */
+    overflow-x: hidden; /* Remove scroll horizontal */
+}
+
+.perfil-content h1 {
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: #000000;
+    margin-bottom: 28px;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 8px;
+}
+
+.perfil-content h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #00ccff;
+    border-radius: 3px;
+}
+
+/* CORREÇÃO 3: Cards sem margens extras */
+.perfil-card {
+    background: #0f5c63;
+    background: linear-gradient(135deg, #126e75 0%, #0b555a 100%);
+    border-radius: 10px;
+    padding: 10px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    width: 100%;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Overlay de brilho */
+.perfil-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.perfil-card:hover::before {
+    left: 100%;
+}
+
+.perfil-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 0 15px rgba(0, 204, 255, 0.6);
+}
+
+.perfil-foto-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
 .perfil-img-wrapper {
+    position: relative;
     width: 120px;
     height: 120px;
     border-radius: 50%;
     overflow: hidden;
     background-color: #f0f0f0;
-    position: relative;
 }
 
 .perfil-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border: 3px solid #ffedd5;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .perfil-img-iniciais {
@@ -174,6 +264,25 @@
     text-transform: uppercase;
     transition: all 0.3s ease;
 }
+
+.edit-foto-btn {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.edit-foto-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.02);
+}
+
 .foto-url-editor {
     margin-top: 10px;
     width: 100%;
@@ -212,111 +321,6 @@
     color: #333;
 }
 
-.perfil-img-iniciais {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    font-weight: bold;
-    color: white;
-    text-transform: uppercase;
-}
-
-.perfil-img-wrapper {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    overflow: hidden;
-    background-color: #f0f0f0;
-}
-
-.perfil-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.perfil-content {
-    flex: 1;
-    padding: 30px 40px;
-    overflow-y: auto;
-}
-
-.perfil-content h1 {
-    font-size: 1.6rem;
-    font-weight: 300;
-    color: #000000;
-    margin-bottom: 28px;
-    position: relative;
-    display: inline-block;
-    padding-bottom: 8px;
-}
-
-.perfil-content h1::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: #00ccff;
-    border-radius: 3px;
-}
-
-/* ========== CARD PERFIL - FOTO CENTRALIZADA ========== */
-.perfil-card {
-    background: #0f5c63;
-    max-width: 400px;
-    background: linear-gradient(135deg, #126e75 0%, #0b555a 100%);
-    border-radius: 10px;
-    padding: 10px 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: white;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
-}
-
-.perfil-foto-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
-
-.perfil-img-wrapper {
-    position: relative;
-}
-
-.perfil-img {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #ffedd5;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.edit-foto-btn {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 6px 18px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 500;
-    color: white;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.edit-foto-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.02);
-}
-
 .perfil-info h2 {
     margin: 0 0 5px 0;
     font-size: 26px;
@@ -343,18 +347,17 @@
     font-weight: 500;
 }
 
-/* ========== GRID ========== */
+/* CORREÇÃO 4: Grid ocupando toda largura */
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-bottom: 30px;
+    width: 100%;
 }
 
-/* ========== CARDS ========== */
 .card {
     background: white;
-    max-width: 400px;
     border-radius: 20px;
     padding: 20px 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
@@ -362,6 +365,7 @@
     transition: 0.2s;
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .card:hover {
@@ -385,7 +389,6 @@
     height: 18px;
 }
 
-/* ========== INPUTS ========== */
 .inputs {
     display: flex;
     flex-direction: column;
@@ -411,6 +414,7 @@ input {
     font-family: inherit;
     outline: none;
     transition: all 0.2s;
+    width: 100%;
 }
 
 input:hover {
@@ -423,7 +427,6 @@ input:focus {
     background: white;
 }
 
-/* ========== PASSWORD WRAPPER ========== */
 .password-wrapper {
     position: relative;
     display: flex;
@@ -449,7 +452,6 @@ input:focus {
     opacity: 1;
 }
 
-/* ========== BOTÕES ========== */
 .btn {
     margin-top: 18px;
     padding: 8px 50px;
@@ -489,7 +491,6 @@ input:focus {
     margin-top: 18px;
 }
 
-/* ========== ALERTA ========== */
 .alert {
     background: #fefaf5;
     border-left: 5px solid #e74c3c;
@@ -499,6 +500,7 @@ input:focus {
     gap: 18px;
     align-items: flex-start;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    width: 100%;
 }
 
 .alert img {
@@ -538,7 +540,7 @@ input:focus {
     border-color: #c0392b;
 }
 
-/* ========== RESPONSIVO ========== */
+/* RESPONSIVO */
 @media (max-width: 950px) {
     .perfil-content {
         padding: 25px 25px;
@@ -571,6 +573,7 @@ input:focus {
         align-items: center;
         padding: 12px 20px;
         gap: 10px;
+        min-height: auto;
     }
     .nav-header {
         padding: 0;
@@ -599,7 +602,6 @@ input:focus {
         padding: 6px 12px;
         font-size: 12px;
     }
-    /* Ajuste da linha no mobile */
     .navbar li::after {
         bottom: -4px;
         height: 2px;
