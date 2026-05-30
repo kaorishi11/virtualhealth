@@ -1,183 +1,363 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { supabase } from '../services/supabase';
+import Swal from 'sweetalert2';
 
 import logo from '../images/logo.png';
-import doutora from '../images/med.png';
-import planilha from '../images/icon2.png';
-import planisaude from '../images/planisaude.png';
-
-import foto1 from '../images/foto1.png';
-import foto2 from '../images/foto2.png';
-import foto3 from '../images/foto3.png';
-import foto4 from '../images/foto4.png';
 
 import '../styles/AgendaMe.css';
 
 export default function AgendaMe() {
-    const navigate = useNavigate();
-    const [currentDate, setCurrentDate] = useState({
-        diaSemana: "SEX",
-        dia: 6,
-        mes: "FEVEREIRO"
-    });
-    const [filtroAtivo, setFiltroAtivo] = useState("Todos");
+    const [loading, setLoading] = useState(true);
+    const [medico, setMedico] = useState(null);
+    const [fotoErro, setFotoErro] = useState(false);
+    const [agendamentos, setAgendamentos] = useState([]);
+    const [mesAtual, setMesAtual] = useState(new Date());
+    const [mesNome, setMesNome] = useState('');
+    const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
 
-    // Dados dos agendamentos - SOMENTE PARA O DIA 6
-    const agendamentosPorData = {
-        6: [
-            {
-                horario: "08H00",
-                duracao: "30 min",
-                paciente: "Maria Helena",
-                procedimento: "Revisão de lentes",
-                tipo: "1ª consulta",
-                modalidade: "Online",
-                status: "Confirmado", // Status Confirmado
-                botoes: ["Entrar"], // Botão Entrar que redireciona
-                foto: foto1
-            },
-            {
-                horario: "10H20",
-                duracao: "30 min",
-                paciente: "Gabriel Jorge",
-                procedimento: "Check-up visual - retorno",
-                tipo: "Retorno",
-                modalidade: "Presencial",
-                status: "Cancelado", // Status Cancelado
-                botoes: [], // Sem botões
-                foto: foto2
-            },
-            {
-                horario: "11H40",
-                duracao: "30 min",
-                paciente: "Maria Helena",
-                procedimento: "Revisão de lentes",
-                tipo: "1ª consulta",
-                modalidade: "Online",
-                status: "Realizada",
-                botoes: ["Prontuário"], // Apenas Prontuário
-                foto: foto3
-            },
-            {
-                horario: "14H00",
-                duracao: "30 min",
-                paciente: "Enaldo Santos",
-                procedimento: "Retorno - avaliação",
-                tipo: "Retorno",
-                modalidade: "Presencial",
-                status: "Confirmado", // Status Confirmado
-                botoes: [], // Sem botões
-                foto: foto4
+    // Buscar dados do médico e agendamentos
+    useEffect(() => {
+        carregarDados();
+    }, [mesAtual]);
+
+    const carregarDados = async () => {
+        try {
+            setLoading(true);
+            
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            
+            if (userError) throw userError;
+            if (!user) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro!',
+                    text: 'Usuário não está logado!',
+                    confirmButtonColor: '#6366f1'
+                });
+                return;
             }
-        ]
-    };
 
-    // Funções para navegar entre as datas
-    const voltarData = () => {
-        setCurrentDate(prev => {
-            let novoSemana = prev.diaSemana;
-            let novoDia = prev.dia - 1;
-            let novoMes = prev.mes;
-            
-            if (novoDia < 1) {
-                if (prev.mes === "FEVEREIRO") {
-                    novoDia = 31;
-                    novoMes = "JANEIRO";
-                    novoSemana = "QUI";
-                } else if (prev.mes === "JANEIRO") {
-                    novoDia = 31;
-                    novoMes = "DEZEMBRO";
-                    novoSemana = "QUI";
-                } else if (prev.mes === "MARÇO") {
-                    novoDia = 28;
-                    novoMes = "FEVEREIRO";
-                    novoSemana = "QUI";
-                }
-            } else {
-                const diasSemana = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
-                const indexAtual = diasSemana.indexOf(prev.diaSemana);
-                novoSemana = diasSemana[(indexAtual - 1 + 7) % 7];
+            // Buscar dados do médico
+            const { data: medicoData, error: medicoError } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (medicoError && medicoError.code !== 'PGRST116') {
+                throw medicoError;
             }
-            
-            return { diaSemana: novoSemana, dia: novoDia, mes: novoMes };
-        });
-    };
 
-    const avancarData = () => {
-        setCurrentDate(prev => {
-            let novoSemana = prev.diaSemana;
-            let novoDia = prev.dia + 1;
-            let novoMes = prev.mes;
-            
-            if (novoDia > 31 && prev.mes === "JANEIRO") {
-                novoDia = 1;
-                novoMes = "FEVEREIRO";
-                novoSemana = "SÁB";
-            } else if (novoDia > 28 && prev.mes === "FEVEREIRO") {
-                novoDia = 1;
-                novoMes = "MARÇO";
-                novoSemana = "SÁB";
-            } else if (novoDia > 31 && prev.mes === "MARÇO") {
-                novoDia = 1;
-                novoMes = "ABRIL";
-                novoSemana = "SÁB";
-            } else {
-                const diasSemana = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
-                const indexAtual = diasSemana.indexOf(prev.diaSemana);
-                novoSemana = diasSemana[(indexAtual + 1) % 7];
+            if (medicoData) {
+                setMedico({
+                    id: medicoData.id,
+                    nome: medicoData.nome,
+                    email: user.email,
+                    especialidade: medicoData.especialidade || 'Médico',
+                    foto: medicoData.foto || ''
+                });
             }
-            
-            return { diaSemana: novoSemana, dia: novoDia, mes: novoMes };
-        });
-    };
 
-    // Buscar agendamentos da data atual
-    const agendamentosAtuais = agendamentosPorData[currentDate.dia] || [];
+            // Buscar agendamentos do mês
+            await carregarAgendamentos(user.id);
 
-    // Filtrar agendamentos por modalidade
-    const agendamentosFiltrados = agendamentosAtuais.filter(agenda => {
-        if (filtroAtivo === "Todos") return true;
-        if (filtroAtivo === "Online") return agenda.modalidade === "Online";
-        if (filtroAtivo === "Presencial") return agenda.modalidade === "Presencial";
-        return true;
-    });
-
-    const handleBotaoClick = (botao, paciente) => {
-        if (botao === "Entrar") {
-            // Redireciona para a página de consulta
-            navigate('/consulta');
-        } else if (botao === "Prontuário") {
-            alert(`📋 Abrindo prontuário de ${paciente}`);
+        } catch (error) {
+            console.error('Erro ao carregar dados:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Erro ao carregar dados',
+                confirmButtonColor: '#6366f1'
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleFiltroClick = (filtro) => {
-        setFiltroAtivo(filtro);
+    const carregarAgendamentos = async (medicoId) => {
+        try {
+            // Pegar primeiro e último dia do mês
+            const primeiroDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
+            const ultimoDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 0);
+            
+            const dataInicio = primeiroDia.toISOString().split('T')[0];
+            const dataFim = ultimoDia.toISOString().split('T')[0];
+
+            const { data, error } = await supabase
+                .from('agendamentos')
+                .select(`
+                    *,
+                    paciente:usuarios!paciente_id (
+                        nome,
+                        telefone
+                    )
+                `)
+                .eq('medico_id', medicoId)
+                .gte('data_consulta', dataInicio)
+                .lte('data_consulta', dataFim)
+                .order('data_consulta', { ascending: true })
+                .order('horario', { ascending: true });
+
+            if (error) throw error;
+
+            // Formatar agendamentos
+            const agendamentosFormatados = data.map(ag => ({
+                id: ag.id,
+                paciente: ag.paciente?.nome || 'Paciente',
+                telefone: ag.paciente?.telefone || '',
+                data: ag.data_consulta,
+                horario: ag.horario,
+                tipo: ag.tipo === 'presencial' ? 'Presencial' : 'Teleconsulta',
+                status: ag.status,
+                link_teleconsulta: ag.link_teleconsulta
+            }));
+
+            setAgendamentos(agendamentosFormatados);
+            
+            // Atualizar nome do mês
+            const nomeMes = mesAtual.toLocaleDateString('pt-BR', { month: 'long' });
+            setMesNome(nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1));
+            setAnoAtual(mesAtual.getFullYear());
+
+        } catch (error) {
+            console.error('Erro ao carregar agendamentos:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Erro ao carregar agendamentos',
+                confirmButtonColor: '#6366f1'
+            });
+        }
     };
 
-    const getStatusClass = (status) => {
-        if (!status) return '';
+    const mesAnterior = () => {
+        setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth() - 1, 1));
+    };
+
+    const proximoMes = () => {
+        setMesAtual(new Date(mesAtual.getFullYear(), mesAtual.getMonth() + 1, 1));
+    };
+
+    const handleCancelarAgendamento = async (agendamento) => {
+        const result = await Swal.fire({
+            title: 'Cancelar agendamento',
+            text: `Tem certeza que deseja cancelar o agendamento de ${agendamento.paciente}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6366f1',
+            confirmButtonText: 'Sim, cancelar',
+            cancelButtonText: 'Voltar'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            setLoading(true);
+
+            const { error } = await supabase
+                .from('agendamentos')
+                .update({ status: 'cancelada' })
+                .eq('id', agendamento.id);
+
+            if (error) throw error;
+
+            // Atualizar lista
+            setAgendamentos(prev => prev.map(ag => 
+                ag.id === agendamento.id ? { ...ag, status: 'cancelada' } : ag
+            ));
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Cancelado!',
+                text: 'Agendamento cancelado com sucesso!',
+                confirmButtonColor: '#6366f1',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (error) {
+            console.error('Erro ao cancelar:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Erro ao cancelar agendamento',
+                confirmButtonColor: '#6366f1'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleConcluirAgendamento = async (agendamento) => {
+        const result = await Swal.fire({
+            title: 'Concluir consulta',
+            text: `Marcar consulta de ${agendamento.paciente} como concluída?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6366f1',
+            confirmButtonText: 'Sim, concluir',
+            cancelButtonText: 'Voltar'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            setLoading(true);
+
+            const { error } = await supabase
+                .from('agendamentos')
+                .update({ status: 'concluida' })
+                .eq('id', agendamento.id);
+
+            if (error) throw error;
+
+            setAgendamentos(prev => prev.map(ag => 
+                ag.id === agendamento.id ? { ...ag, status: 'concluida' } : ag
+            ));
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Concluída!',
+                text: 'Consulta marcada como concluída!',
+                confirmButtonColor: '#6366f1',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        } catch (error) {
+            console.error('Erro ao concluir:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Erro ao concluir consulta',
+                confirmButtonColor: '#6366f1'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEntrarConsulta = (agendamento) => {
+        if (agendamento.tipo === 'Teleconsulta' && agendamento.link_teleconsulta) {
+            window.open(agendamento.link_teleconsulta, '_blank');
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Consulta Presencial',
+                text: `Paciente: ${agendamento.paciente}\nHorário: ${agendamento.horario}\nCompareça ao consultório.`,
+                confirmButtonColor: '#6366f1'
+            });
+        }
+    };
+
+    // Funções para a navbar (igual ao DicasMe)
+    const getIniciais = () => {
+        if (!medico?.nome) return '?';
+        const nomes = medico.nome.trim().split(' ');
+        if (nomes.length === 1) return nomes[0].charAt(0).toUpperCase();
+        return (nomes[0].charAt(0) + nomes[nomes.length - 1].charAt(0)).toUpperCase();
+    };
+
+    const getCorFundo = () => {
+        if (!medico?.nome) return '#6366f1';
+        
+        const cores = [
+            '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', 
+            '#ef4444', '#f97316', '#f59e0b', '#84cc16',
+            '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+            '#3b82f6', '#6366f1', '#8b5cf6'
+        ];
+        
+        let hash = 0;
+        for (let i = 0; i < medico.nome.length; i++) {
+            hash = medico.nome.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % cores.length;
+        return cores[index];
+    };
+
+    const getPrimeiroNome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        return partes[0];
+    };
+
+    const getSobrenome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        if (partes.length === 1) return '';
+        return partes.slice(1).join(' ');
+    };
+
+    const getStatusBadge = (status) => {
         switch(status) {
-            case 'Confirmado': return 'status-confirmado';
-            case 'Realizada': return 'status-realizada';
-            case 'Cancelado': return 'status-cancelado';
-            default: return '';
+            case 'agendada':
+                return <span className="status-badge status-agendada">Agendada</span>;
+            case 'concluida':
+                return <span className="status-badge status-concluida">Concluída</span>;
+            case 'cancelada':
+                return <span className="status-badge status-cancelada">Cancelada</span>;
+            default:
+                return <span className="status-badge">{status}</span>;
         }
     };
+
+    if (loading && !medico) {
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Carregando...</p>
+            </div>
+        );
+    }
+
+    // Agrupar agendamentos por data
+    const agendamentosPorData = agendamentos.reduce((acc, ag) => {
+        const data = ag.data;
+        if (!acc[data]) {
+            acc[data] = [];
+        }
+        acc[data].push(ag);
+        return acc;
+    }, {});
 
     return (
         <div className="agenda-container">
-            {/* SIDEBAR */}
+            {/* NAVBAR IGUAL AO DICASME */}
             <div className="navbar">
                 <div className="nav-header">
                     <img src={logo} alt="Logo" className="logoperfil" />
                 </div>
 
                 <div className="medico-section">
-                    <img src={doutora} alt="Dra. Marta" className="medico-img" />
+                    <div className="medico-img-wrapper">
+                        {medico?.foto && !fotoErro ? (
+                            <img 
+                                src={medico.foto} 
+                                className="medico-img" 
+                                alt={medico.nome}
+                                onError={() => setFotoErro(true)}
+                            />
+                        ) : (
+                            <div 
+                                className="medico-img-iniciais"
+                                style={{ backgroundColor: getCorFundo() }}
+                            >
+                                {getIniciais()}
+                            </div>
+                        )}
+                    </div>
                     <div className="medico-info">
-                        <h4>Dra. Marta</h4>
-                        <p>Dentista</p>
+                        <h4>
+                            <span className="primeiro-nome">{getPrimeiroNome()}</span>
+                            {getSobrenome() && (
+                                <span className="sobrenome">{getSobrenome()}</span>
+                            )}
+                        </h4>
+                        <p>{medico?.especialidade || 'Médico'}</p>
                     </div>
                 </div>
 
@@ -186,6 +366,8 @@ export default function AgendaMe() {
                     <ul>
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li className="active"><Link to="/agenda">Minha agenda</Link></li>
+                        <li><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
 
@@ -197,104 +379,106 @@ export default function AgendaMe() {
                     </ul>
                 </div>
 
+                <div className="spacer"></div>
+
                 <div className="logout">
                     <Link to="/">Desconectar</Link>
                 </div>
             </div>
 
             {/* CONTEÚDO PRINCIPAL */}
-            <div className="main-content">
-                <div className="agenda-header">
-                    <h1>MINHA AGENDA</h1>
-                </div>
+            <div className="agenda-content">
+                <h1>MINHA AGENDA</h1>
 
-                {/* SELETOR DE DATA */}
-                <div className="data-selector">
-                    <button className="seta-btn" onClick={voltarData}>◀</button>
-                    <div className="data-info">
-                        <span className="dia-semana">{currentDate.diaSemana}</span>
-                        <span className="dia-numero"> - {currentDate.dia}</span>
-                        <span className="mes"> DE {currentDate.mes}</span>
+                <div className="mes-container">
+                    <div className="mes-header">
+                        <button className="month-nav-btn" onClick={mesAnterior}>
+                            ◀ Anterior
+                        </button>
+                        <h2>{mesNome} {anoAtual}</h2>
+                        <button className="month-nav-btn" onClick={proximoMes}>
+                            Próximo ▶
+                        </button>
                     </div>
-                    <button className="seta-btn" onClick={avancarData}>▶</button>
-                </div>
 
-                {/* FILTROS */}
-                <div className="filtros">
-                    <button 
-                        className={`filtro-btn ${filtroAtivo === "Todos" ? 'active' : ''}`}
-                        onClick={() => handleFiltroClick("Todos")}
-                    >
-                        Todos
-                    </button>
-                    <button 
-                        className={`filtro-btn ${filtroAtivo === "Online" ? 'active' : ''}`}
-                        onClick={() => handleFiltroClick("Online")}
-                    >
-                        Online
-                    </button>
-                    <button 
-                        className={`filtro-btn ${filtroAtivo === "Presencial" ? 'active' : ''}`}
-                        onClick={() => handleFiltroClick("Presencial")}
-                    >
-                        Presencial
-                    </button>
-                </div>
-
-                {/* LISTA DE AGENDAMENTOS */}
-                <div className="agendamentos-lista">
-                    {agendamentosFiltrados.length > 0 ? (
-                        agendamentosFiltrados.map((agenda, index) => (
-                            <div key={index} className="agendamento-card">
-                                <div className="agendamento-horario">
-                                    <span className="horario-principal">{agenda.horario}</span>
-                                    <span className="duracao">{agenda.duracao}</span>
-                                </div>
-
-                                <div className="agendamento-paciente">
-                                    <img src={agenda.foto} alt={agenda.paciente} className="paciente-foto" />
-                                    <div className="paciente-dados">
-                                        <h3>{agenda.paciente}</h3>
-                                        <p>{agenda.procedimento}</p>
-                                    </div>
-                                </div>
-
-                                <div className="agendamento-footer">
-                                    <div className="agendamento-tags">
-                                        {agenda.tipo && <span className="tag tipo">{agenda.tipo}</span>}
-                                        <span className={`tag modalidade ${agenda.modalidade.toLowerCase()}`}>
-                                            {agenda.modalidade}
-                                        </span>
-                                        {agenda.status && (
-                                            <span className={`status-badge ${getStatusClass(agenda.status)}`}>
-                                                {agenda.status}
-                                            </span>
-                                        )}
-                                    </div>
-                                    {/* Mostra botões apenas se houver */}
-                                    {agenda.botoes.length > 0 && (
-                                        <div className="agendamento-botoes">
-                                            {agenda.botoes.map((botao, idx) => (
-                                                <button 
-                                                    key={idx} 
-                                                    className={`btn-agenda ${botao.toLowerCase()}`}
-                                                    onClick={() => handleBotaoClick(botao, agenda.paciente)}
-                                                >
-                                                    {botao}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                    <div className="appointments-list">
+                        {Object.keys(agendamentosPorData).length === 0 ? (
+                            <div className="no-appointments">
+                                <p>Nenhum agendamento para este mês</p>
+                                <p>Os agendamentos aparecerão aqui quando houver consultas marcadas.</p>
                             </div>
-                        ))
-                    ) : (
-                        <div className="no-results">
-                            <div className="no-results-icon">📅</div>
-                            <h3>Nenhum agendamento</h3>
-                            <p>Não há consultas agendadas para {currentDate.diaSemana} - {currentDate.dia} de {currentDate.mes}</p>
-                        </div>
-                    )}
+                        ) : (
+                            Object.keys(agendamentosPorData).sort().map(data => {
+                                const dataObj = new Date(data);
+                                const diaSemana = dataObj.toLocaleDateString('pt-BR', { weekday: 'long' });
+                                const diaNumero = dataObj.getDate();
+                                const mesNome = dataObj.toLocaleDateString('pt-BR', { month: 'long' });
+                                
+                                return (
+                                    <div key={data} className="appointment-date-group">
+                                        <div className="date-header">
+                                            <span className="date-day">{diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}</span>
+                                            <span className="date-number">{diaNumero} de {mesNome}</span>
+                                        </div>
+                                        
+                                        {agendamentosPorData[data].map(ag => (
+                                            <div key={ag.id} className="appointment-card">
+                                                <div className="appointment-time">
+                                                    <span className="time">{ag.horario}</span>
+                                                </div>
+                                                <div className="appointment-details">
+                                                    <div className="appointment-header">
+                                                        <strong>{ag.paciente}</strong>
+                                                        {ag.telefone && <span className="appointment-phone">📞 {ag.telefone}</span>}
+                                                    </div>
+                                                    <div className="appointment-info">
+                                                        <span className="appointment-type">{ag.tipo}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="appointment-status">
+                                                    {getStatusBadge(ag.status)}
+                                                </div>
+                                                <div className="appointment-action">
+                                                    {ag.status === 'agendada' && (
+                                                        <>
+                                                            <button 
+                                                                className="action-btn btn-entrar"
+                                                                onClick={() => handleEntrarConsulta(ag)}
+                                                            >
+                                                                {ag.tipo === 'Teleconsulta' ? '🎥 Entrar' : '📍 Iniciar'}
+                                                            </button>
+                                                            <button 
+                                                                className="action-btn btn-cancelar"
+                                                                onClick={() => handleCancelarAgendamento(ag)}
+                                                            >
+                                                                Cancelar
+                                                            </button>
+                                                            <button 
+                                                                className="action-btn btn-concluir"
+                                                                onClick={() => handleConcluirAgendamento(ag)}
+                                                            >
+                                                                ✓ Concluir
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {ag.status === 'concluida' && (
+                                                        <button className="action-btn btn-relatorio" disabled>
+                                                            ✓ Consulta Realizada
+                                                        </button>
+                                                    )}
+                                                    {ag.status === 'cancelada' && (
+                                                        <button className="action-btn btn-cancelado" disabled>
+                                                            ✗ Cancelada
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
