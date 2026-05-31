@@ -1,31 +1,47 @@
-// Esta é uma API Route para o Vite (usando Express ou similar)
-// Se você estiver usando apenas frontend, pode usar uma Edge Function do Supabase
+// supabase/functions/create-room/index.js
+// Isso é uma Edge Function do Supabase, não um arquivo do frontend
 
-export default async function handler(req, res) {
-  // Permitir apenas POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido' })
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const DAILY_API_KEY = Deno.env.get('DAILY_API_KEY')
+const DAILY_API_URL = 'https://api.daily.co/v1'
+
+Deno.serve(async (req) => {
+  // Permitir CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 
-  const { codigo, medicoId, pacienteId } = req.body
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers })
+  }
 
-  // Verificar se a API key do Daily está configurada
-  const DAILY_API_KEY = process.env.VITE_DAILY_API_KEY
-
-  if (!DAILY_API_KEY) {
-    return res.status(500).json({ error: 'API key do Daily não configurada' })
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Método não permitido' }), {
+      status: 405,
+      headers
+    })
   }
 
   try {
+    const { codigo, medicoId, pacienteId } = await req.json()
+
+    if (!DAILY_API_KEY) {
+      throw new Error('API key do Daily não configurada')
+    }
+
     // Criar sala no Daily.co
-    const dailyResponse = await fetch('https://api.daily.co/v1/rooms', {
+    const roomName = `consulta-${codigo}-${Date.now()}`
+    const dailyResponse = await fetch(`${DAILY_API_URL}/rooms`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${DAILY_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: `consulta-${codigo}-${Date.now()}`,
+        name: roomName,
         properties: {
           enable_chat: true,
           enable_screenshare: true,
@@ -35,6 +51,7 @@ export default async function handler(req, res) {
           max_participants: 2,
           enable_network_ui: true,
           enable_prejoin_ui: true,
+          exp: Math.floor(Date.now() / 1000) + 7200, // Expira em 2 horas
         },
       }),
     })
@@ -45,18 +62,23 @@ export default async function handler(req, res) {
       throw new Error(roomData.error || 'Erro ao criar sala')
     }
 
-    // Retornar a URL da sala
-    return res.status(200).json({
+    return new Response(JSON.stringify({
       success: true,
       roomUrl: roomData.url,
       roomName: roomData.name
+    }), {
+      status: 200,
+      headers
     })
 
   } catch (error) {
     console.error('Erro ao criar sala:', error)
-    return res.status(500).json({ 
+    return new Response(JSON.stringify({
       error: 'Erro ao criar sala de videoconferência',
-      details: error.message 
+      details: error.message
+    }), {
+      status: 500,
+      headers
     })
   }
-}
+})

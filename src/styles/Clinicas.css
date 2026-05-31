@@ -8,7 +8,44 @@
 body {
     background: #f1f5f9;
 }
+/* Navegação do calendário */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
 
+.month-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.month-nav-btn {
+    background: #2c7da0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.month-nav-btn:hover {
+    background: #1f5e7a;
+}
+
+.month-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #2c7da0;
+    min-width: 120px;
+    text-align: center;
+}
 /* HEADER */
 .header {
     top: 20px;

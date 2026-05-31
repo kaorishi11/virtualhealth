@@ -50,7 +50,6 @@ export default function Disponibilidade() {
                 return;
             }
 
-            // Buscar dados do médico
             const { data: medicoData, error: medicoError } = await supabase
                 .from('usuarios')
                 .select('*')
@@ -71,7 +70,6 @@ export default function Disponibilidade() {
                 });
             }
 
-            // Buscar disponibilidades do médico
             await carregarDisponibilidades(user.id);
 
         } catch (error) {
@@ -143,7 +141,6 @@ export default function Disponibilidade() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (editando && editando.id) {
-                // Editar existente
                 const { error } = await supabase
                     .from('medico_disponibilidade')
                     .update({
@@ -164,7 +161,6 @@ export default function Disponibilidade() {
                     showConfirmButton: false
                 });
             } else {
-                // Verificar se já existe para o mesmo dia/horário
                 const conflito = disponibilidades.some(d => 
                     d.dia_semana === parseInt(formData.dia_semana) &&
                     ((formData.horario_inicio >= d.horario_inicio && formData.horario_inicio < d.horario_fim) ||
@@ -183,7 +179,6 @@ export default function Disponibilidade() {
                     return;
                 }
 
-                // Adicionar novo
                 const { error } = await supabase
                     .from('medico_disponibilidade')
                     .insert({
@@ -206,7 +201,6 @@ export default function Disponibilidade() {
                 });
             }
 
-            // Resetar formulário
             setFormData({ dia_semana: '', horario_inicio: '', horario_fim: '' });
             setEditando(null);
             await carregarDisponibilidades(user.id);
@@ -250,7 +244,6 @@ export default function Disponibilidade() {
         try {
             setLoading(true);
 
-            // Soft delete - apenas desativar
             const { error } = await supabase
                 .from('medico_disponibilidade')
                 .update({ ativo: false })
@@ -293,7 +286,6 @@ export default function Disponibilidade() {
         return diaObj ? diaObj.nome : '';
     };
 
-    // Funções para a navbar
     const getIniciais = () => {
         if (!medico?.nome) return '?';
         const nomes = medico.nome.trim().split(' ');
@@ -332,7 +324,6 @@ export default function Disponibilidade() {
         return partes.slice(1).join(' ');
     };
 
-    // Agrupar disponibilidades por dia
     const disponibilidadesPorDia = {};
     disponibilidades.forEach(disp => {
         if (!disponibilidadesPorDia[disp.dia_semana]) {
@@ -493,24 +484,24 @@ export default function Disponibilidade() {
                                         {horarios.map(horario => (
                                             <div key={horario.id} className="horario-card">
                                                 <div className="horario-info">
-                                                    <span className="horario">
-                                                        {horario.horario_inicio} - {horario.horario_fim}
-                                                    </span>
-                                                </div>
+                                                <span className="horario">
+                                                    {formatarHorario(horario.horario_inicio)} - {formatarHorario(horario.horario_fim)}
+                                                </span>
+                                            </div>
                                                 <div className="horario-actions">
                                                     <button 
                                                         className="btn-editar"
                                                         onClick={() => handleEditar(horario)}
                                                         disabled={loading}
                                                     >
-                                                        ✏️ Editar
+                                                        Editar
                                                     </button>
                                                     <button 
                                                         className="btn-excluir"
                                                         onClick={() => handleExcluir(horario.id)}
                                                         disabled={loading}
                                                     >
-                                                        🗑️ Excluir
+                                                        Excluir
                                                     </button>
                                                 </div>
                                             </div>

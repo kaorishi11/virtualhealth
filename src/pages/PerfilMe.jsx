@@ -33,7 +33,8 @@ export default function ConfigPerfilMedico() {
         especialidade: '',
         universidade: '',
         ano_formacao: '',
-        clinica_id: ''
+        clinica_id: '',
+        preco_consulta: '' // Adicionado campo de preço
     });
     const [passwordData, setPasswordData] = useState({
         senhaAtual: '',
@@ -102,7 +103,8 @@ export default function ConfigPerfilMedico() {
                     especialidade: data.especialidade || '',
                     universidade: data.universidade || '',
                     ano_formacao: data.ano_formacao || '',
-                    clinica_id: data.clinica_id || ''
+                    clinica_id: data.clinica_id || '',
+                    preco_consulta: data.preco_consulta || '' // Carrega o preço
                 });
             }
         } catch (error) {
@@ -141,6 +143,22 @@ export default function ConfigPerfilMedico() {
             return cep.replace(/(\d{5})(\d{3})/, '$1-$2').slice(0, 9);
         }
         return valor;
+    };
+
+    const formatarPreco = (valor) => {
+        // Remove tudo que não é número
+        let numero = valor.replace(/\D/g, '');
+        
+        // Converte para centavos
+        let centavos = parseInt(numero) / 100;
+        
+        if (isNaN(centavos)) return '';
+        
+        // Formata como moeda brasileira
+        return centavos.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     };
 
     const getIniciais = () => {
@@ -276,6 +294,10 @@ export default function ConfigPerfilMedico() {
             setUserData(prev => ({ ...prev, [name]: formatarTelefone(value) }));
         } else if (name === 'cep') {
             setUserData(prev => ({ ...prev, [name]: formatarCEP(value) }));
+        } else if (name === 'preco_consulta') {
+            // Formata o preço enquanto digita
+            const precoFormatado = formatarPreco(value);
+            setUserData(prev => ({ ...prev, [name]: precoFormatado }));
         } else {
             setUserData(prev => ({ ...prev, [name]: value }));
         }
@@ -295,6 +317,15 @@ export default function ConfigPerfilMedico() {
             const cpfLimpo = userData.cpf.replace(/\D/g, '');
             const telefoneLimpo = userData.telefone.replace(/\D/g, '');
             const cepLimpo = userData.cep.replace(/\D/g, '');
+            
+            // Converte o preço formatado para número
+            let precoNumero = null;
+            if (userData.preco_consulta) {
+                // Remove formatação e converte para número
+                const precoLimpo = userData.preco_consulta.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
+                precoNumero = parseFloat(precoLimpo);
+                if (isNaN(precoNumero)) precoNumero = null;
+            }
 
             const dadosParaAtualizar = {
                 nome: userData.nome,
@@ -311,7 +342,8 @@ export default function ConfigPerfilMedico() {
                 especialidade: userData.especialidade,
                 universidade: userData.universidade,
                 ano_formacao: userData.ano_formacao,
-                clinica_id: userData.clinica_id || null
+                clinica_id: userData.clinica_id || null,
+                preco_consulta: precoNumero // Adiciona o preço
             };
 
             const { error } = await supabase
@@ -585,6 +617,11 @@ export default function ConfigPerfilMedico() {
                             {userData.crm && (
                                 <span className="crm-tag-medico">CRM: {userData.crm}</span>
                             )}
+                            {userData.preco_consulta && (
+                                <span className="preco-tag-medico">
+                                    Consulta: R$ {userData.preco_consulta}
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -745,6 +782,16 @@ export default function ConfigPerfilMedico() {
                                     ))}
                                 </select>
                             </div>
+                            {/* Campo de Preço da Consulta */}
+                            <input 
+                                type="text" 
+                                name="preco_consulta"
+                                placeholder="Preço da consulta (R$)" 
+                                value={userData.preco_consulta}
+                                onChange={handleInputChange}
+                                className="preco-input-medico"
+                            />
+                            <small className="preco-hint-medico">Digite o valor da consulta (ex: 150,00)</small>
                         </div>
                     </div>
 

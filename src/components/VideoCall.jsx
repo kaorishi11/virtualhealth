@@ -1,198 +1,166 @@
-import { useEffect, useRef, useState } from 'react'
-import dailyIframe from '@daily-co/daily-js'
+import { useEffect, useRef, useState } from "react";
 
-export default function VideoCall({ roomUrl, userName, onCallEnd, isDoctor = false }) {
-  const [callFrame, setCallFrame] = useState(null)
-  const [isJoined, setIsJoined] = useState(false)
-  const [participants, setParticipants] = useState(0)
-  const [callStatus, setCallStatus] = useState('connecting')
-  const iframeRef = useRef(null)
+export default function VideoCall({
+  roomUrl,
+  userName,
+  onCallEnd
+}) {
+  const containerRef = useRef(null);
+  const apiRef = useRef(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!roomUrl) {
-      console.error('Room URL não fornecida')
-      setCallStatus('error')
-      return
-    }
+    if (!roomUrl) return;
 
-    console.log('Iniciando chamada com URL:', roomUrl)
-    
-    try {
-      // Criar instância do Daily
-      const frame = dailyIframe.createFrame(iframeRef.current, {
-        showLeaveButton: true,
-        showFullscreenButton: true,
-        showLocalVideo: true,
-        showParticipantsBar: true,
-        lang: 'pt',
-        twemoji: true,
-        showDeveloperInfo: false,
-      })
+    const roomName = roomUrl.split("/").pop();
 
-      setCallFrame(frame)
+    async function iniciarJitsi() {
+      try {
+        setLoading(true);
 
-      // Eventos da chamada
-      frame.on('joining-meeting', () => {
-        console.log('Entrando na reunião...')
-        setCallStatus('joining')
-      })
+        // Esperar script carregar
+        await carregarScript();
 
-      frame.on('joined-meeting', (event) => {
-        console.log('Entrou na reunião:', event)
-        setIsJoined(true)
-        setCallStatus('joined')
-        setParticipants(event.participants?.length || 1)
-      })
-
-      frame.on('participant-joined', (event) => {
-        console.log('Participante entrou:', event)
-        setParticipants(prev => prev + 1)
-      })
-
-      frame.on('participant-left', (event) => {
-        console.log('Participante saiu:', event)
-        setParticipants(prev => prev - 1)
-      })
-
-      frame.on('left-meeting', () => {
-        console.log('Saiu da reunião')
-        setIsJoined(false)
-        setCallStatus('left')
-        if (onCallEnd) onCallEnd()
-      })
-
-      frame.on('error', (error) => {
-        console.error('Erro na chamada:', error)
-        setCallStatus('error')
-      })
-
-      // Participar da reunião
-      frame.join({
-        url: roomUrl,
-        userName: userName,
-      })
-
-    } catch (error) {
-      console.error('Erro ao criar frame:', error)
-      setCallStatus('error')
-    }
-
-    // Cleanup
-    return () => {
-      if (callFrame) {
-        try {
-          callFrame.leave()
-          setTimeout(() => callFrame.destroy(), 1000)
-        } catch (error) {
-          console.error('Erro ao destruir frame:', error)
+        if (!window.JitsiMeetExternalAPI) {
+          throw new Error("JitsiMeetExternalAPI não carregou");
         }
+
+        apiRef.current = new window.JitsiMeetExternalAPI(
+          "meet.jit.si",
+          {
+            roomName,
+            parentNode: containerRef.current,
+            width: "100%",
+            height: "100%",
+
+            userInfo: {
+              displayName: userName,
+            },
+
+            configOverwrite: {
+              prejoinPageEnabled: false,
+              startWithAudioMuted: false,
+              startWithVideoMuted: false,
+              disableModeratorIndicator: true,
+            },
+
+            interfaceConfigOverwrite: {
+              SHOW_JITSI_WATERMARK: false,
+              SHOW_WATERMARK_FOR_GUESTS: false,
+            }
+          }
+        );
+
+        apiRef.current.addEventListener(
+          "videoConferenceJoined",
+          () => {
+            console.log("Entrou na call");
+            setLoading(false);
+          }
+        );
+
+        apiRef.current.addEventListener(
+          "readyToClose",
+          () => {
+            if (onCallEnd) onCallEnd();
+          }
+        );
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
       }
     }
-  }, [roomUrl, userName, onCallEnd])
 
-  const toggleFullscreen = () => {
-    if (iframeRef.current) {
-      if (document.fullscreenElement) {
-        document.exitFullscreen()
-      } else {
-        iframeRef.current.requestFullscreen()
+    iniciarJitsi();
+
+    return () => {
+      if (apiRef.current) {
+        apiRef.current.dispose();
       }
-    }
-  }
+    };
+  }, [roomUrl]);
 
-  const getStatusText = () => {
-    switch (callStatus) {
-      case 'connecting': return '🔌 Conectando...'
-      case 'joining': return '📞 Entrando na chamada...'
-      case 'joined': return '📹 Em chamada'
-      case 'left': return '⏹️ Chamada encerrada'
-      case 'error': return '❌ Erro na conexão'
-      default: return '📹 Chamada'
-    }
+  function carregarScript() {
+    return new Promise((resolve, reject) => {
+      // já carregou
+      if (window.JitsiMeetExternalAPI) {
+        resolve();
+        return;
+      }
+
+      const existingScript = document.querySelector(
+        'script[src="https://meet.jit.si/external_api.js"]'
+      );
+
+      if (existingScript) {
+        existingScript.onload = resolve;
+        return;
+      }
+
+      const script = document.createElement("script");
+
+      script.src =
+        "https://meet.jit.si/external_api.js";
+
+      script.async = true;
+
+      script.onload = () => resolve();
+
+      script.onerror = () =>
+        reject(new Error("Erro ao carregar Jitsi"));
+
+      document.body.appendChild(script);
+    });
   }
 
   return (
-    <div className="video-call-wrapper" style={{
-      width: '100%',
-      backgroundColor: '#f5f5f5',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-    }}>
-      <div className="video-call-header" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '12px 20px',
-        backgroundColor: '#2c3e50',
-        color: 'white',
-        flexWrap: 'wrap',
-        gap: '10px'
-      }}>
-        <div className="call-info" style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span className="call-status" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontWeight: 'bold'
-          }}>
-            {getStatusText()}
-          </span>
-          {isJoined && (
-            <span className="participants-count" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              fontSize: '14px'
-            }}>
-              👥 {participants} participante(s)
-            </span>
-          )}
-        </div>
-        <div className="call-controls" style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={toggleFullscreen} 
-            className="fullscreen-btn"
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#34495e',
-              border: 'none',
-              borderRadius: '6px',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            ⛶ Tela cheia
-          </button>
-        </div>
-      </div>
-      
-      <div style={{ position: 'relative', backgroundColor: '#000' }}>
-        <iframe
-          ref={iframeRef}
-          title="Video Call"
-          allow="camera; microphone; fullscreen; display-capture"
+    <div
+      style={{
+        width: "100%",
+        height: "700px",
+        borderRadius: "12px",
+        overflow: "hidden",
+        background: "#111",
+        position: "relative",
+      }}
+    >
+      {loading && !error && (
+        <div
           style={{
-            width: '100%',
-            height: '600px',
-            border: 'none',
-            backgroundColor: '#1a1a1a'
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            color: "#fff",
+            zIndex: 10,
           }}
-        />
-      </div>
-      
-      <div className="video-call-footer" style={{
-        padding: '10px 20px',
-        backgroundColor: '#ecf0f1',
-        textAlign: 'center',
-        fontSize: '12px',
-        color: '#7f8c8d'
-      }}>
-        <p className="call-tip">
-          💡 Dica: Use fones de ouvido para melhor qualidade de áudio
-        </p>
-      </div>
+        >
+          Conectando à consulta...
+        </div>
+      )}
+
+      {error && (
+        <div
+          style={{
+            color: "red",
+            padding: 30,
+          }}
+        >
+          ❌ {error}
+        </div>
+      )}
+
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+      />
     </div>
-  )
+  );
 }

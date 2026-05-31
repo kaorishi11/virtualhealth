@@ -446,21 +446,21 @@ export default function HomeMe() {
 
                 <div className="stats-cards">
                     <div className="stat-card">
-                        <img src={icon1} alt="" />
+                        <img src={icon1} alt="Consultas hoje" />
                         <div className="stat-info">
                             <h4>Consultas hoje</h4>
                             <p>{stats.consultasHoje}</p>
                         </div>
                     </div>
                     <div className="stat-card">
-                        <img src={icon2} alt="" />
+                        <img src={icon2} alt="Pacientes mês" />
                         <div className="stat-info">
                             <h4>Pacientes este mês</h4>
                             <p>{stats.pacientesMes}</p>
                         </div>
                     </div>
                     <div className="stat-card">
-                        <img src={icontempo} alt="" />
+                        <img src={icontempo} alt="Aguardando" />
                         <div className="stat-info">
                             <h4>Aguardando</h4>
                             <p>{stats.aguardando}</p>
@@ -472,7 +472,7 @@ export default function HomeMe() {
                     <div className="consultas-hoje">
                         <div className="section-header">
                             <div className="section-header-left">
-                                <img src={icontempo} alt="" />
+                                <img src={icontempo} alt="Tempo" />
                                 <h2>CONSULTAS DE HOJE</h2>
                             </div>
                             {consultasHoje.length > 4 && (

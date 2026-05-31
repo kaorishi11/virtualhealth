@@ -12,7 +12,7 @@
     background: #f0f2f5;
 }
 
-/* ========== SIDEBAR - IGUAL AO DICASME ========== */
+/* ========== SIDEBAR ========== */
 .navbar {
     width: 260px;
     min-width: 260px;
@@ -194,13 +194,6 @@
     border-radius: 10px;
     transition: 0.2s;
     text-align: center;
-}
-
-.navbar a img {
-    width: 18px;
-    height: 18px;
-    filter: brightness(0) invert(1);
-    opacity: 0.85;
 }
 
 .navbar .spacer {
@@ -415,10 +408,11 @@
 
 .horarios-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 12px;
 }
 
+/* CARD DE HORÁRIO */
 .horario-card {
     background: white;
     border-radius: 12px;
@@ -428,6 +422,8 @@
     justify-content: space-between;
     border: 1px solid #eef2f6;
     transition: all 0.2s;
+    gap: 16px;
+    flex-wrap: nowrap;
 }
 
 .horario-card:hover {
@@ -436,25 +432,47 @@
     border-color: #e2e8f0;
 }
 
+.horario-info {
+    flex-shrink: 0;
+}
+
 .horario-info .horario {
     font-size: 0.9rem;
     font-weight: 600;
     color: #1a6b6f;
+    background: #f0f5f7;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: inline-block;
 }
 
+/* AÇÕES DOS BOTÕES - CORRIGIDO COM ALINHAMENTO PERFEITO */
 .horario-actions {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+    align-items: center;
 }
 
 .btn-editar, .btn-excluir {
     background: none;
     border: none;
     font-size: 0.75rem;
+    font-weight: 600;
     cursor: pointer;
-    padding: 4px 10px;
+    padding: 0 14px;
     border-radius: 8px;
     transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 65px;
+    height: 32px;
+    line-height: 1;
+    margin: 0;
+    vertical-align: middle;
+    box-sizing: border-box;
 }
 
 .btn-editar {
@@ -464,6 +482,7 @@
 
 .btn-editar:hover {
     background: #dbeafe;
+    transform: translateY(-1px);
 }
 
 .btn-excluir {
@@ -473,6 +492,33 @@
 
 .btn-excluir:hover {
     background: #fee2e2;
+    transform: translateY(-1px);
+}
+
+/* Reset específico para botões */
+.btn-editar::-moz-focus-inner,
+.btn-excluir::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+
+/* Botões desabilitados */
+.btn-editar:disabled, 
+.btn-excluir:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Garantir que nenhum elemento flutue */
+.horario-card,
+.horario-info,
+.horario-actions,
+.btn-editar,
+.btn-excluir {
+    position: relative;
+    float: none;
+    clear: none;
 }
 
 .no-data {
@@ -559,6 +605,23 @@
         margin-bottom: 0;
     }
     
+    .medico-img-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .medico-img-iniciais {
+        font-size: 16px;
+    }
+    
+    .medico-info h4 .primeiro-nome {
+        font-size: 12px;
+    }
+    
+    .medico-info .sobrenome {
+        display: none;
+    }
+    
     .navbar h3 {
         display: none;
     }
@@ -576,7 +639,7 @@
     
     .navbar a {
         padding: 6px 12px;
-        font-size: 12px;
+        font-size: 11px;
     }
     
     .logout {
@@ -590,15 +653,26 @@
         max-width: 100%;
     }
     
+    /* Correção para mobile */
     .horario-card {
         flex-direction: column;
-        gap: 10px;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .horario-info {
         text-align: center;
     }
     
     .horario-actions {
-        width: 100%;
+        margin-left: 0;
         justify-content: center;
+    }
+    
+    .btn-editar, .btn-excluir {
+        flex: 1;
+        text-align: center;
+        height: 36px;
     }
 }
 
@@ -617,5 +691,16 @@
     
     .btn-salvar, .btn-cancelar {
         width: 100%;
+    }
+    
+    /* Correção para mobile pequeno */
+    .horario-actions {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .btn-editar, .btn-excluir {
+        width: 100%;
+        height: 38px;
     }
 }
