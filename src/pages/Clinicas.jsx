@@ -57,15 +57,16 @@ export default function Clinicas() {
     const [confirmationDetailsPresencial, setConfirmationDetailsPresencial] = useState({});
     
     const [pacienteId, setPacienteId] = useState(null);
+    const [pacienteNome, setPacienteNome] = useState("");
 
     // Estados para navegação do calendário
     const [mesAtual, setMesAtual] = useState(new Date().getMonth());
     const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
 
-    // Refs para detectar clique fora do card
     const cardRefs = useRef({});
 
-    // Função para gerar iniciais
+    // ==================== FUNÇÕES AUXILIARES ====================
+
     const getIniciais = (nome) => {
         if (!nome) return '?';
         const nomes = nome.trim().split(' ');
@@ -73,7 +74,6 @@ export default function Clinicas() {
         return (nomes[0].charAt(0) + nomes[nomes.length - 1].charAt(0)).toUpperCase();
     };
 
-    // Função para gerar cor de fundo
     const getCorFundo = (nome) => {
         if (!nome) return '#6366f1';
         
@@ -195,6 +195,138 @@ export default function Clinicas() {
         return horarios;
     }
 
+    // ==================== FUNÇÕES DE AGENDAMENTO ====================
+
+    async function verificarDisponibilidadeHorario(medicoId, data, horario) {
+        const { data: agendamentoExistente, error } = await supabase
+            .from("agendamentos")
+            .select("id")
+            .eq("medico_id", medicoId)
+            .eq("data_consulta", data)
+            .eq("horario", horario)
+            .eq("status", "agendada");
+
+        if (error) {
+            console.error("Erro ao verificar disponibilidade:", error);
+            return false;
+        }
+
+        return agendamentoExistente?.length === 0;
+    }
+
+    async function salvarAgendamentoPresencial(medico, pacienteId, data, horario, pacienteNome) {
+        const disponivel = await verificarDisponibilidadeHorario(medico.id, data, horario);
+        
+        if (!disponivel) {
+            alert("Este horário já está ocupado!");
+            return false;
+        }
+
+        const { error } = await supabase
+            .from("agendamentos")
+            .insert({
+                paciente_id: pacienteId,
+                medico_id: medico.id,
+                tipo: "presencial",
+                data_consulta: data,
+                horario: horario,
+                status: "agendada"
+            });
+
+        if (error) {
+            console.error("Erro ao agendar:", error);
+            alert("Erro ao agendar consulta. " + error.message);
+            return false;
+        }
+
+        // Criar notificações
+        await supabase.from("notificacoes").insert([
+            {
+                usuario_id: medico.id,
+                titulo: "Nova consulta agendada",
+                mensagem: `${pacienteNome} agendou uma consulta presencial para ${data} às ${horario}`,
+                tipo: "consulta",
+                lida: false
+            },
+            {
+                usuario_id: pacienteId,
+                titulo: "Consulta agendada com sucesso!",
+                mensagem: `Sua consulta com Dr(a). ${medico.nome} foi agendada para ${data} às ${horario} - Presencial`,
+                tipo: "consulta",
+                lida: false
+            }
+        ]);
+
+        return true;
+    }
+
+    async function salvarAgendamentoTeleconsulta(medico, pacienteId, data, horario, pacienteNome) {
+        const disponivel = await verificarDisponibilidadeHorario(medico.id, data, horario);
+        
+        if (!disponivel) {
+            alert("Este horário já está ocupado!");
+            return false;
+        }
+
+        const codigoSala = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const salaUrl = `https://meet.jit.si/VirtualHealth_${codigoSala}_${Date.now()}`;
+
+        // Criar sala
+        const { error: salaError } = await supabase
+            .from("consulta_salas")
+            .insert({
+                codigo: codigoSala,
+                medico_id: medico.id,
+                paciente_id: pacienteId,
+                sala_url: salaUrl,
+                status: "aguardando_medico"
+            });
+
+        if (salaError) {
+            console.error("Erro ao criar sala:", salaError);
+            alert("Erro ao criar sala de consulta.");
+            return false;
+        }
+
+        // Criar agendamento
+        const { error: agendamentoError } = await supabase
+            .from("agendamentos")
+            .insert({
+                paciente_id: pacienteId,
+                medico_id: medico.id,
+                tipo: "teleconsulta",
+                data_consulta: data,
+                horario: horario,
+                status: "agendada"
+            });
+
+        if (agendamentoError) {
+            console.error("Erro ao agendar:", agendamentoError);
+            alert("Erro ao agendar consulta.");
+            return false;
+        }
+
+        // Criar notificações
+        await supabase.from("notificacoes").insert([
+            {
+                usuario_id: medico.id,
+                titulo: "Nova teleconsulta agendada",
+                mensagem: `${pacienteNome} agendou uma teleconsulta para ${data} às ${horario}. Código: ${codigoSala}`,
+                tipo: "teleconsulta",
+                lida: false
+            },
+            {
+                usuario_id: pacienteId,
+                titulo: "Teleconsulta agendada!",
+                mensagem: `Sua consulta com Dr(a). ${medico.nome} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
+                tipo: "teleconsulta",
+                lida: false
+            }
+        ]);
+
+        return true;
+    }
+
     // ==================== FUNÇÕES DE USUÁRIO ====================
 
     async function buscarPacienteLogado() {
@@ -208,12 +340,13 @@ export default function Clinicas() {
 
             const { data: usuario } = await supabase
                 .from("usuarios")
-                .select("id, tipo")
+                .select("id, tipo, nome")
                 .eq("id", user.id)
                 .single();
 
             if (usuario && usuario.tipo === 'paciente') {
                 setPacienteId(usuario.id);
+                setPacienteNome(usuario.nome);
             } else if (usuario && usuario.tipo === 'medico') {
                 navigate("/home-medico");
             }
@@ -246,93 +379,98 @@ export default function Clinicas() {
     async function buscarMedicos() {
         setLoading(true);
         
-        const { data: medicos, error } = await supabase
-            .from("usuarios")
-            .select(`
-                id,
-                nome,
-                especialidade,
-                foto,
-                crm,
-                ano_formacao,
-                universidade,
-                preco_consulta,
-                clinica_id,
-                clinicas (
+        try {
+            const { data: medicos, error } = await supabase
+                .from("usuarios")
+                .select(`
                     id,
                     nome,
-                    descricao,
-                    logradouro,
-                    bairro,
-                    cidade,
-                    estado,
-                    cep,
-                    telefone,
-                    email,
-                    imagem,
-                    horario_funcionamento
-                )
-            `)
-            .eq("tipo", "medico");
+                    especialidade,
+                    foto,
+                    crm,
+                    ano_formacao,
+                    universidade,
+                    preco_consulta,
+                    clinica_id,
+                    clinicas (
+                        id,
+                        nome,
+                        descricao,
+                        logradouro,
+                        bairro,
+                        cidade,
+                        estado,
+                        cep,
+                        telefone,
+                        email,
+                        imagem,
+                        horario_funcionamento
+                    )
+                `)
+                .eq("tipo", "medico");
 
-        if (error) {
-            console.error("Erro ao buscar médicos:", error);
-            setLoading(false);
-            return;
-        }
+            if (error) {
+                console.error("Erro ao buscar médicos:", error);
+                setLoading(false);
+                return;
+            }
 
-        const medicosFormatados = await Promise.all(
-            medicos.map(async (medico) => {
-                let lat = -23.1005;
-                let lng = -45.7072;
+            const medicosFormatados = await Promise.all(
+                medicos.map(async (medico) => {
+                    let lat = -23.1005;
+                    let lng = -45.7072;
 
-                const diasDisponiveisMedico = await buscarDiasDisponiveis(
-                    medico.id, 
-                    mesAtual, 
-                    anoAtual
-                );
+                    const diasDisponiveisMedico = await buscarDiasDisponiveis(
+                        medico.id, 
+                        mesAtual, 
+                        anoAtual
+                    );
 
-                if (medico.clinicas) {
-                    const endereco = `${medico.clinicas.logradouro}, ${medico.clinicas.bairro}, ${medico.clinicas.cidade}, ${medico.clinicas.estado}`;
-                    
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`
-                        );
-                        const geoData = await response.json();
-                        if (geoData.length > 0) {
-                            lat = Number(geoData[0].lat);
-                            lng = Number(geoData[0].lon);
+                    if (medico.clinicas) {
+                        const endereco = `${medico.clinicas.logradouro}, ${medico.clinicas.bairro}, ${medico.clinicas.cidade}, ${medico.clinicas.estado}`;
+                        
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`
+                            );
+                            const geoData = await response.json();
+                            if (geoData.length > 0) {
+                                lat = Number(geoData[0].lat);
+                                lng = Number(geoData[0].lon);
+                            }
+                        } catch (err) {
+                            console.error("Erro ao buscar localização:", err);
                         }
-                    } catch (err) {
-                        console.error("Erro ao buscar localização:", err);
                     }
-                }
 
-                return {
-                    id: medico.id,
-                    name: medico.nome,
-                    specialty: medico.especialidade || "Especialista",
-                    crm: medico.crm,
-                    anoFormacao: medico.ano_formacao,
-                    universidade: medico.universidade,
-                    rating: 4.9,
-                    reviews: 38,
-                    enderecoCompleto: medico.clinicas
-                        ? `${medico.clinicas.nome} - ${medico.clinicas.logradouro}, ${medico.clinicas.bairro}, ${medico.clinicas.cidade} - ${medico.clinicas.estado}`
-                        : "Clínica não informada",
-                    clinicaInfo: medico.clinicas,
-                    price: medico.preco_consulta || 90.00,
-                    foto: medico.foto || null,
-                    coordinates: { lat, lng },
-                    diasDisponiveis: diasDisponiveisMedico,
-                    cep: medico.clinicas?.cep || null
-                };
-            })
-        );
+                    return {
+                        id: medico.id,
+                        name: medico.nome,
+                        specialty: medico.especialidade || "Especialista",
+                        crm: medico.crm,
+                        anoFormacao: medico.ano_formacao,
+                        universidade: medico.universidade,
+                        rating: 4.9,
+                        reviews: 38,
+                        enderecoCompleto: medico.clinicas
+                            ? `${medico.clinicas.logradouro}, ${medico.clinicas.bairro}, ${medico.clinicas.cidade} - ${medico.clinicas.estado}`
+                            : "Clínica não informada",
+                        clinicaInfo: medico.clinicas,
+                        price: medico.preco_consulta || 90.00,
+                        foto: medico.foto || null,
+                        coordinates: { lat, lng },
+                        diasDisponiveis: diasDisponiveisMedico,
+                        cep: medico.clinicas?.cep || null
+                    };
+                })
+            );
 
-        setDoctors(medicosFormatados);
-        setLoading(false);
+            setDoctors(medicosFormatados);
+        } catch (error) {
+            console.error("Erro ao buscar médicos:", error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     async function carregarNotificacoes() {
@@ -357,157 +495,8 @@ export default function Clinicas() {
         }
     }
 
-    // ==================== FUNÇÕES DE AGENDAMENTO ====================
+    // ==================== HANDLERS ====================
 
-    async function verificarDisponibilidadeHorario(medicoId, data, horario) {
-        const { data: agendamentoExistente, error } = await supabase
-            .from("agendamentos")
-            .select("id")
-            .eq("medico_id", medicoId)
-            .eq("data_consulta", data)
-            .eq("horario", horario)
-            .eq("status", "agendada");
-
-        if (error) {
-            console.error("Erro ao verificar disponibilidade:", error);
-            return false;
-        }
-
-        return agendamentoExistente?.length === 0;
-    }
-
-    async function salvarAgendamentoPresencial(medico, pacienteId, data, horario) {
-        const disponivel = await verificarDisponibilidadeHorario(medico.id, data, horario);
-        
-        if (!disponivel) {
-            alert("Este horário já está ocupado!");
-            return false;
-        }
-
-        const { error } = await supabase
-            .from("agendamentos")
-            .insert({
-                paciente_id: pacienteId,
-                medico_id: medico.id,
-                tipo: "presencial",
-                data_consulta: data,
-                horario: horario,
-                status: "agendada"
-            });
-
-        if (error) {
-            console.error("Erro ao agendar:", error);
-            alert("Erro ao agendar consulta. " + error.message);
-            return false;
-        }
-
-        await supabase.from("notificacoes").insert([
-            {
-                usuario_id: medico.id,
-                titulo: "Nova consulta agendada",
-                mensagem: `Um paciente agendou uma consulta presencial para ${data} às ${horario}`,
-                tipo: "consulta"
-            },
-            {
-                usuario_id: pacienteId,
-                titulo: "Consulta agendada com sucesso!",
-                mensagem: `Sua consulta com Dr(a). ${medico.name} foi agendada para ${data} às ${horario}`,
-                tipo: "consulta"
-            }
-        ]);
-
-        return true;
-    }
-
-    async function salvarAgendamentoTeleconsulta(medico, pacienteId, data, horario) {
-        const disponivel = await verificarDisponibilidadeHorario(medico.id, data, horario);
-        
-        if (!disponivel) {
-            alert("Este horário já está ocupado!");
-            return false;
-        }
-
-        const codigoSala = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const salaUrl = `https://meet.jit.si/VirtualHealth_${codigoSala}`;
-
-        const { error: salaError } = await supabase
-            .from("consulta_salas")
-            .insert({
-                codigo: codigoSala,
-                medico_id: medico.id,
-                paciente_id: pacienteId,
-                sala_url: salaUrl,
-                status: "aguardando"
-            });
-
-        if (salaError) {
-            console.error("Erro ao criar sala:", salaError);
-            alert("Erro ao criar sala de consulta.");
-            return false;
-        }
-
-        const { error: agendamentoError } = await supabase
-            .from("agendamentos")
-            .insert({
-                paciente_id: pacienteId,
-                medico_id: medico.id,
-                tipo: "teleconsulta",
-                data_consulta: data,
-                horario: horario,
-                status: "agendada"
-            });
-
-        if (agendamentoError) {
-            console.error("Erro ao agendar:", agendamentoError);
-            alert("Erro ao agendar consulta.");
-            return false;
-        }
-
-        await supabase.from("notificacoes").insert([
-            {
-                usuario_id: medico.id,
-                titulo: "Nova teleconsulta agendada",
-                mensagem: `Um paciente agendou uma teleconsulta para ${data} às ${horario}. Código: ${codigoSala}`,
-                tipo: "teleconsulta"
-            },
-            {
-                usuario_id: pacienteId,
-                titulo: "Teleconsulta agendada!",
-                mensagem: `Sua consulta com Dr(a). ${medico.name} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
-                tipo: "teleconsulta"
-            }
-        ]);
-
-        localStorage.setItem(`consulta_${pacienteId}`, codigoSala);
-        return true;
-    }
-
-    // ==================== FUNÇÕES DE NAVEGAÇÃO DO CALENDÁRIO ====================
-
-    const mesAnterior = () => {
-        if (mesAtual === 0) {
-            setMesAtual(11);
-            setAnoAtual(anoAtual - 1);
-        } else {
-            setMesAtual(mesAtual - 1);
-        }
-    };
-
-    const proximoMes = () => {
-        if (mesAtual === 11) {
-            setMesAtual(0);
-            setAnoAtual(anoAtual + 1);
-        } else {
-            setMesAtual(mesAtual + 1);
-        }
-    };
-
-    const getNomeMes = () => {
-        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        return `${meses[mesAtual]} ${anoAtual}`;
-    };
-
-    // Função para resetar o calendário de um médico específico
     const resetCalendar = (doctorId) => {
         setShowCalendar(prev => ({ ...prev, [doctorId]: false }));
         setActiveTab(prev => ({ ...prev, [doctorId]: undefined }));
@@ -517,7 +506,6 @@ export default function Clinicas() {
         setSelectedHourPresencial(prev => ({ ...prev, [doctorId]: null }));
     };
 
-    // Detectar clique fora do card
     useEffect(() => {
         const handleClickOutside = (event) => {
             Object.keys(cardRefs.current).forEach((doctorId) => {
@@ -534,8 +522,6 @@ export default function Clinicas() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showCalendar]);
-
-    // ==================== HANDLERS ====================
 
     const handleTabClick = (doctorId, tabType) => {
         setActiveTab(prev => ({ ...prev, [doctorId]: tabType }));
@@ -588,7 +574,8 @@ export default function Clinicas() {
                 selectedDoctorPayment,
                 pacienteId,
                 dataFormatada,
-                selectedHourPayment
+                selectedHourPayment,
+                pacienteNome
             );
             
             if (sucesso) {
@@ -612,7 +599,8 @@ export default function Clinicas() {
                 doc,
                 pacienteId,
                 dataFormatada,
-                horaSelecionada
+                horaSelecionada,
+                pacienteNome
             );
             
             if (sucesso) {
@@ -636,9 +624,11 @@ export default function Clinicas() {
     const handleAgendar = (doc) => {
         if (activeTab[doc.id] === 'teleconsulta') {
             handlePagarConsulta(doc);
-        } else {
+        } else if (activeTab[doc.id] === 'presencial') {
             setSelectedDoctor(doc);
             setModalOpen(true);
+        } else {
+            alert("Selecione o tipo de consulta (Presencial ou Teleconsulta)");
         }
     };
 
@@ -721,6 +711,29 @@ export default function Clinicas() {
             case 'teleconsulta': return 'teleconsulta';
             default: return 'sistema';
         }
+    };
+
+    const mesAnterior = () => {
+        if (mesAtual === 0) {
+            setMesAtual(11);
+            setAnoAtual(anoAtual - 1);
+        } else {
+            setMesAtual(mesAtual - 1);
+        }
+    };
+
+    const proximoMes = () => {
+        if (mesAtual === 11) {
+            setMesAtual(0);
+            setAnoAtual(anoAtual + 1);
+        } else {
+            setMesAtual(mesAtual + 1);
+        }
+    };
+
+    const getNomeMes = () => {
+        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        return `${meses[mesAtual]} ${anoAtual}`;
     };
 
     const filteredDoctors = doctors.filter(
@@ -887,7 +900,7 @@ export default function Clinicas() {
                                         Teleconsulta
                                     </button>
                                 </div>
-                                {activeTab[doc.id] === 'presencial' && !showCalendar[doc.id] && (
+                                                                {activeTab[doc.id] === 'presencial' && !showCalendar[doc.id] && (
                                     <div className="address-section">
                                         <p className="address-full"><img src={iconlocal} alt="local" />{doc.enderecoCompleto}</p>
                                         {doc.cep && (
@@ -895,7 +908,7 @@ export default function Clinicas() {
                                                 CEP: {doc.cep}
                                             </p>
                                         )}
-                                                                       </div>
+                                    </div>
                                 )}
                                 {activeTab[doc.id] === 'teleconsulta' && !showCalendar[doc.id] && (
                                     <div className="tele-info-left">
@@ -911,7 +924,6 @@ export default function Clinicas() {
                             </div>
                             <div className="doctor-right">
                                 {!showCalendar[doc.id] ? (
-                                    // Mostra o mapa e informações iniciais
                                     <div className="info-content">
                                         <div className="location-section">
                                             <h4>Localização da Clínica</h4>
@@ -953,19 +965,18 @@ export default function Clinicas() {
                                                     <strong>Informações da Clínica:</strong>
                                                 </p>
                                                 {doc.clinicaInfo?.telefone && (
-                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Telefone: {doc.clinicaInfo.telefone}</p>
+                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>📞 Telefone: {doc.clinicaInfo.telefone}</p>
                                                 )}
                                                 {doc.clinicaInfo?.email && (
-                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Email: {doc.clinicaInfo.email}</p>
+                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>📧 Email: {doc.clinicaInfo.email}</p>
                                                 )}
                                                 {doc.clinicaInfo?.horario_funcionamento && (
-                                                    <p style={{ fontSize: '12px' }}>Horário: {doc.clinicaInfo.horario_funcionamento}</p>
+                                                    <p style={{ fontSize: '12px' }}>🕐 Horário: {doc.clinicaInfo.horario_funcionamento}</p>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                 ) : (
-                                    // Mostra o calendário baseado na aba selecionada
                                     activeTab[doc.id] === 'teleconsulta' ? (
                                         <div className="teleconsulta-content">
                                             <div className="calendar-section">
@@ -1189,7 +1200,8 @@ export default function Clinicas() {
                                 </div>
 
                                 <div className="confirmation-footer">
-                                    <p>Você receberá o link da consulta por e-mail</p>
+                                    <p>Você receberá o código da consulta por e-mail e notificação</p>
+                                    <p style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>O código também estará disponível na página de Teleconsulta</p>
                                 </div>
                                 
                                 <button className="confirm-btn" onClick={closePaymentModal} style={{ marginTop: '20px', width: '100%' }}>Fechar</button>
@@ -1345,7 +1357,7 @@ export default function Clinicas() {
                                 </div>
 
                                 <div className="confirmation-footer">
-                                    <p>Você receberá um lembrete por e-mail</p>
+                                    <p>Você receberá um lembrete por e-mail e notificação</p>
                                 </div>
                                 
                                 <button className="confirm-btn" onClick={closeModal} style={{ marginTop: '20px', width: '100%' }}>Fechar</button>

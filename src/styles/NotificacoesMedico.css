@@ -1,0 +1,477 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.notificacoes-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f0f2f5;
+    font-family: "Segoe UI", "Inter", system-ui, sans-serif;
+}
+
+/* SIDEBAR - mesmo estilo do ConsultaMe */
+.navbar {
+    width: 260px;
+    min-width: 260px;
+    background: linear-gradient(180deg, #1f7378 0%, #135b5f 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.08);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+}
+
+.nav-header {
+    padding: 24px 20px 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    margin-bottom: 20px;
+}
+
+.logoperfil {
+    width: 108px;
+    height: auto;
+}
+
+.medico-section {
+    padding: 0 20px 20px 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.medico-img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ffd966;
+}
+
+.medico-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+}
+
+.medico-info p {
+    font-size: 11px;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.15);
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+
+.nav-section {
+    padding: 0 20px;
+    margin-bottom: 24px;
+}
+
+.navbar h3 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    margin: 0 0 12px 4px;
+    opacity: 0.7;
+    text-transform: uppercase;
+}
+
+.navbar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navbar li {
+    margin-bottom: 4px;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+
+.navbar li.active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.navbar li:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.navbar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 450;
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.logout {
+    padding: 20px 20px 30px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: auto;
+}
+
+.logout a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ff9999;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 12px;
+    border-radius: 10px;
+}
+
+.logout a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ff6666;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex: 1;
+    padding: 28px 36px;
+    overflow-y: auto;
+}
+
+.notificacoes-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.notificacoes-header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #1a2a3a;
+    margin: 0;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 8px;
+}
+
+.notificacoes-header h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #1a6b6f;
+    border-radius: 3px;
+}
+
+.badge {
+    background: #e74c3c;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* AÇÕES */
+.notificacoes-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filters {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    position: relative;
+    padding: 8px 20px;
+    border: 1px solid #e0e0e0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background: #f8f9fa;
+}
+
+.filter-btn.active {
+    background: #1a6b6f;
+    color: white;
+    border-color: #1a6b6f;
+}
+
+.filter-btn .count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.action-btn.mark-all {
+    background: #3498db;
+    color: white;
+}
+
+.action-btn.mark-all:hover {
+    background: #2980b9;
+}
+
+.action-btn.delete-read {
+    background: #95a5a6;
+    color: white;
+}
+
+.action-btn.delete-read:hover {
+    background: #7f8c8d;
+}
+
+/* LISTA DE NOTIFICAÇÕES */
+.notificacoes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.notification-card {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notification-card.unread {
+    background: linear-gradient(135deg, #fff 0%, #f0f9ff 100%);
+    border-left: 4px solid #1a6b6f;
+}
+
+.notification-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.notification-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.notification-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: #95a5a6;
+}
+
+.notification-message {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.notification-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.unread-badge {
+    background: #e74c3c;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #c0392b;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background: #fde8e8;
+}
+
+/* EMPTY STATE */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #7f8c8d;
+}
+
+/* LOADING */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #1a6b6f;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+    .navbar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        height: auto;
+        position: relative;
+        padding: 12px 20px;
+    }
+    
+    .nav-header, .medico-section, .nav-section {
+        margin-bottom: 0;
+        padding: 0;
+        border-bottom: none;
+    }
+    
+    .navbar ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .navbar li::after {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+    
+    .notificacoes-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .notificacoes-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filters {
+        justify-content: center;
+    }
+    
+    .bulk-actions {
+        justify-content: center;
+    }
+    
+    .notification-header {
+        flex-direction: column;
+    }
+}

@@ -533,6 +533,7 @@ export default function ConfigPerfilMedico() {
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
                         <li><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li className="active"><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>

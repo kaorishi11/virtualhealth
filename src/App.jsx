@@ -30,6 +30,8 @@ import DicasMe from "./pages/DicasMe";
 import ConsultaMe from "./pages/ConsultaMe";
 import Disponibilidade from './pages/Disponibilidade';
 import PerfilMe from "./pages/PerfilMe";
+import NotificacoesMedico from './pages/NotificacoesMedico';
+
 
 import TeleconsultaPa from "./pages/TeleconsultaPa";
 
@@ -193,6 +195,11 @@ export default function App() {
         <Route path="/perfil-medico" element={
           <MedicoRoute>
             <PerfilMe />
+          </MedicoRoute>
+        } />
+        <Route path="/notificacoesme" element={
+          <MedicoRoute>
+            <NotificacoesMedico />
           </MedicoRoute>
         } />
 
