@@ -25,7 +25,7 @@ export default function ChatMedico() {
         {
             id: 1,
             type: "doctor",
-            text: "Olá! 👋\n\nSou o assistente médico virtual da Virtual Health.\n\nComo posso ajudar você hoje? Descreva seus sintomas ou faça perguntas sobre saúde. Lembre-se: não dou diagnósticos definitivos, mas posso ajudar com informações e orientações! 😊",
+            text: "Olá! 👋\n\nSou o assistente médico virtual da Virtual Health, especializado APENAS em saúde e medicina.\n\nComo posso ajudar você hoje? Descreva seus sintomas ou faça perguntas sobre saúde. Lembre-se: não dou diagnósticos definitivos, mas posso ajudar com informações e orientações! 😊",
             time: "Agora"
         }
     ]);
@@ -36,6 +36,40 @@ export default function ChatMedico() {
     const [showNotifications, setShowNotifications] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+
+    // Palavras-chave relacionadas à saúde (whitelist)
+    const healthKeywords = [
+        'saúde', 'medicina', 'médico', 'consulta', 'sintoma', 'dor', 'febre', 'tosse',
+        'gripe', 'resfriado', 'pressão', 'coração', 'cabeça', 'estômago', 'náusea',
+        'vômito', 'diarréia', 'alergia', 'asma', 'diabetes', 'hipertensão', 'ansiedade',
+        'depressão', 'insônia', 'câncer', 'infecção', 'bactéria', 'vírus', 'vacina',
+        'remédio', 'medicamento', 'tratamento', 'cirurgia', 'exame', 'laboratório',
+        'hospital', 'clínica', 'enfermagem', 'doutor', 'enfermeiro', 'ambulância',
+        'emergência', 'primeiros socorros', 'gravidez', 'bebê', 'criança', 'idoso',
+        'nutrição', 'dieta', 'exercício', 'fitness', 'bem-estar', 'mental', 'psicologia',
+        'enxaqueca', 'vertigem', 'tontura', 'falta de ar', 'respiração', 'pulmão',
+        'rins', 'fígado', 'estômago', 'intestino', 'pele', 'mancha', 'coceira',
+        'vermelhidão', 'inchaço', 'fratura', 'entorse', 'luxação', 'queimadura',
+        'corte', 'hematoma', 'desmaio', 'convulsão', 'parada cardíaca', 'avc', 'derrame'
+    ];
+
+    // Palavras que indicam que NÃO é sobre saúde (blacklist)
+    const nonHealthKeywords = [
+        'filme', 'série', 'netflix', 'disney', 'hbo', 'prime video', 'youtube',
+        'barbie', 'superman', 'batman', 'homem aranha', 'vingadores', 'star wars',
+        'futebol', 'basquete', 'volei', 'tenis', 'corrida', 'fórmula 1',
+        'música', 'cantor', 'banda', 'show', 'concerto', 'spotify',
+        'política', 'presidente', 'governador', 'eleição', 'bolsonaro', 'lula',
+        'receita', 'cozinhar', 'comida', 'restaurante', 'culinária',
+        'viagem', 'hotel', 'praia', 'montanha', 'turismo',
+        'jogo', 'videogame', 'playstation', 'xbox', 'nintendo', 'fortnite',
+        'carro', 'moto', 'veículo', 'automóvel', 'fipe',
+        'clima', 'tempo', 'previsão do tempo', 'chuva', 'calor',
+        'tecnologia', 'celular', 'computador', 'internet', 'wi-fi',
+        'moda', 'roupa', 'vestido', 'sapato', 'maquiagem',
+        'famoso', 'celebridade', 'ator', 'atriz', 'novela',
+        'livro', 'leitura', 'biblioteca', 'autor', 'escritor'
+    ];
 
     // Função para buscar paciente logado
     async function buscarPacienteLogado() {
@@ -63,6 +97,78 @@ export default function ChatMedico() {
             navigate("/login");
         }
     }
+
+    // Função para verificar se a pergunta é sobre saúde
+    const isHealthRelated = (question) => {
+        const lowerQuestion = question.toLowerCase().trim();
+        
+        // Se a pergunta for muito curta, considera inválida
+        if (lowerQuestion.length < 4) {
+            return false;
+        }
+        
+        // Verifica se contém alguma palavra-chave de saúde (whitelist)
+        for (const keyword of healthKeywords) {
+            if (lowerQuestion.includes(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        
+        // Verifica se contém palavras que indicam NÃO saúde (blacklist)
+        for (const keyword of nonHealthKeywords) {
+            if (lowerQuestion.includes(keyword.toLowerCase())) {
+                return false;
+            }
+        }
+        
+        // Perguntas comuns que podem ser sobre saúde mesmo sem palavras-chave específicas
+        const healthPatterns = [
+            /estou me sentindo/, /sinto/, /doi/, /dói/, /doeu/, 
+            /o que pode ser/, /isso é normal/, /devo me preocupar/,
+            /preciso de ajuda/, /me ajuda/, /socorro/, /urgente/
+        ];
+        
+        for (const pattern of healthPatterns) {
+            if (pattern.test(lowerQuestion)) {
+                return true;
+            }
+        }
+        
+        // Se a pergunta começa com "qual", "quem", "quando", "onde" sem contexto de saúde
+        const questionStarters = /^(qual|quem|quando|onde|como|por que|para que) /i;
+        if (questionStarters.test(lowerQuestion) && !healthPatterns.some(p => p.test(lowerQuestion))) {
+            return false;
+        }
+        
+        // Por padrão, permite para não bloquear perguntas legítimas
+        return true;
+    };
+
+    // Função para gerar resposta de fora do contexto
+    const getOutOfContextResponse = (question) => {
+        // Extrai o assunto principal da pergunta
+        let subject = "este assunto";
+        
+        for (const keyword of nonHealthKeywords) {
+            if (question.toLowerCase().includes(keyword)) {
+                subject = keyword;
+                break;
+            }
+        }
+        
+        return `**Desculpe, não posso responder sobre isso!**
+
+Sou um assistente especializado **APENAS em saúde e medicina**. Não tenho conhecimento para responder perguntas sobre "${subject}".
+
+**O que posso ajudar:**
+✅ Sintomas e doenças
+✅ Medicamentos e tratamentos
+✅ Cuidados preventivos
+✅ Bem-estar e saúde mental
+✅ Dúvidas sobre consultas e exames
+
+Por favor, me pergunte algo relacionado à sua saúde. Estou aqui para ajudar! 😊`;
+    };
 
     // Função para carregar notificações do banco
     async function carregarNotificacoes() {
@@ -119,7 +225,19 @@ export default function ChatMedico() {
                     messages: [
                         {
                             role: "system",
-                            content: "Você é um assistente médico virtual da Virtual Health. Regras: 1) Nunca dê diagnósticos definitivos 2) Sempre recomende procurar um médico presencial para casos graves 3) Seja atencioso e profissional 4) Responda em português 5) Seja claro e objetivo 6) Dê dicas de saúde preventiva quando apropriado 7) Use emojis ocasionalmente para tornar a conversa mais amigável"
+                            content: `Você é um assistente médico virtual da Virtual Health, especializado APENAS em saúde e medicina.
+
+REGRAS OBRIGATÓRIAS:
+1. Responda SOMENTE perguntas relacionadas à saúde, medicina, sintomas, doenças, tratamentos, medicamentos, bem-estar e cuidados médicos.
+2. Se o usuário perguntar sobre qualquer assunto fora da área da saúde (como filmes, esportes, música, política, entretenimento, etc.), responda EDUCAMENTE que você é um assistente de saúde e não pode responder sobre esse assunto.
+3. NUNCA dê diagnósticos definitivos - sempre recomende procurar um médico presencial para casos graves.
+4. Seja atencioso, profissional e use emojis ocasionalmente para tornar a conversa mais amigável.
+5. Responda em português de forma clara, objetiva e com informações precisas.
+6. Para casos graves (dor no peito, dificuldade para respirar, sangramento intenso, etc.), sempre oriente o usuário a procurar atendimento médico de emergência imediatamente.
+7. Dê orientações baseadas em evidências científicas, sem inventar informações.
+8. Se não souber a resposta, admita e sugira consultar um médico presencial.
+
+Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha o foco apenas em assuntos médicos.`
                         },
                         {
                             role: "user",
@@ -127,7 +245,7 @@ export default function ChatMedico() {
                         }
                     ],
                     temperature: 0.7,
-                    max_tokens: 500
+                    max_tokens: 600
                 })
             });
 
@@ -196,20 +314,35 @@ export default function ChatMedico() {
     const handleSendMessage = async () => {
         if (inputValue.trim() === "" || isLoading) return;
 
-        // Adicionar mensagem do usuário com animação
+        const userQuestion = inputValue.trim();
+        
+        // VERIFICAÇÃO: Se a pergunta NÃO é sobre saúde
+        if (!isHealthRelated(userQuestion)) {
+            const errorMessage = {
+                id: Date.now(),
+                type: "doctor",
+                text: getOutOfContextResponse(userQuestion),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            setMessages(prev => [...prev, errorMessage]);
+            setInputValue("");
+            scrollToBottom();
+            return;
+        }
+
+        // Adicionar mensagem do usuário
         const userMessage = {
             id: Date.now(),
             type: "user",
-            text: inputValue,
+            text: userQuestion,
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
         setMessages(prev => [...prev, userMessage]);
-        const userQuestion = inputValue;
         setInputValue("");
         setIsLoading(true);
 
-        // Adicionar indicador de digitação com animação
+        // Adicionar indicador de digitação
         const typingIndicator = {
             id: Date.now() + 1,
             type: "typing",
@@ -217,8 +350,9 @@ export default function ChatMedico() {
             time: "Digitando"
         };
         setMessages(prev => [...prev, typingIndicator]);
+        scrollToBottom();
 
-        // Chamar API Groq
+        // Chamar API Groq apenas para perguntas de saúde
         const response = await sendToGroq(userQuestion);
         
         // Remover indicador e adicionar resposta
@@ -234,8 +368,8 @@ export default function ChatMedico() {
         setMessages(prev => [...prev, doctorMessage]);
         setIsLoading(false);
         
-        // Focar no input após enviar
         inputRef.current?.focus();
+        scrollToBottom();
     };
 
     const handleKeyPress = (e) => {
@@ -393,7 +527,7 @@ export default function ChatMedico() {
                 <div className="chat-card">
                     <div className="chat-header">
                         <h1>CONVERSE COM O SEU <span>MÉDICO VIRTUAL!</span></h1>
-                        <p className="chat-subtitle">💬 Atendimento 24h - Respostas rápidas e inteligentes</p>
+                        <p className="chat-subtitle">Atendimento 24h - Especializado em saúde e medicina</p>
                     </div>
 
                     {/* MENSAGENS COM ANIMAÇÕES */}
@@ -401,8 +535,7 @@ export default function ChatMedico() {
                         {messages.map((msg, index) => (
                             <div 
                                 key={msg.id} 
-                                className={`message-wrapper ${msg.type === "doctor" ? "doctor-wrapper" : "user-wrapper"} animate-message`}
-                                style={{ animationDelay: `${index * 0.05}s` }}
+                                className={`message-wrapper ${msg.type === "doctor" ? "doctor-wrapper" : "user-wrapper"}`}
                             >
                                 {msg.type === "doctor" ? (
                                     <div className="doctor-message">
@@ -444,7 +577,7 @@ export default function ChatMedico() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* INPUT DE MENSAGEM COM ANIMAÇÃO */}
+                    {/* INPUT DE MENSAGEM */}
                     <div className="chat-input-area">
                         <div className="input-wrapper">
                             <textarea
@@ -483,7 +616,7 @@ export default function ChatMedico() {
 
                     {/* SUGESTÕES RÁPIDAS */}
                     <div className="quick-suggestions">
-                        <p className="suggestions-title">Perguntas frequentes:</p>
+                        <p className="suggestions-title">O que você gostaria de saber sobre saúde?</p>
                         <div className="suggestions-grid">
                             <button 
                                 className="suggestion-btn"
