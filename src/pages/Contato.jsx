@@ -23,40 +23,75 @@ export default function Contato() {
     const [mensagem, setMensagem] = useState("");
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
+    const [usuarioId, setUsuarioId] = useState(null);
 
     // STATES DAS NOTIFICAÇÕES
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-    buscarUsuario();
-}, []);
+        buscarUsuario();
+    }, []);
 
-async function buscarUsuario() {
-    const {
-        data: { user }
-    } = await supabase.auth.getUser();
+    async function buscarUsuario() {
+        const {
+            data: { user }
+        } = await supabase.auth.getUser();
 
-    if (!user) return;
+        if (!user) return;
 
-    setEmail(user.email || "");
+        setUsuarioId(user.id);
+        setEmail(user.email || "");
 
-    // busca nome na tabela usuarios
-    const { data } = await supabase
-        .from("usuarios")
-        .select("nome")
-        .eq("id", user.id)
-        .single();
+        // busca nome na tabela usuarios
+        const { data } = await supabase
+            .from("usuarios")
+            .select("nome")
+            .eq("id", user.id)
+            .single();
 
-    if (data) {
-        setNome(data.nome);
+        if (data) {
+            setNome(data.nome);
+        }
+
+        // buscar notificações do usuário
+        await buscarNotificacoes(user.id);
     }
-}
+
+    async function buscarNotificacoes(userId) {
+        const { data, error } = await supabase
+            .from("notificacoes")
+            .select("*")
+            .eq("usuario_id", userId)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Erro ao buscar notificações:", error);
+            return;
+        }
+
+        const notificacoesFormatadas = data.map(notif => ({
+            id: notif.id,
+            title: notif.titulo,
+            message: notif.mensagem,
+            type: notif.tipo,
+            read: notif.lida,
+            time: new Date(notif.created_at).toLocaleDateString('pt-BR') + ' ' + new Date(notif.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        }));
+
+        setNotifications(notificacoesFormatadas);
+    }
 
     // FUNÇÕES DAS NOTIFICAÇÕES
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    const handleNotificationClick = (id) => {
+    const handleNotificationClick = async (id) => {
+        // Marcar como lida no banco
+        await supabase
+            .from("notificacoes")
+            .update({ lida: true })
+            .eq("id", id);
+
         setNotifications(prev => 
             prev.map(notif => 
                 notif.id === id ? { ...notif, read: true } : notif
@@ -64,8 +99,16 @@ async function buscarUsuario() {
         );
     };
 
-    const markAllAsRead = () => {
-        setNotifications(prev => 
+    const markAllAsRead = async () => {
+        if (!usuarioId) return;
+        
+        // Marcar todas como lidas no banco
+        await supabase
+            .from("notificacoes")
+            .update({ lida: true })
+            .eq("usuario_id", usuarioId);
+
+        setNotifications(prev =>
             prev.map(notif => ({ ...notif, read: true }))
         );
     };
@@ -137,31 +180,30 @@ async function buscarUsuario() {
     };
 
     const handleSubmit = async () => {
-    if (!mensagem) {
-        showToastMessage("Digite uma mensagem!", true);
-        return;
-    }
+        if (!mensagem) {
+            showToastMessage("Digite uma mensagem!", true);
+            return;
+        }
 
-    const { error } = await supabase
-        .from("contatos")
-        .insert([
-            {
-                nome,
-                email,
-                mensagem
-            }
-        ]);
+        const { error } = await supabase
+            .from("contatos")
+            .insert([
+                {
+                    nome,
+                    email,
+                    mensagem
+                }
+            ]);
 
-    if (error) {
-        console.error(error);
-        showToastMessage("Erro ao enviar mensagem!", true);
-        return;
-    }
+        if (error) {
+            console.error(error);
+            showToastMessage("Erro ao enviar mensagem!", true);
+            return;
+        }
 
-    showToastMessage("Mensagem enviada com sucesso!");
-
-    setMensagem("");
-};
+        showToastMessage("Mensagem enviada com sucesso!");
+        setMensagem("");
+    };
 
     return (
         <div>
@@ -301,10 +343,10 @@ async function buscarUsuario() {
                 <div className="footer-column">
                     <h4>Serviços</h4>
                     <ul>
-                        <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
-                        <li><img src={certinho} className="certo"/> Agendamento online</li>
-                        <li><img src={certinho} className="certo"/> Especialidades</li>
-                        <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Teleconsulta 24h</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Agendamento online</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Especialidades</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Perguntas frequentes</li>
                     </ul>
                 </div>
                 <div className="footer-column">
@@ -318,10 +360,10 @@ async function buscarUsuario() {
                 <div className="footer-column">
                     <h4>Contato</h4>
                     <ul>
-                        <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
-                        <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
-                        <li><img src={tempo} className="certo"/> Horário: 24h</li>
+                        <li><img src={local} className="certo" alt="local"/> Endereço: Sesi Caçapava SP</li>
+                        <li><img src={tell} className="certo" alt="telefone"/> Telefone: (12) 9966-9732</li>
+                        <li><img src={gmail} className="certo" alt="email"/> Email: Virtualhealth@gmail.com</li>
+                        <li><img src={tempo} className="certo" alt="horario"/> Horário: 24h</li>
                     </ul>
                 </div>
             </footer>

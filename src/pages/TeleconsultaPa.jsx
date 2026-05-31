@@ -17,6 +17,7 @@ export default function TeleconsultaPa() {
     const [proximaConsulta, setProximaConsulta] = useState(null);
     const [usuario, setUsuario] = useState(null);
     const [carregandoConsulta, setCarregandoConsulta] = useState(true);
+    const [codigoSala, setCodigoSala] = useState(null);
     
     // Estados das notificações
     const [showNotifications, setShowNotifications] = useState(false);
@@ -115,13 +116,19 @@ export default function TeleconsultaPa() {
         
         try {
             const hoje = new Date().toISOString().split('T')[0];
-            console.log("📅 Data atual:", hoje);
-            console.log("🔍 Buscando para paciente:", pacienteId);
 
             // Buscar agendamentos da tabela
             const { data: agendamentos, error: errorAgendamentos } = await supabase
                 .from("agendamentos")
-                .select("*")
+                .select(`
+                    id,
+                    data_consulta,
+                    horario,
+                    tipo,
+                    status,
+                    medico_id,
+                    created_at
+                `)
                 .eq("paciente_id", pacienteId)
                 .eq("tipo", "teleconsulta")
                 .eq("status", "agendada")
@@ -130,10 +137,8 @@ export default function TeleconsultaPa() {
                 .order("horario", { ascending: true })
                 .limit(1);
 
-            console.log("📊 Agendamentos encontrados:", agendamentos);
-
             if (errorAgendamentos) {
-                console.error("❌ Erro ao buscar agendamentos:", errorAgendamentos);
+                console.error("Erro ao buscar agendamentos:", errorAgendamentos);
                 setProximaConsulta(null);
                 setCarregandoConsulta(false);
                 return;
@@ -149,16 +154,19 @@ export default function TeleconsultaPa() {
                     .eq("id", agendamento.medico_id)
                     .single();
 
-                console.log("👨‍⚕️ Médico encontrado:", medico);
+                // Buscar a sala associada a este agendamento
+                const { data: sala, error: salaError } = await supabase
+                    .from("consulta_salas")
+                    .select("codigo, sala_url")
+                    .eq("agendamento_id", agendamento.id)
+                    .maybeSingle();
 
-                if (errorMedico) {
-                    console.error("❌ Erro ao buscar médico:", errorMedico);
+                if (!salaError && sala) {
+                    setCodigoSala(sala.codigo);
                 }
 
-                // Formatar a data
+                // Formatar a data e horário
                 const dataFormatada = new Date(agendamento.data_consulta).toLocaleDateString('pt-BR');
-                
-                // Formatar o horário (remover segundos se existir)
                 const horarioFormatado = agendamento.horario.substring(0, 5);
 
                 setProximaConsulta({
@@ -168,21 +176,13 @@ export default function TeleconsultaPa() {
                     foto: medico?.foto,
                     data: dataFormatada,
                     horario: horarioFormatado,
-                    link: agendamento.link_teleconsulta
-                });
-                
-                console.log("✅ Próxima consulta configurada:", {
-                    medico: medico?.nome,
-                    especialidade: medico?.especialidade,
-                    data: dataFormatada,
-                    horario: horarioFormatado
+                    codigo: sala?.codigo || null
                 });
             } else {
-                console.log("⚠️ Nenhuma consulta agendada encontrada");
                 setProximaConsulta(null);
             }
         } catch (error) {
-            console.error("❌ Erro ao carregar próxima consulta:", error);
+            console.error("Erro ao carregar próxima consulta:", error);
             setProximaConsulta(null);
         } finally {
             setCarregandoConsulta(false);
@@ -211,13 +211,13 @@ export default function TeleconsultaPa() {
             // Buscar sala pelo código na tabela consulta_salas
             const { data: sala, error } = await supabase
                 .from('consulta_salas')
-                .select('sala_url, status, medico_id, paciente_id')
+                .select('sala_url, status, medico_id, paciente_id, codigo')
                 .eq('codigo', codigoLimpo)
                 .single();
 
             if (error) {
                 console.error("Erro ao buscar sala:", error);
-                showToast('Código inválido!', true);
+                showToast('Código inválido ou consulta não encontrada!', true);
                 return false;
             }
 
@@ -233,7 +233,7 @@ export default function TeleconsultaPa() {
             if (!sala.paciente_id) {
                 await supabase
                     .from('consulta_salas')
-                    .update({ paciente_id: pacienteId })
+                    .update({ paciente_id: pacienteId, status: 'aguardando_paciente' })
                     .eq('id', sala.id);
             }
 
@@ -243,23 +243,22 @@ export default function TeleconsultaPa() {
             
         } catch (error) {
             console.error('Erro:', error);
-            showToast('Erro ao conectar.', true);
+            showToast('Erro ao conectar. Verifique o código.', true);
             return false;
         } finally {
             setCarregando(false);
         }
     }
 
-    // Usar o link da próxima consulta
+    // Usar o código da próxima consulta
     async function entrarComProximaConsulta() {
-        if (!proximaConsulta?.link) {
-            showToast('Link da consulta não disponível. Entre em contato com o suporte.', true);
+        if (!proximaConsulta?.codigo) {
+            showToast('Código da consulta não disponível. Entre em contato com o suporte.', true);
             return;
         }
         
-        console.log("Entrando na consulta com link:", proximaConsulta.link);
-        setRoomUrl(proximaConsulta.link);
-        setEmChamadaVideo(true);
+        console.log("Entrando na consulta com código:", proximaConsulta.codigo);
+        await entrarNaConsulta(proximaConsulta.codigo);
     }
 
     const showToast = (message, isError = false) => {
@@ -432,6 +431,12 @@ export default function TeleconsultaPa() {
                                                         <span className="info-label">Horário:</span>
                                                         <span className="info-value">{proximaConsulta.horario}</span>
                                                     </div>
+                                                    {proximaConsulta.codigo && (
+                                                        <div className="info-item">
+                                                            <span className="info-label">Código:</span>
+                                                            <span className="info-value codigo-destaque">{proximaConsulta.codigo}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <button 
                                                     className="btn-entrar-proxima"
@@ -452,6 +457,14 @@ export default function TeleconsultaPa() {
                                 </div>
                             </div>
 
+                            {/* CARD COM O CÓDIGO DA PRÓXIMA CONSULTA (se tiver) */}
+                            {proximaConsulta?.codigo && (
+                                <div className="codigo-card">
+                                    <h3>Seu código para a próxima consulta</h3>
+                                    <div className="codigo-grande">{proximaConsulta.codigo}</div>
+                                    <p>Compartilhe este código com seu médico ou digite acima para entrar</p>
+                                </div>
+                            )}
                         </>
                     ) : (
                         <VideoCall 
@@ -476,6 +489,64 @@ export default function TeleconsultaPa() {
                     {toast.message}
                 </div>
             )}
+
+            <style>{`
+                .codigo-card {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-top: 24px;
+                    text-align: center;
+                    color: white;
+                }
+                
+                .codigo-card h3 {
+                    margin: 0 0 10px 0;
+                    font-size: 16px;
+                    font-weight: normal;
+                }
+                
+                .codigo-grande {
+                    font-size: 36px;
+                    font-weight: bold;
+                    letter-spacing: 8px;
+                    background: rgba(255,255,255,0.2);
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    font-family: monospace;
+                }
+                
+                .codigo-destaque {
+                    background: #e3f2fd;
+                    padding: 4px 12px;
+                    border-radius: 6px;
+                    font-family: monospace;
+                    font-weight: bold;
+                    font-size: 16px;
+                    letter-spacing: 2px;
+                }
+                
+                .info-card-body .info-content {
+                    margin-bottom: 16px;
+                }
+                
+                .btn-entrar-proxima {
+                    width: 100%;
+                    background: #28a745;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 14px;
+                }
+                
+                .btn-entrar-proxima:hover {
+                    background: #218838;
+                }
+            `}</style>
         </div>
     );
 }

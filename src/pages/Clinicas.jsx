@@ -202,7 +202,7 @@ export default function Clinicas() {
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
-                navigate("/login");
+                navigate("/");
                 return;
             }
 
@@ -219,7 +219,7 @@ export default function Clinicas() {
             }
         } catch (error) {
             console.error("Erro ao buscar paciente:", error);
-            navigate("/login");
+            navigate("/");
         }
     }
 
@@ -360,13 +360,18 @@ export default function Clinicas() {
     // ==================== FUNÇÕES DE AGENDAMENTO ====================
 
     async function verificarDisponibilidadeHorario(medicoId, data, horario) {
-        const { data: agendamentoExistente } = await supabase
+        const { data: agendamentoExistente, error } = await supabase
             .from("agendamentos")
             .select("id")
             .eq("medico_id", medicoId)
             .eq("data_consulta", data)
             .eq("horario", horario)
             .eq("status", "agendada");
+
+        if (error) {
+            console.error("Erro ao verificar disponibilidade:", error);
+            return false;
+        }
 
         return agendamentoExistente?.length === 0;
     }
@@ -392,7 +397,7 @@ export default function Clinicas() {
 
         if (error) {
             console.error("Erro ao agendar:", error);
-            alert("Erro ao agendar consulta.");
+            alert("Erro ao agendar consulta. " + error.message);
             return false;
         }
 
@@ -467,7 +472,7 @@ export default function Clinicas() {
             },
             {
                 usuario_id: pacienteId,
-                titulo: "🩺 Teleconsulta agendada!",
+                titulo: "Teleconsulta agendada!",
                 mensagem: `Sua consulta com Dr(a). ${medico.name} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
                 tipo: "teleconsulta"
             }
@@ -597,22 +602,25 @@ export default function Clinicas() {
     };
 
     const handleConfirmPresencial = async (doc) => {
-        if (selectedDatePresencial[doc.id] && selectedHourPresencial[doc.id]) {
-            const dataFormatada = `${anoAtual}-${(mesAtual + 1).toString().padStart(2, '0')}-${selectedDatePresencial[doc.id].toString().padStart(2, '0')}`;
+        const dataSelecionada = selectedDatePresencial[doc.id];
+        const horaSelecionada = selectedHourPresencial[doc.id];
+        
+        if (dataSelecionada && horaSelecionada) {
+            const dataFormatada = `${anoAtual}-${(mesAtual + 1).toString().padStart(2, '0')}-${dataSelecionada.toString().padStart(2, '0')}`;
             
             const sucesso = await salvarAgendamentoPresencial(
                 doc,
                 pacienteId,
                 dataFormatada,
-                selectedHourPresencial[doc.id]
+                horaSelecionada
             );
             
             if (sucesso) {
                 setConfirmationDetailsPresencial({
                     doctorName: doc.name,
                     specialty: doc.specialty,
-                    date: selectedDatePresencial[doc.id],
-                    hour: selectedHourPresencial[doc.id],
+                    date: dataSelecionada,
+                    hour: horaSelecionada,
                     address: doc.enderecoCompleto,
                     price: doc.price,
                     type: "Presencial"
@@ -735,7 +743,7 @@ export default function Clinicas() {
         }
     }, [pacienteId]);
 
-    if (doctors.length === 0 && !loading) {
+    if (loading && doctors.length === 0) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <p>Carregando médicos...</p>
@@ -887,9 +895,9 @@ export default function Clinicas() {
                                                 CEP: {doc.cep}
                                             </p>
                                         )}
-                                    </div>
+                                                                       </div>
                                 )}
-                                                                {activeTab[doc.id] === 'teleconsulta' && !showCalendar[doc.id] && (
+                                {activeTab[doc.id] === 'teleconsulta' && !showCalendar[doc.id] && (
                                     <div className="tele-info-left">
                                         <p><img src={icontempo} alt="tempo" /> Duração média: 30 a 50 minutos</p>
                                         <p><img src={iconesc} alt="segurança" /> Dados protegidos pela LGPD</p>
