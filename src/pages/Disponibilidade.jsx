@@ -29,6 +29,12 @@ export default function Disponibilidade() {
         { id: 6, nome: 'Sábado' }
     ];
 
+    // FUNÇÃO PARA FORMATAR HORÁRIO - ADICIONADA
+    const formatarHorario = (horario) => {
+        if (!horario) return '';
+        return horario.substring(0, 5);
+    };
+
     useEffect(() => {
         carregarDados();
     }, []);
@@ -484,10 +490,10 @@ export default function Disponibilidade() {
                                         {horarios.map(horario => (
                                             <div key={horario.id} className="horario-card">
                                                 <div className="horario-info">
-                                                <span className="horario">
-                                                    {formatarHorario(horario.horario_inicio)} - {formatarHorario(horario.horario_fim)}
-                                                </span>
-                                            </div>
+                                                    <span className="horario">
+                                                        {formatarHorario(horario.horario_inicio)} - {formatarHorario(horario.horario_fim)}
+                                                    </span>
+                                                </div>
                                                 <div className="horario-actions">
                                                     <button 
                                                         className="btn-editar"
