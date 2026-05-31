@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/supabase';
 import VideoCall from '../components/VideoCall';
 
 import logo from '../images/logo.png';
