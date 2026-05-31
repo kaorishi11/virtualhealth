@@ -73,7 +73,7 @@ export default function AgendamentosMedicos() {
                 medico: app.medico?.nome || 'Médico não encontrado',
                 especialidade: app.medico?.especialidade || 'Especialidade não informada',
                 tipo: app.tipo === 'presencial' ? 'Presencial' : 'Teleconsulta',
-                horario: app.horario.substring(0, 5), // Formato HH:MM
+                horario: app.horario.substring(0, 5),
                 duracao: app.tipo === 'teleconsulta' ? '30 min' : '',
                 local: app.tipo === 'presencial' ? 'Consultório' : '',
                 status: app.status,
@@ -191,7 +191,6 @@ export default function AgendamentosMedicos() {
                         confirmButtonColor: '#6366f1'
                     });
                     
-                    // Recarregar agendamentos
                     await carregarAgendamentos();
                     
                 } catch (error) {
@@ -247,10 +246,7 @@ export default function AgendamentosMedicos() {
         }
     };
 
-    if (loading && appointments.length === 0) {
-        return <div className="loading">Carregando agendamentos...</div>;
-    }
-
+    // Removeu a tela de loading inicial
     return (
         <div className="agenda-container">
 
@@ -276,7 +272,6 @@ export default function AgendamentosMedicos() {
                         <span className="active-indicator"></span>
                     </li>
                 </ul>
-
 
                 <h3>NAVEGAÇÕES</h3>
                 <ul>
@@ -313,7 +308,13 @@ export default function AgendamentosMedicos() {
                     
                     {/* LISTA DE AGENDAMENTOS */}
                     <div className="appointments-list">
-                        {filteredAppointments.length > 0 ? (
+                        {loading && appointments.length === 0 ? (
+                            <div className="loading-skeleton">
+                                <div className="skeleton-card"></div>
+                                <div className="skeleton-card"></div>
+                                <div className="skeleton-card"></div>
+                            </div>
+                        ) : filteredAppointments.length > 0 ? (
                             filteredAppointments.map((app) => (
                                 <div key={app.id} className="appointment-card">
                                     <div className="appointment-day">

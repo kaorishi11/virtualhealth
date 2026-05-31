@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
-import { createConsultationRoom } from '../services/roomService'
-
 
 import "../styles/Clinicas.css";
 
@@ -29,11 +27,13 @@ export default function Clinicas() {
     const [selectedEspecialidade, setSelectedEspecialidade] = useState("");
     const [selectedLocal, setSelectedLocal] = useState("Caçapava, São Paulo - SP");
     const [activeTab, setActiveTab] = useState({});
+    const [showCalendar, setShowCalendar] = useState({});
     
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [especialidades, setEspecialidades] = useState([]);
     
     const [horariosDisponiveis, setHorariosDisponiveis] = useState({});
     
@@ -62,34 +62,50 @@ export default function Clinicas() {
     const [mesAtual, setMesAtual] = useState(new Date().getMonth());
     const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
 
+    // Refs para detectar clique fora do card
+    const cardRefs = useRef({});
+
+    // Função para gerar iniciais
+    const getIniciais = (nome) => {
+        if (!nome) return '?';
+        const nomes = nome.trim().split(' ');
+        if (nomes.length === 1) return nomes[0].charAt(0).toUpperCase();
+        return (nomes[0].charAt(0) + nomes[nomes.length - 1].charAt(0)).toUpperCase();
+    };
+
+    // Função para gerar cor de fundo
+    const getCorFundo = (nome) => {
+        if (!nome) return '#6366f1';
+        
+        const cores = [
+            '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', 
+            '#ef4444', '#f97316', '#f59e0b', '#84cc16',
+            '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+            '#3b82f6', '#6366f1', '#8b5cf6'
+        ];
+        
+        let hash = 0;
+        for (let i = 0; i < nome.length; i++) {
+            hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % cores.length;
+        return cores[index];
+    };
+
     // ==================== FUNÇÕES DE DISPONIBILIDADE ====================
 
-    // Função para buscar dias disponíveis do médico no mês selecionado
     async function buscarDiasDisponiveis(medicoId, mes, ano) {
-        console.log(`Buscando disponibilidade para médico ${medicoId} no mês ${mes + 1}/${ano}`);
-        
         const { data: disponibilidade, error } = await supabase
             .from("medico_disponibilidade")
             .select("dia_semana, horario_inicio, horario_fim")
             .eq("medico_id", medicoId)
             .eq("ativo", true);
 
-        if (error) {
-            console.error("Erro ao buscar disponibilidade:", error);
+        if (error || !disponibilidade || disponibilidade.length === 0) {
             return [];
         }
-
-        if (!disponibilidade || disponibilidade.length === 0) {
-            console.log("Nenhuma disponibilidade cadastrada para este médico");
-            return [];
-        }
-
-        console.log("Disponibilidade encontrada:", disponibilidade);
 
         const diasAtendimento = disponibilidade.map(d => d.dia_semana);
-        console.log("Dias da semana que atende:", diasAtendimento);
-        
-        const primeiroDia = new Date(ano, mes, 1);
         const ultimoDia = new Date(ano, mes + 1, 0);
         const diasDisponiveisLista = [];
 
@@ -100,33 +116,20 @@ export default function Clinicas() {
             if (diasAtendimento.includes(diaSemana)) {
                 const hoje = new Date();
                 hoje.setHours(0, 0, 0, 0);
-                
                 if (data >= hoje) {
                     diasDisponiveisLista.push(dia);
                 }
             }
         }
 
-        console.log("Dias disponíveis encontrados:", diasDisponiveisLista);
         return diasDisponiveisLista;
     }
 
-    // Função para buscar horários disponíveis
     async function buscarHorariosDisponiveis(medicoId, ano, mes, dia) {
-        console.log("=== BUSCANDO HORÁRIOS ===");
-        console.log("Médico ID:", medicoId);
-        console.log("Ano:", ano, "Mês:", mes, "Dia:", dia);
-        
-        // Criar a data corretamente
         const dataObj = new Date(ano, mes, dia);
         const diaSemana = dataObj.getDay();
-        console.log("Dia da semana (0=Domingo,6=Sábado):", diaSemana);
-        
-        // Formatar data para YYYY-MM-DD
         const dataFormatada = `${ano}-${(mes + 1).toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`;
-        console.log("Data formatada para busca:", dataFormatada);
         
-        // Buscar disponibilidade do médico
         const { data: disponibilidade, error: dispError } = await supabase
             .from("medico_disponibilidade")
             .select("horario_inicio, horario_fim")
@@ -134,19 +137,10 @@ export default function Clinicas() {
             .eq("dia_semana", diaSemana)
             .eq("ativo", true);
 
-        if (dispError) {
-            console.error("Erro ao buscar disponibilidade:", dispError);
+        if (dispError || !disponibilidade || disponibilidade.length === 0) {
             return [];
         }
 
-        if (!disponibilidade || disponibilidade.length === 0) {
-            console.log(`❌ Nenhuma disponibilidade para o dia ${diaSemana}`);
-            return [];
-        }
-
-        console.log("Disponibilidade encontrada:", disponibilidade);
-
-        // Buscar horários já agendados
         const { data: agendamentos } = await supabase
             .from("agendamentos")
             .select("horario")
@@ -155,27 +149,17 @@ export default function Clinicas() {
             .eq("status", "agendada");
 
         const horariosOcupados = agendamentos?.map(a => a.horario) || [];
-        console.log("Horários ocupados:", horariosOcupados);
 
-        // Verificar se é hoje
         const hoje = new Date();
         const isHoje = hoje.getDate() === dia && hoje.getMonth() === mes && hoje.getFullYear() === ano;
         const horaAtual = hoje.getHours();
         const minutoAtual = hoje.getMinutes();
-        
-        console.log("É hoje?", isHoje);
-        if (isHoje) {
-            console.log("Hora atual:", horaAtual + ":" + minutoAtual);
-        }
 
-        // Gerar horários disponíveis
         const horarios = [];
         
         for (const disp of disponibilidade) {
             let inicio = disp.horario_inicio;
             const fim = disp.horario_fim;
-            
-            console.log(`Gerando horários entre ${inicio} e ${fim}`);
             
             while (inicio < fim) {
                 const horarioStr = inicio.substring(0, 5);
@@ -188,7 +172,6 @@ export default function Clinicas() {
                     
                     if (horarioEmMinutos <= agoraEmMinutos) {
                         horarioValido = false;
-                        console.log(`Horário ${horarioStr} já passou, ignorando`);
                     }
                 }
                 
@@ -196,7 +179,6 @@ export default function Clinicas() {
                     horarios.push(horarioStr);
                 }
                 
-                // Avançar 30 minutos
                 const [h, m] = inicio.split(':');
                 let novaHora = parseInt(h);
                 let novoMinuto = parseInt(m) + 30;
@@ -210,7 +192,6 @@ export default function Clinicas() {
             }
         }
 
-        console.log("✅ Horários disponíveis finais:", horarios);
         return horarios;
     }
 
@@ -239,6 +220,26 @@ export default function Clinicas() {
         } catch (error) {
             console.error("Erro ao buscar paciente:", error);
             navigate("/login");
+        }
+    }
+
+    async function buscarEspecialidades() {
+        try {
+            const { data, error } = await supabase
+                .from("usuarios")
+                .select("especialidade")
+                .eq("tipo", "medico")
+                .not("especialidade", "is", null);
+
+            if (error) {
+                console.error("Erro ao buscar especialidades:", error);
+                return;
+            }
+
+            const especialidadesUnicas = [...new Set(data.map(item => item.especialidade).filter(esp => esp && esp.trim() !== ""))];
+            setEspecialidades(especialidadesUnicas.sort());
+        } catch (error) {
+            console.error("Erro ao buscar especialidades:", error);
         }
     }
 
@@ -322,9 +323,10 @@ export default function Clinicas() {
                         : "Clínica não informada",
                     clinicaInfo: medico.clinicas,
                     price: medico.preco_consulta || 90.00,
-                    avatar: medico.foto || "https://placehold.co/300x300",
+                    foto: medico.foto || null,
                     coordinates: { lat, lng },
-                    diasDisponiveis: diasDisponiveisMedico
+                    diasDisponiveis: diasDisponiveisMedico,
+                    cep: medico.clinicas?.cep || null
                 };
             })
         );
@@ -413,113 +415,67 @@ export default function Clinicas() {
     }
 
     async function salvarAgendamentoTeleconsulta(medico, pacienteId, data, horario) {
-    const disponivel = await verificarDisponibilidadeHorario(medico.id, data, horario);
-    
-    if (!disponivel) {
-        alert("Este horário já está ocupado!");
-        return false;
-    }
+        const disponivel = await verificarDisponibilidadeHorario(medico.id, data, horario);
+        
+        if (!disponivel) {
+            alert("Este horário já está ocupado!");
+            return false;
+        }
 
-    // Gerar código único para sala (6 caracteres)
-    const codigoSala = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
-    // Criar URL da sala no Jitsi Meet
-    const salaUrl = `https://meet.jit.si/VirtualHealth_${codigoSala}`;
-    
-    console.log("=== CRIANDO AGENDAMENTO TELECONSULTA ===");
-    console.log("Código da sala:", codigoSala);
-    console.log("URL da sala:", salaUrl);
-    console.log("Médico:", medico.name, "ID:", medico.id);
-    console.log("Paciente ID:", pacienteId);
-    console.log("Data:", data, "Horário:", horario);
+        const codigoSala = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const salaUrl = `https://meet.jit.si/VirtualHealth_${codigoSala}`;
 
-    // 1. Criar sala na tabela consulta_salas
-    const { data: salaData, error: salaError } = await supabase
-        .from("consulta_salas")
-        .insert({
-            codigo: codigoSala,
-            medico_id: medico.id,
-            paciente_id: pacienteId,
-            sala_url: salaUrl,
-            status: "aguardando"
-        })
-        .select();
-
-    if (salaError) {
-        console.error("Erro ao criar sala:", salaError);
-        alert("Erro ao criar sala de consulta.");
-        return false;
-    }
-
-    console.log("Sala criada com sucesso, ID:", salaData[0]?.id);
-
-    // 2. Criar agendamento (SEM link_teleconsulta, pois a sala já tem)
-    const { data: agendamentoData, error: agendamentoError } = await supabase
-        .from("agendamentos")
-        .insert({
-            paciente_id: pacienteId,
-            medico_id: medico.id,
-            tipo: "teleconsulta",
-            data_consulta: data,
-            horario: horario,
-            status: "agendada"
-            // NÃO incluir link_teleconsulta aqui - ele está na tabela consulta_salas
-        })
-        .select();
-
-    if (agendamentoError) {
-        console.error("Erro ao agendar:", agendamentoError);
-        alert("Erro ao agendar consulta.");
-        return false;
-    }
-
-    console.log("Agendamento criado com sucesso, ID:", agendamentoData[0]?.id);
-
-    // 3. Atualizar o agendamento com o id da sala (opcional, para referência)
-    if (salaData && salaData[0] && agendamentoData && agendamentoData[0]) {
-        await supabase
+        const { error: salaError } = await supabase
             .from("consulta_salas")
-            .update({ agendamento_id: agendamentoData[0].id })
-            .eq("id", salaData[0].id);
+            .insert({
+                codigo: codigoSala,
+                medico_id: medico.id,
+                paciente_id: pacienteId,
+                sala_url: salaUrl,
+                status: "aguardando"
+            });
+
+        if (salaError) {
+            console.error("Erro ao criar sala:", salaError);
+            alert("Erro ao criar sala de consulta.");
+            return false;
+        }
+
+        const { error: agendamentoError } = await supabase
+            .from("agendamentos")
+            .insert({
+                paciente_id: pacienteId,
+                medico_id: medico.id,
+                tipo: "teleconsulta",
+                data_consulta: data,
+                horario: horario,
+                status: "agendada"
+            });
+
+        if (agendamentoError) {
+            console.error("Erro ao agendar:", agendamentoError);
+            alert("Erro ao agendar consulta.");
+            return false;
+        }
+
+        await supabase.from("notificacoes").insert([
+            {
+                usuario_id: medico.id,
+                titulo: "Nova teleconsulta agendada",
+                mensagem: `Um paciente agendou uma teleconsulta para ${data} às ${horario}. Código: ${codigoSala}`,
+                tipo: "teleconsulta"
+            },
+            {
+                usuario_id: pacienteId,
+                titulo: "🩺 Teleconsulta agendada!",
+                mensagem: `Sua consulta com Dr(a). ${medico.name} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
+                tipo: "teleconsulta"
+            }
+        ]);
+
+        localStorage.setItem(`consulta_${pacienteId}`, codigoSala);
+        return true;
     }
-
-    // 4. Criar NOTIFICAÇÃO para o MÉDICO
-    const { error: notifMedicoError } = await supabase
-        .from("notificacoes")
-        .insert({
-            usuario_id: medico.id,
-            titulo: "Nova teleconsulta agendada",
-            mensagem: `Um paciente agendou uma teleconsulta para ${data} às ${horario}. Código: ${codigoSala}`,
-            tipo: "teleconsulta"
-        });
-
-    if (notifMedicoError) {
-        console.error("Erro ao criar notificação para médico:", notifMedicoError);
-    } else {
-        console.log("✅ Notificação para médico enviada!");
-    }
-
-    // 5. Criar NOTIFICAÇÃO para o PACIENTE
-    const { error: notifPacienteError } = await supabase
-        .from("notificacoes")
-        .insert({
-            usuario_id: pacienteId,
-            titulo: "🩺 Teleconsulta agendada!",
-            mensagem: `Sua consulta com Dr(a). ${medico.name} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
-            tipo: "teleconsulta"
-        });
-
-    if (notifPacienteError) {
-        console.error("Erro ao criar notificação para paciente:", notifPacienteError);
-    } else {
-        console.log("✅ Notificação para paciente enviada!");
-    }
-
-    // 6. Salvar o código na sessão ou localStorage para o paciente usar depois
-    localStorage.setItem(`consulta_${pacienteId}`, codigoSala);
-
-    return true;
-}
 
     // ==================== FUNÇÕES DE NAVEGAÇÃO DO CALENDÁRIO ====================
 
@@ -546,19 +502,44 @@ export default function Clinicas() {
         return `${meses[mesAtual]} ${anoAtual}`;
     };
 
+    // Função para resetar o calendário de um médico específico
+    const resetCalendar = (doctorId) => {
+        setShowCalendar(prev => ({ ...prev, [doctorId]: false }));
+        setActiveTab(prev => ({ ...prev, [doctorId]: undefined }));
+        setSelectedDateTele(prev => ({ ...prev, [doctorId]: null }));
+        setSelectedHourTele(prev => ({ ...prev, [doctorId]: null }));
+        setSelectedDatePresencial(prev => ({ ...prev, [doctorId]: null }));
+        setSelectedHourPresencial(prev => ({ ...prev, [doctorId]: null }));
+    };
+
+    // Detectar clique fora do card
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            Object.keys(cardRefs.current).forEach((doctorId) => {
+                if (cardRefs.current[doctorId] && !cardRefs.current[doctorId].contains(event.target)) {
+                    if (showCalendar[doctorId]) {
+                        resetCalendar(doctorId);
+                    }
+                }
+            });
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showCalendar]);
+
     // ==================== HANDLERS ====================
 
+    const handleTabClick = (doctorId, tabType) => {
+        setActiveTab(prev => ({ ...prev, [doctorId]: tabType }));
+        setShowCalendar(prev => ({ ...prev, [doctorId]: true }));
+    };
+
     const handleSelectDateTele = async (doctorId, dia) => {
-        console.log("=== DATA SELECIONADA TELECONSULTA ===");
-        console.log("Doctor ID:", doctorId);
-        console.log("Dia:", dia);
-        
         setSelectedDateTele(prev => ({ ...prev, [doctorId]: dia }));
-        
         const horarios = await buscarHorariosDisponiveis(doctorId, anoAtual, mesAtual, dia);
-        
-        console.log("Horários encontrados:", horarios);
-        
         setHorariosDisponiveis(prev => ({ ...prev, [doctorId]: horarios }));
         setSelectedHourTele(prev => ({ ...prev, [doctorId]: null }));
     };
@@ -568,16 +549,8 @@ export default function Clinicas() {
     };
 
     const handleSelectDatePresencial = async (doctorId, dia) => {
-        console.log("=== DATA SELECIONADA PRESENCIAL ===");
-        console.log("Doctor ID:", doctorId);
-        console.log("Dia:", dia);
-        
         setSelectedDatePresencial(prev => ({ ...prev, [doctorId]: dia }));
-        
         const horarios = await buscarHorariosDisponiveis(doctorId, anoAtual, mesAtual, dia);
-        
-        console.log("Horários encontrados:", horarios);
-        
         setHorariosDisponiveis(prev => ({ ...prev, [doctorId]: horarios }));
         setSelectedHourPresencial(prev => ({ ...prev, [doctorId]: null }));
     };
@@ -753,6 +726,7 @@ export default function Clinicas() {
     useEffect(() => {
         buscarMedicos();
         buscarPacienteLogado();
+        buscarEspecialidades();
     }, [mesAtual, anoAtual]);
 
     useEffect(() => {
@@ -761,11 +735,10 @@ export default function Clinicas() {
         }
     }, [pacienteId]);
 
-    if (loading) {
+    if (doctors.length === 0 && !loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <div className="loader"></div>
-                <p>Carregando clínicas e especialistas...</p>
+                <p>Carregando médicos...</p>
             </div>
         );
     }
@@ -829,7 +802,7 @@ export default function Clinicas() {
 
             {/* HERO */}
             <div className="hero-clinicas">
-                <h1><span>CONHEÇA TODAS AS <br />CLÍNICAS</span> PRESENCIAIS</h1>
+                <h1><span>CONHEÇA TODAS AS </span> CLÍNICAS PRESENCIAIS</h1>
                 <p>Encontre especialistas próximos a você e agende sua consulta.</p>
             </div>
 
@@ -846,12 +819,11 @@ export default function Clinicas() {
                     </div>
                     <select className="filter-select" value={selectedEspecialidade} onChange={(e) => setSelectedEspecialidade(e.target.value)}>
                         <option value="">Todas Especialidades</option>
-                        <option value="Dentista">Dentista</option>
-                        <option value="Oftalmologista">Oftalmologista</option>
-                        <option value="Ginecologista">Ginecologista</option>
-                        <option value="Cardiologista">Cardiologista</option>
-                        <option value="Pediatra">Pediatra</option>
-                        <option value="Dermatologista">Dermatologista</option>
+                        {especialidades.map((especialidade) => (
+                            <option key={especialidade} value={especialidade}>
+                                {especialidade}
+                            </option>
+                        ))}
                     </select>
                     <input type="text" className="location-input" placeholder="Caçapava, São Paulo - SP" value={selectedLocal} onChange={(e) => setSelectedLocal(e.target.value)} />
                 </div>
@@ -860,29 +832,64 @@ export default function Clinicas() {
 
                 <div className="doctors">
                     {filteredDoctors.map((doc) => (
-                        <div className="doctor-card" key={doc.id}>
+                        <div 
+                            className="doctor-card" 
+                            key={doc.id}
+                            ref={el => cardRefs.current[doc.id] = el}
+                        >
                             <div className="doctor-left">
                                 <div className="doctor-header">
-                                    <img src={doc.avatar} className="doctor-avatar" alt={doc.name} />
+                                    {doc.foto ? (
+                                        <img 
+                                            src={doc.foto} 
+                                            className="doctor-avatar" 
+                                            alt={doc.name}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                const initialsDiv = e.target.nextSibling;
+                                                if (initialsDiv) initialsDiv.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div 
+                                        className="doctor-avatar-iniciais"
+                                        style={{ 
+                                            backgroundColor: getCorFundo(doc.name),
+                                            display: doc.foto ? 'none' : 'flex'
+                                        }}
+                                    >
+                                        {getIniciais(doc.name)}
+                                    </div>
                                     <div className="doctor-info">
                                         <h3>{doc.name}</h3>
                                         <p className="doctor-specialty">{doc.specialty}</p>
-                                        <div className="doctor-rating">
-                                            <span className="stars">★★★★★</span>
-                                            <span className="rating-value">({doc.rating} · {doc.reviews} avaliações)</span>
-                                        </div>
                                     </div>
                                 </div>
                                 <div className="tabs-left">
-                                    <button className={`tab-btn-left ${activeTab[doc.id] !== 'teleconsulta' ? 'active' : ''}`} onClick={() => setActiveTab(prev => ({ ...prev, [doc.id]: 'presencial' }))}>Presencial</button>
-                                    <button className={`tab-btn-left ${activeTab[doc.id] === 'teleconsulta' ? 'active' : ''}`} onClick={() => setActiveTab(prev => ({ ...prev, [doc.id]: 'teleconsulta' }))}>Teleconsulta</button>
+                                    <button 
+                                        className={`tab-btn-left ${activeTab[doc.id] === 'presencial' ? 'active' : ''}`} 
+                                        onClick={() => handleTabClick(doc.id, 'presencial')}
+                                    >
+                                        Presencial
+                                    </button>
+                                    <button 
+                                        className={`tab-btn-left ${activeTab[doc.id] === 'teleconsulta' ? 'active' : ''}`} 
+                                        onClick={() => handleTabClick(doc.id, 'teleconsulta')}
+                                    >
+                                        Teleconsulta
+                                    </button>
                                 </div>
-                                {activeTab[doc.id] === 'presencial' && (
+                                {activeTab[doc.id] === 'presencial' && !showCalendar[doc.id] && (
                                     <div className="address-section">
                                         <p className="address-full"><img src={iconlocal} alt="local" />{doc.enderecoCompleto}</p>
+                                        {doc.cep && (
+                                            <p className="cep-info" style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                                                CEP: {doc.cep}
+                                            </p>
+                                        )}
                                     </div>
                                 )}
-                                {activeTab[doc.id] === 'teleconsulta' && (
+                                                                {activeTab[doc.id] === 'teleconsulta' && !showCalendar[doc.id] && (
                                     <div className="tele-info-left">
                                         <p><img src={icontempo} alt="tempo" /> Duração média: 30 a 50 minutos</p>
                                         <p><img src={iconesc} alt="segurança" /> Dados protegidos pela LGPD</p>
@@ -890,94 +897,206 @@ export default function Clinicas() {
                                     </div>
                                 )}
                                 <div className="price-value">Consulta: <strong>R$ {doc.price.toFixed(2)}</strong></div>
-                                <button className="btn-schedule" onClick={() => handleAgendar(doc)}>{activeTab[doc.id] === 'teleconsulta' ? 'Pagar Consulta' : 'Agendar Consulta'}</button>
+                                <button className="btn-schedule" onClick={() => handleAgendar(doc)}>
+                                    {activeTab[doc.id] === 'teleconsulta' ? 'Pagar Consulta' : 'Agendar Consulta'}
+                                </button>
                             </div>
                             <div className="doctor-right">
-                                {activeTab[doc.id] === 'teleconsulta' ? (
-                                    <div className="teleconsulta-content">
-                                        <div className="calendar-section">
-                                            <div className="calendar-header">
-                                                <h4>ESCOLHA A DATA</h4>
-                                                <div className="month-navigation">
-                                                    <button onClick={mesAnterior} className="month-nav-btn">◀</button>
-                                                    <span className="month-name">{getNomeMes()}</span>
-                                                    <button onClick={proximoMes} className="month-nav-btn">▶</button>
-                                                </div>
-                                            </div>
-                                            <div className="calendar">
-                                                <div className="calendar-weekdays">
-                                                    {["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"].map(day => (
-                                                        <span key={day}>{day}</span>
-                                                    ))}
-                                                </div>
-                                                <div className="calendar-dates">
-                                                    {Array.from({ length: new Date(anoAtual, mesAtual + 1, 0).getDate() }, (_, i) => i + 1).map((date) => {
-                                                                                                                const isDisponivel = doc.diasDisponiveis?.includes(date);
-                                                        const isSelected = selectedDateTele[doc.id] === date;
-                                                        
-                                                        return (
-                                                            <div
-                                                                key={date}
-                                                                className={`date ${isSelected ? 'selected' : ''}`}
-                                                                onClick={() => isDisponivel && handleSelectDateTele(doc.id, date)}
-                                                                style={{
-                                                                    cursor: isDisponivel ? 'pointer' : 'not-allowed',
-                                                                    opacity: isDisponivel ? 1 : 0.4,
-                                                                    backgroundColor: isSelected ? '#2c7da0' : 'transparent',
-                                                                    color: isSelected ? 'white' : '#333',
-                                                                    textDecoration: isDisponivel ? 'none' : 'line-through'
-                                                                }}
-                                                            >
-                                                                {date}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {selectedDateTele[doc.id] && (
-                                            <div className="hours-section">
-                                                <h4>SELECIONE O HORÁRIO</h4>
-                                                <div className="hours-grid">
-                                                    {horariosDisponiveis[doc.id]?.length > 0 ? (
-                                                        horariosDisponiveis[doc.id].map((hour) => (
-                                                            <button
-                                                                key={hour}
-                                                                className={`hour-btn ${selectedHourTele[doc.id] === hour ? 'selected' : ''}`}
-                                                                onClick={() => handleSelectHourTele(doc.id, hour)}
-                                                            >
-                                                                {hour}
-                                                            </button>
-                                                        ))
-                                                    ) : (
-                                                        <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#666' }}>
-                                                            Nenhum horário disponível para esta data
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="presencial-content">
+                                {!showCalendar[doc.id] ? (
+                                    // Mostra o mapa e informações iniciais
+                                    <div className="info-content">
                                         <div className="location-section">
                                             <h4>Localização da Clínica</h4>
                                             <div className="map-placeholder">
-                                                <iframe
-                                                    title={`map-${doc.id}`}
-                                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.015},${doc.coordinates.lat - 0.015},${doc.coordinates.lng + 0.015},${doc.coordinates.lat + 0.015}&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
-                                                    style={{ width: '100%', height: '250px', border: 0, borderRadius: '8px' }}
-                                                    allowFullScreen
-                                                    loading="lazy"
-                                                />
+                                                {doc.coordinates && doc.coordinates.lat && doc.coordinates.lng ? (
+                                                    <iframe
+                                                        title={`map-${doc.id}`}
+                                                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${doc.coordinates.lng - 0.015},${doc.coordinates.lat - 0.015},${doc.coordinates.lng + 0.015},${doc.coordinates.lat + 0.015}&layer=mapnik&marker=${doc.coordinates.lat},${doc.coordinates.lng}`}
+                                                        style={{ width: '100%', height: '300px', border: 0, borderRadius: '8px' }}
+                                                        allowFullScreen
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <div style={{ 
+                                                        width: '100%', 
+                                                        height: '300px', 
+                                                        background: '#f0f0f0', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center',
+                                                        borderRadius: '8px',
+                                                        color: '#666'
+                                                    }}>
+                                                        <p>Mapa indisponível - Endereço não encontrado</p>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <p className="address-full" style={{ marginTop: '10px', fontSize: '12px' }}>
-                                                <img src={iconlocal} alt="local" style={{ width: '14px', marginRight: '5px' }} />
+                                            <p className="address-full" style={{ marginTop: '10px', fontSize: '14px' }}>
+                                                <img src={iconlocal} alt="local" style={{ width: '16px', marginRight: '8px' }} />
                                                 {doc.enderecoCompleto}
                                             </p>
+                                            {doc.cep && (
+                                                <p className="cep-info" style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>
+                                                    CEP: {doc.cep}
+                                                </p>
+                                            )}
+                                            <div style={{ marginTop: '15px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
+                                                <p style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>
+                                                    <strong>Informações da Clínica:</strong>
+                                                </p>
+                                                {doc.clinicaInfo?.telefone && (
+                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Telefone: {doc.clinicaInfo.telefone}</p>
+                                                )}
+                                                {doc.clinicaInfo?.email && (
+                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Email: {doc.clinicaInfo.email}</p>
+                                                )}
+                                                {doc.clinicaInfo?.horario_funcionamento && (
+                                                    <p style={{ fontSize: '12px' }}>Horário: {doc.clinicaInfo.horario_funcionamento}</p>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
+                                ) : (
+                                    // Mostra o calendário baseado na aba selecionada
+                                    activeTab[doc.id] === 'teleconsulta' ? (
+                                        <div className="teleconsulta-content">
+                                            <div className="calendar-section">
+                                                <div className="calendar-header">
+                                                    <h4>ESCOLHA A DATA PARA TELECONSULTA</h4>
+                                                    <div className="month-navigation">
+                                                        <button onClick={mesAnterior} className="month-nav-btn">◀</button>
+                                                        <span className="month-name">{getNomeMes()}</span>
+                                                        <button onClick={proximoMes} className="month-nav-btn">▶</button>
+                                                    </div>
+                                                </div>
+                                                <div className="calendar">
+                                                    <div className="calendar-weekdays">
+                                                        {["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"].map(day => (
+                                                            <span key={day}>{day}</span>
+                                                        ))}
+                                                    </div>
+                                                    <div className="calendar-dates">
+                                                        {Array.from({ length: new Date(anoAtual, mesAtual + 1, 0).getDate() }, (_, i) => i + 1).map((date) => {
+                                                            const isDisponivel = doc.diasDisponiveis?.includes(date);
+                                                            const isSelected = selectedDateTele[doc.id] === date;
+                                                            
+                                                            return (
+                                                                <div
+                                                                    key={date}
+                                                                    className={`date ${isSelected ? 'selected' : ''} ${isDisponivel ? 'available' : 'unavailable'}`}
+                                                                    onClick={() => isDisponivel && handleSelectDateTele(doc.id, date)}
+                                                                >
+                                                                    {date}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {selectedDateTele[doc.id] && (
+                                                <div className="hours-section">
+                                                    <h4>SELECIONE O HORÁRIO</h4>
+                                                    <div className="hours-grid">
+                                                        {horariosDisponiveis[doc.id]?.length > 0 ? (
+                                                            horariosDisponiveis[doc.id].map((hour) => (
+                                                                <button
+                                                                    key={hour}
+                                                                    className={`hour-btn ${selectedHourTele[doc.id] === hour ? 'selected' : ''}`}
+                                                                    onClick={() => handleSelectHourTele(doc.id, hour)}
+                                                                >
+                                                                    {hour}
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#666' }}>
+                                                                Nenhum horário disponível para esta data
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="presencial-content">
+                                            <div className="calendar-section">
+                                                <div className="calendar-header">
+                                                    <h4>ESCOLHA A DATA PARA CONSULTA PRESENCIAL</h4>
+                                                    <div className="month-navigation">
+                                                        <button onClick={mesAnterior} className="month-nav-btn">◀</button>
+                                                        <span className="month-name">{getNomeMes()}</span>
+                                                        <button onClick={proximoMes} className="month-nav-btn">▶</button>
+                                                    </div>
+                                                </div>
+                                                <div className="calendar">
+                                                    <div className="calendar-weekdays">
+                                                        {["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"].map(day => (
+                                                            <span key={day}>{day}</span>
+                                                        ))}
+                                                    </div>
+                                                    <div className="calendar-dates">
+                                                        {Array.from({ length: new Date(anoAtual, mesAtual + 1, 0).getDate() }, (_, i) => i + 1).map((date) => {
+                                                            const isDisponivel = doc.diasDisponiveis?.includes(date);
+                                                            const isSelected = selectedDatePresencial[doc.id] === date;
+                                                            
+                                                            return (
+                                                                <div
+                                                                    key={date}
+                                                                    className={`date ${isSelected ? 'selected' : ''} ${isDisponivel ? 'available' : 'unavailable'}`}
+                                                                    onClick={() => isDisponivel && handleSelectDatePresencial(doc.id, date)}
+                                                                >
+                                                                    {date}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {selectedDatePresencial[doc.id] && (
+                                                <div className="hours-section">
+                                                    <h4>SELECIONE O HORÁRIO</h4>
+                                                    <div className="hours-grid">
+                                                        {horariosDisponiveis[doc.id]?.length > 0 ? (
+                                                            horariosDisponiveis[doc.id].map((hour) => (
+                                                                <button
+                                                                    key={hour}
+                                                                    className={`hour-btn ${selectedHourPresencial[doc.id] === hour ? 'selected' : ''}`}
+                                                                    onClick={() => handleSelectHourPresencial(doc.id, hour)}
+                                                                >
+                                                                    {hour}
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <p style={{ gridColumn: '1/-1', textAlign: 'center', color: '#666' }}>
+                                                                Nenhum horário disponível para esta data
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <button 
+                                                        className="confirm-presencial-btn"
+                                                        onClick={() => handleConfirmPresencial(doc)}
+                                                        disabled={!selectedDatePresencial[doc.id] || !selectedHourPresencial[doc.id]}
+                                                        style={{
+                                                            marginTop: '20px',
+                                                            width: '100%',
+                                                            padding: '12px',
+                                                            backgroundColor: '#10b981',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            cursor: (!selectedDatePresencial[doc.id] || !selectedHourPresencial[doc.id]) ? 'not-allowed' : 'pointer',
+                                                            opacity: (!selectedDatePresencial[doc.id] || !selectedHourPresencial[doc.id]) ? 0.5 : 1,
+                                                            fontWeight: '600',
+                                                            fontSize: '14px'
+                                                        }}
+                                                    >
+                                                        Confirmar Agendamento Presencial
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
                                 )}
                             </div>
                         </div>
@@ -985,7 +1104,7 @@ export default function Clinicas() {
                 </div>
             </div>
 
-            {/* MODAL PAGAMENTO */}
+            {/* MODAL PAGAMENTO PARA TELECONSULTA */}
             {showPaymentModal && selectedDoctorPayment && (
                 <div className="modal-overlay" onClick={closePaymentModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
@@ -993,7 +1112,21 @@ export default function Clinicas() {
                         {!agendamentoConfirmado ? (
                             <>
                                 <div className="modal-doctor">
-                                    <img src={selectedDoctorPayment.avatar} alt={selectedDoctorPayment.name} />
+                                    {selectedDoctorPayment.foto ? (
+                                        <img src={selectedDoctorPayment.foto} alt={selectedDoctorPayment.name} />
+                                    ) : (
+                                        <div 
+                                            className="doctor-avatar-iniciais"
+                                            style={{ 
+                                                backgroundColor: getCorFundo(selectedDoctorPayment.name),
+                                                width: '60px',
+                                                height: '60px',
+                                                fontSize: '24px'
+                                            }}
+                                        >
+                                            {getIniciais(selectedDoctorPayment.name)}
+                                        </div>
+                                    )}
                                     <div><h3>{selectedDoctorPayment.name}</h3><p>{selectedDoctorPayment.specialty}</p></div>
                                 </div>
                                 <div className="confirmation-card" style={{ margin: '0 24px 20px 24px' }}>
@@ -1066,20 +1199,35 @@ export default function Clinicas() {
                         {!showConfirmationPresencial ? (
                             <>
                                 <div className="modal-doctor">
-                                    <img src={selectedDoctor.avatar} alt={selectedDoctor.name} />
+                                    {selectedDoctor.foto ? (
+                                        <img src={selectedDoctor.foto} alt={selectedDoctor.name} />
+                                    ) : (
+                                        <div 
+                                            className="doctor-avatar-iniciais"
+                                            style={{ 
+                                                backgroundColor: getCorFundo(selectedDoctor.name),
+                                                width: '60px',
+                                                height: '60px',
+                                                fontSize: '24px'
+                                            }}
+                                        >
+                                            {getIniciais(selectedDoctor.name)}
+                                        </div>
+                                    )}
                                     <div>
                                         <h3>{selectedDoctor.name}</h3>
                                         <p>{selectedDoctor.specialty}</p>
-                                        <div className="doctor-rating">
-                                            <span className="stars">★★★★★</span>
-                                            <span className="rating-value">({selectedDoctor.rating} · {selectedDoctor.reviews} avaliações)</span>
-                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="modal-address">
                                     <strong>Endereço da Clínica</strong>
                                     <p>{selectedDoctor.enderecoCompleto}</p>
+                                    {selectedDoctor.cep && (
+                                        <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                                            CEP: {selectedDoctor.cep}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="modal-calendar-section">
@@ -1105,15 +1253,8 @@ export default function Clinicas() {
                                                 return (
                                                     <div
                                                         key={date}
-                                                        className={`date ${isSelected ? 'selected' : ''}`}
+                                                        className={`date ${isSelected ? 'selected' : ''} ${isDisponivel ? 'available' : 'unavailable'}`}
                                                         onClick={() => isDisponivel && handleSelectDatePresencial(selectedDoctor.id, date)}
-                                                        style={{
-                                                            cursor: isDisponivel ? 'pointer' : 'not-allowed',
-                                                            opacity: isDisponivel ? 1 : 0.4,
-                                                            backgroundColor: isSelected ? '#2c7da0' : 'transparent',
-                                                            color: isSelected ? 'white' : '#333',
-                                                            textDecoration: isDisponivel ? 'none' : 'line-through'
-                                                        }}
                                                     >
                                                         {date}
                                                     </div>

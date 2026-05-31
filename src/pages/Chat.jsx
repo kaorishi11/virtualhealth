@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabase";
 import "../styles/Chat.css";
 
 // Imagens
@@ -24,43 +25,85 @@ export default function ChatMedico() {
         {
             id: 1,
             type: "doctor",
-            text: "Olá! 👋\n\nSou o assistente médico virtual da Virtual Health.\n\nDescreva seus sintomas ou faça perguntas sobre saúde. Lembre-se: não dou diagnósticos definitivos, mas posso ajudar com informações e orientações! 😊",
+            text: "Olá! 👋\n\nSou o assistente médico virtual da Virtual Health.\n\nComo posso ajudar você hoje? Descreva seus sintomas ou faça perguntas sobre saúde. Lembre-se: não dou diagnósticos definitivos, mas posso ajudar com informações e orientações! 😊",
             time: "Agora"
         }
     ]);
     const [inputValue, setInputValue] = useState("");
-    const [selectedTopics, setSelectedTopics] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const messagesEndRef = useRef(null);
-
-    // Estados das notificações
+    const [pacienteId, setPacienteId] = useState(null);
+    const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
-    const [notifications, setNotifications] = useState([
-        {
-            id: 1,
-            title: "Nova consulta agendada",
-            message: "Sua consulta com Dr. Lucas Ferraz foi agendada para amanhã às 14h.",
-            time: "Há 2 horas",
-            read: false,
-            type: "consulta"
-        },
-        {
-            id: 2,
-            title: "Lembrete de medicação",
-            message: "Não se esqueça de tomar seu medicamento às 20h.",
-            time: "Há 5 horas",
-            read: false,
-            type: "lembrete"
-        },
-        {
-            id: 3,
-            title: "Link para teleconsulta",
-            message: "Copie e cole este link para acessar sua teleconsulta: https://virtualhealth.com/teleconsulta/12345",
-            time: "2 min atrás",
-            read: true,
-            type: "teleconsulta"
+    const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
+
+    // Função para buscar paciente logado
+    async function buscarPacienteLogado() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                navigate("/login");
+                return;
+            }
+
+            const { data: usuario } = await supabase
+                .from("usuarios")
+                .select("id, tipo")
+                .eq("id", user.id)
+                .single();
+
+            if (usuario && usuario.tipo === 'paciente') {
+                setPacienteId(usuario.id);
+            } else if (usuario && usuario.tipo === 'medico') {
+                navigate("/home-medico");
+            }
+        } catch (error) {
+            console.error("Erro ao buscar paciente:", error);
+            navigate("/login");
         }
-    ]);
+    }
+
+    // Função para carregar notificações do banco
+    async function carregarNotificacoes() {
+        if (!pacienteId) return;
+
+        const { data: notificacoes, error } = await supabase
+            .from("notificacoes")
+            .select("*")
+            .eq("usuario_id", pacienteId)
+            .order("created_at", { ascending: false })
+            .limit(20);
+
+        if (error) {
+            console.error("Erro ao carregar notificações:", error);
+            return;
+        }
+
+        if (notificacoes) {
+            setNotifications(notificacoes.map(n => ({
+                id: n.id,
+                title: n.titulo,
+                message: n.mensagem,
+                type: n.tipo,
+                read: n.lida,
+                time: new Date(n.created_at).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+            })));
+        }
+    }
+
+    // Função para marcar notificação como lida
+    const marcarNotificacaoLida = async (id) => {
+        await supabase
+            .from("notificacoes")
+            .update({ lida: true })
+            .eq("id", id);
+    };
 
     // Função para enviar mensagem para a API Groq
     const sendToGroq = async (userMessage) => {
@@ -76,7 +119,7 @@ export default function ChatMedico() {
                     messages: [
                         {
                             role: "system",
-                            content: "Você é um assistente médico virtual da Virtual Health. Regras: 1) Nunca dê diagnósticos definitivos 2) Sempre recomende procurar um médico presencial para casos graves 3) Seja atencioso e profissional 4) Responda em português 5) Seja claro e objetivo 6) Dê dicas de saúde preventiva quando apropriado"
+                            content: "Você é um assistente médico virtual da Virtual Health. Regras: 1) Nunca dê diagnósticos definitivos 2) Sempre recomende procurar um médico presencial para casos graves 3) Seja atencioso e profissional 4) Responda em português 5) Seja claro e objetivo 6) Dê dicas de saúde preventiva quando apropriado 7) Use emojis ocasionalmente para tornar a conversa mais amigável"
                         },
                         {
                             role: "user",
@@ -95,8 +138,6 @@ export default function ChatMedico() {
             }
 
             const data = await response.json();
-            console.log('Resposta da API:', data);
-            
             return data.choices[0].message.content;
         } catch (error) {
             console.error('Erro ao chamar Groq:', error);
@@ -112,148 +153,55 @@ export default function ChatMedico() {
         scrollToBottom();
     }, [messages]);
 
-    // Tópicos com ícones
-    const topics = [
-        { 
-            id: "pressao", 
-            label: "Pressão arterial", 
-            icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>
-            )
-        },
-        { 
-            id: "sintomas", 
-            label: "Sintomas", 
-            icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 12h-4l-3 9H9l-3-9H2"/>
-                    <path d="M5 3h14"/>
-                    <path d="M12 3v9"/>
-                </svg>
-            )
-        },
-        { 
-            id: "exames", 
-            label: "Meus exames", 
-            icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                </svg>
-            )
-        },
-        { 
-            id: "agendar", 
-            label: "Agendar Consulta", 
-            icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                    <circle cx="12" cy="15" r="1"/>
-                    <circle cx="16" cy="15" r="1"/>
-                    <circle cx="8" cy="15" r="1"/>
-                </svg>
-            )
-        },
-        { 
-            id: "dicas", 
-            label: "Dicas de saúde", 
-            icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 2L15 8.5L22 9.5L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.5L9 8.5L12 2z"/>
-                </svg>
-            )
-        },
-        { 
-            id: "medicamentos", 
-            label: "Medicamentos", 
-            icon: (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 12H4M12 4v16M4 4h16v16H4z"/>
-                </svg>
-            )
-        }
-    ];
+    useEffect(() => {
+        buscarPacienteLogado();
+    }, []);
 
-    const handleTopicToggle = async (topicId, topicLabel) => {
-        setSelectedTopics(prev => {
-            if (prev.includes(topicId)) {
-                return prev.filter(id => id !== topicId);
-            } else {
-                return [...prev, topicId];
-            }
-        });
+    useEffect(() => {
+        if (pacienteId) {
+            carregarNotificacoes();
+            
+            // Inscrever para notificações em tempo real
+            const subscription = supabase
+                .channel('notificacoes-realtime')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'notificacoes',
+                    filter: `usuario_id=eq.${pacienteId}`
+                }, (payload) => {
+                    const novaNotificacao = {
+                        id: payload.new.id,
+                        title: payload.new.titulo,
+                        message: payload.new.mensagem,
+                        type: payload.new.tipo,
+                        read: false,
+                        time: new Date(payload.new.created_at).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })
+                    };
+                    setNotifications(prev => [novaNotificacao, ...prev]);
+                })
+                .subscribe();
 
-        const isSelected = selectedTopics.includes(topicId);
-        
-        if (!isSelected) {
-            // Adicionar mensagem do usuário
-            const userMessage = {
-                id: Date.now(),
-                type: "user",
-                text: topicLabel,
-                time: new Date().toLocaleTimeString()
+            return () => {
+                subscription.unsubscribe();
             };
-            
-            setMessages(prev => [...prev, userMessage]);
-            setIsLoading(true);
-
-            // Construir prompt baseado no tópico
-            let prompt = "";
-            switch (topicId) {
-                case "pressao":
-                    prompt = "Me fale sobre pressão arterial, como medir corretamente, valores ideais e dicas para manter controlada.";
-                    break;
-                case "sintomas":
-                    prompt = "Quero entender melhor meus sintomas. O que devo observar e quando devo procurar um médico?";
-                    break;
-                case "exames":
-                    prompt = "Me explique sobre exames médicos preventivos, quais são importantes e com que frequência devo fazer.";
-                    break;
-                case "agendar":
-                    prompt = "Como funciona o agendamento de consultas na Virtual Health? Quais as opções disponíveis?";
-                    break;
-                case "dicas":
-                    prompt = "Me dê dicas de saúde preventiva, alimentação saudável, exercícios e hábitos para uma vida melhor.";
-                    break;
-                case "medicamentos":
-                    prompt = "Me oriente sobre uso correto de medicamentos, cuidados importantes e automedicação.";
-                    break;
-                default:
-                    prompt = topicLabel;
-            }
-
-            // Chamar API Groq
-            const response = await sendToGroq(prompt);
-            
-            const doctorMessage = {
-                id: Date.now() + 1,
-                type: "doctor",
-                text: response,
-                time: new Date().toLocaleTimeString()
-            };
-            
-            setMessages(prev => [...prev, doctorMessage]);
-            setIsLoading(false);
         }
-    };
+    }, [pacienteId]);
 
     const handleSendMessage = async () => {
         if (inputValue.trim() === "" || isLoading) return;
 
-        // Adicionar mensagem do usuário
+        // Adicionar mensagem do usuário com animação
         const userMessage = {
             id: Date.now(),
             type: "user",
             text: inputValue,
-            time: new Date().toLocaleTimeString()
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
         setMessages(prev => [...prev, userMessage]);
@@ -261,7 +209,7 @@ export default function ChatMedico() {
         setInputValue("");
         setIsLoading(true);
 
-        // Adicionar indicador de digitação
+        // Adicionar indicador de digitação com animação
         const typingIndicator = {
             id: Date.now() + 1,
             type: "typing",
@@ -280,11 +228,14 @@ export default function ChatMedico() {
             id: Date.now() + 2,
             type: "doctor",
             text: response,
-            time: new Date().toLocaleTimeString()
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         
         setMessages(prev => [...prev, doctorMessage]);
         setIsLoading(false);
+        
+        // Focar no input após enviar
+        inputRef.current?.focus();
     };
 
     const handleKeyPress = (e) => {
@@ -294,21 +245,27 @@ export default function ChatMedico() {
         }
     };
 
-    // Funções de notificação (mantidas iguais)
+    // Funções de notificação
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    const handleNotificationClick = (id) => {
+    const handleNotificationClick = async (id) => {
         setNotifications(prev => 
             prev.map(notif => 
                 notif.id === id ? { ...notif, read: true } : notif
             )
         );
+        await marcarNotificacaoLida(id);
     };
 
-    const markAllAsRead = () => {
+    const markAllAsRead = async () => {
+        const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
         setNotifications(prev => 
             prev.map(notif => ({ ...notif, read: true }))
         );
+        
+        for (const id of unreadIds) {
+            await marcarNotificacaoLida(id);
+        }
     };
 
     const closeNotifications = () => {
@@ -323,13 +280,6 @@ export default function ChatMedico() {
                         <path d="M22 12h-4l-3 9H9l-3-9H2"/>
                         <path d="M5 3h14"/>
                         <path d="M12 3v9"/>
-                    </svg>
-                );
-            case 'lembrete':
-                return (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
                     </svg>
                 );
             case 'teleconsulta':
@@ -353,7 +303,6 @@ export default function ChatMedico() {
     const getTypeClass = (type) => {
         switch(type) {
             case 'consulta': return 'consulta';
-            case 'lembrete': return 'lembrete';
             case 'teleconsulta': return 'teleconsulta';
             default: return 'sistema';
         }
@@ -444,31 +393,49 @@ export default function ChatMedico() {
                 <div className="chat-card">
                     <div className="chat-header">
                         <h1>CONVERSE COM O SEU <span>MÉDICO VIRTUAL!</span></h1>
+                        <p className="chat-subtitle">💬 Atendimento 24h - Respostas rápidas e inteligentes</p>
                     </div>
 
-                    {/* MENSAGENS */}
+                    {/* MENSAGENS COM ANIMAÇÕES */}
                     <div className="chat-messages">
-                        {messages.map((msg) => (
-                            <div key={msg.id}>
+                        {messages.map((msg, index) => (
+                            <div 
+                                key={msg.id} 
+                                className={`message-wrapper ${msg.type === "doctor" ? "doctor-wrapper" : "user-wrapper"} animate-message`}
+                                style={{ animationDelay: `${index * 0.05}s` }}
+                            >
                                 {msg.type === "doctor" ? (
                                     <div className="doctor-message">
-                                        <div className="doctor-avatar"><img src={robochat} alt="avatar"/></div>
+                                        <div className="doctor-avatar">
+                                            <img src={robochat} alt="avatar"/>
+                                            <div className="online-dot"></div>
+                                        </div>
                                         <div className="message-bubble">
                                             <p style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</p>
-                                            <div className="doctor-name">Dr. Virtual Health</div>
+                                            <div className="message-footer">
+                                                <span className="doctor-name">Dr. Virtual Health</span>
+                                                <span className="message-time">{msg.time}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : msg.type === "typing" ? (
                                     <div className="doctor-message">
-                                        <div className="doctor-avatar"><img src={robochat} alt="avatar"/></div>
-                                        <div className="message-bubble typing-indicator">
-                                            <span>.</span><span>.</span><span>.</span>
+                                        <div className="doctor-avatar">
+                                            <img src={robochat} alt="avatar"/>
+                                        </div>
+                                        <div className="typing-indicator">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="user-message">
                                         <div className="user-bubble">
                                             <p>{msg.text}</p>
+                                            <div className="message-footer">
+                                                <span className="message-time">{msg.time}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -477,48 +444,89 @@ export default function ChatMedico() {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* TÓPICOS/OPÇÕES */}
-                    <div className="topics-section">
-                        <div className="topics-title">Escolha um dos temas abaixo ou me conte o que está sentindo:</div>
-                        <div className="topics-grid">
-                            {topics.map((topic) => (
-                                <div 
-                                    key={topic.id}
-                                    className={`topic-item ${selectedTopics.includes(topic.id) ? "selected" : ""}`}
-                                    onClick={() => handleTopicToggle(topic.id, topic.label)}
-                                >
-                                    <span className="topic-icon">{topic.icon}</span>
-                                    <span>{topic.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* INPUT DE MENSAGEM */}
+                    {/* INPUT DE MENSAGEM COM ANIMAÇÃO */}
                     <div className="chat-input-area">
                         <div className="input-wrapper">
                             <textarea
+                                ref={inputRef}
                                 className="chat-input"
-                                placeholder="Digite sua mensagem aqui..."
+                                placeholder="Digite sua mensagem aqui... (Pressione Enter para enviar)"
                                 rows="2"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onKeyPress={handleKeyPress}
                                 disabled={isLoading}
                             />
-                            <button className="send-btn" onClick={handleSendMessage} disabled={isLoading}>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <line x1="22" y1="2" x2="11" y2="13"/>
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                                </svg>
-                                {isLoading ? "Enviando..." : "Enviar"}
+                            <button 
+                                className={`send-btn ${isLoading ? 'loading' : ''}`} 
+                                onClick={handleSendMessage} 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <div className="send-loading">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <line x1="22" y1="2" x2="11" y2="13"/>
+                                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                        </svg>
+                                        <span>Enviar</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* SUGESTÕES RÁPIDAS */}
+                    <div className="quick-suggestions">
+                        <p className="suggestions-title">Perguntas frequentes:</p>
+                        <div className="suggestions-grid">
+                            <button 
+                                className="suggestion-btn"
+                                onClick={() => {
+                                    setInputValue("Estou com dor de cabeça há 2 dias, o que devo fazer?");
+                                    inputRef.current?.focus();
+                                }}
+                            >
+                                Dor de cabeça
+                            </button>
+                            <button 
+                                className="suggestion-btn"
+                                onClick={() => {
+                                    setInputValue("Quais são os sintomas de gripe?");
+                                    inputRef.current?.focus();
+                                }}
+                            >
+                                Sintomas de gripe
+                            </button>
+                            <button 
+                                className="suggestion-btn"
+                                onClick={() => {
+                                    setInputValue("Como posso controlar minha pressão arterial?");
+                                    inputRef.current?.focus();
+                                }}
+                            >
+                                Pressão arterial
+                            </button>
+                            <button 
+                                className="suggestion-btn"
+                                onClick={() => {
+                                    setInputValue("Quando devo procurar um médico de emergência?");
+                                    inputRef.current?.focus();
+                                }}
+                            >
+                                Quando ir ao médico
                             </button>
                         </div>
                     </div>
 
                     {/* AVISO LEGAL */}
                     <div className="disclaimer">
-                        <p>⚠️ Esse chat não substitui as avaliações médicas presenciais. Em caso de emergência, procure um serviço de saúde imediatamente.</p>
+                        <p>⚠️ Este chat não substitui avaliações médicas presenciais. Em caso de emergência, procure um serviço de saúde imediatamente.</p>
                     </div>
                 </div>
             </div>
@@ -528,10 +536,10 @@ export default function ChatMedico() {
                 <div className="footer-column">
                     <h4>Serviços</h4>
                     <ul>
-                        <li><img src={certinho} className="certo"/> Teleconsulta 24h</li>
-                        <li><img src={certinho} className="certo"/> Agendamento online</li>
-                        <li><img src={certinho} className="certo"/> Especialidades</li>
-                        <li><img src={certinho} className="certo"/> Perguntas frequentes</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Teleconsulta 24h</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Agendamento online</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Especialidades</li>
+                        <li><img src={certinho} className="certo" alt="check"/> Perguntas frequentes</li>
                     </ul>
                 </div>
                 <div className="footer-column">
@@ -545,10 +553,10 @@ export default function ChatMedico() {
                 <div className="footer-column">
                     <h4>Contato</h4>
                     <ul>
-                        <li><img src={local} className="certo"/> Endereço: Sesi Caçapava SP</li>
-                        <li><img src={tell} className="certo"/> Telefone: (12) 9966-9732</li>
-                        <li><img src={gmail} className="certo"/> Email: Virtualhealth@gmail.com</li>
-                        <li><img src={tempo} className="certo"/> Horário: 24h</li>
+                        <li><img src={local} className="certo" alt="local"/> Endereço: Sesi Caçapava SP</li>
+                        <li><img src={tell} className="certo" alt="telefone"/> Telefone: (12) 9966-9732</li>
+                        <li><img src={gmail} className="certo" alt="email"/> Email: Virtualhealth@gmail.com</li>
+                        <li><img src={tempo} className="certo" alt="horario"/> Horário: 24h</li>
                     </ul>
                 </div>
             </footer>

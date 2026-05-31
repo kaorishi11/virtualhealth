@@ -32,6 +32,32 @@ export default function HomePa() {
 
     const navigate = useNavigate();
 
+    // Funções para gerar iniciais e cor de fundo (igual ao perfil)
+    const getIniciais = (nome) => {
+        if (!nome) return '?';
+        const nomes = nome.trim().split(' ');
+        if (nomes.length === 1) return nomes[0].charAt(0).toUpperCase();
+        return (nomes[0].charAt(0) + nomes[nomes.length - 1].charAt(0)).toUpperCase();
+    };
+
+    const getCorFundo = (nome) => {
+        if (!nome) return '#6366f1';
+        
+        const cores = [
+            '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', 
+            '#ef4444', '#f97316', '#f59e0b', '#84cc16',
+            '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+            '#3b82f6', '#6366f1', '#8b5cf6'
+        ];
+        
+        let hash = 0;
+        for (let i = 0; i < nome.length; i++) {
+            hash = nome.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % cores.length;
+        return cores[index];
+    };
+
     useEffect(() => {
         async function carregarDados() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -105,7 +131,7 @@ export default function HomePa() {
             texto: item.texto,
             nome: item.usuarios?.nome || "Especialista",
             especialidade: item.usuarios?.especialidade || "",
-            imagem: item.usuarios?.foto || doutor
+            foto: item.usuarios?.foto || null
         }));
 
         setDicas(dicasFormatadas);
@@ -209,10 +235,6 @@ export default function HomePa() {
         }
     };
 
-    const handleImageError = (e) => {
-        e.target.src = doutor;
-    };
-
     return (
         <div className="home-container">
             {/* HEADER */}
@@ -240,7 +262,7 @@ export default function HomePa() {
                         </div>
                     </div>
                     
-                    <button className="consulta-btn" onClick={() => navigate("/chat")}>
+                    <button className="consultar-btn" onClick={() => navigate("/chat")}>
                         Fazer Consulta
                     </button>
                 </div>
@@ -370,11 +392,29 @@ export default function HomePa() {
                                     <p className="expert-text">{item.texto}</p>
                                     <div className="expert-footer">
                                         <div className="perfil">
-                                            <img 
-                                                src={item.imagem} 
-                                                alt={item.nome}
-                                                onError={handleImageError}
-                                            />
+                                            {item.foto ? (
+                                                <img 
+                                                    src={item.foto} 
+                                                    alt={item.nome}
+                                                    className="perfil-img"
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                        const initialsDiv = e.target.nextSibling;
+                                                        if (initialsDiv && initialsDiv.classList) {
+                                                            initialsDiv.style.display = 'flex';
+                                                        }
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div 
+                                                className="medico-iniciais"
+                                                style={{ 
+                                                    backgroundColor: getCorFundo(item.nome),
+                                                    display: item.foto ? 'none' : 'flex'
+                                                }}
+                                            >
+                                                {getIniciais(item.nome)}
+                                            </div>
                                             <strong>
                                                 {item.nome} {item.especialidade && `- ${item.especialidade}`}
                                             </strong>
@@ -394,7 +434,7 @@ export default function HomePa() {
 
             <hr className="hr3"/>
 
-            {/* FAQ - Versão do segundo arquivo */}
+            {/* FAQ */}
             <div className="faq-section">
                 <h2>Perguntas frequentes</h2>
                 <hr />

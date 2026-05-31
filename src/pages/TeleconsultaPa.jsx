@@ -16,6 +16,7 @@ export default function TeleconsultaPa() {
     const [pacienteId, setPacienteId] = useState(null);
     const [proximaConsulta, setProximaConsulta] = useState(null);
     const [usuario, setUsuario] = useState(null);
+    const [carregandoConsulta, setCarregandoConsulta] = useState(true);
     
     // Estados das notificações
     const [showNotifications, setShowNotifications] = useState(false);
@@ -105,124 +106,158 @@ export default function TeleconsultaPa() {
     }
 
     async function carregarProximaConsulta() {
-        if (!pacienteId) return;
-
-        const hoje = new Date().toISOString().split('T')[0];
-
-        const { data, error } = await supabase
-            .from("agendamentos")
-            .select(`
-                id,
-                data_consulta,
-                horario,
-                tipo,
-                link_teleconsulta,
-                medico_id,
-                usuarios:medico_id (
-                    nome,
-                    especialidade,
-                    foto
-                )
-            `)
-            .eq("paciente_id", pacienteId)
-            .eq("tipo", "teleconsulta")
-            .eq("status", "agendada")
-            .gte("data_consulta", hoje)
-            .order("data_consulta", { ascending: true })
-            .order("horario", { ascending: true })
-            .limit(1);
-
-        if (error) {
-            console.error("Erro ao buscar próxima consulta:", error);
+        if (!pacienteId) {
+            setCarregandoConsulta(false);
             return;
         }
 
-        if (data && data.length > 0) {
-            const consulta = data[0];
-            setProximaConsulta({
-                id: consulta.id,
-                medico: consulta.usuarios?.nome || "Médico",
-                especialidade: consulta.usuarios?.especialidade || "Especialista",
-                foto: consulta.usuarios?.foto,
-                data: new Date(consulta.data_consulta).toLocaleDateString('pt-BR'),
-                horario: consulta.horario,
-                link: consulta.link_teleconsulta,
-                codigo: consulta.codigo
-            });
-        } else {
-            setProximaConsulta(null);
-        }
-    }
-
-    // FUNÇÃO ÚNICA PARA ENTRAR NA CONSULTA
-    async function entrarNaConsulta(codigo = null) {
-    const codigoFinal = codigo || codigoBusca;
-    
-    if (!codigoFinal || !codigoFinal.trim()) {
-        showToast('Digite o código da consulta!', true);
-        return false;
-    }
-
-    const codigoLimpo = codigoFinal.toUpperCase().trim();
-    
-    if (codigoLimpo.length !== 6 || !/^[A-Z0-9]+$/i.test(codigoLimpo)) {
-        showToast('Código inválido! Digite 6 caracteres alfanuméricos.', true);
-        return false;
-    }
-
-    setCarregando(true);
-    
-    try {
-        // Buscar sala pelo código na tabela consulta_salas
-        const { data: sala, error } = await supabase
-            .from('consulta_salas')
-            .select('sala_url, status, medico_id, paciente_id')
-            .eq('codigo', codigoLimpo)
-            .single();
-
-        if (error) {
-            console.error("Erro ao buscar sala:", error);
-            showToast('Código inválido!', true);
-            return false;
-        }
-
-        console.log("Sala encontrada:", sala);
-
-        // Verificar se o paciente é o dono ou se a sala está livre
-        if (sala.paciente_id && sala.paciente_id !== pacienteId) {
-            showToast('Este código não pertence às suas consultas!', true);
-            return false;
-        }
-
-        // Atualizar paciente_id se estiver vazio
-        if (!sala.paciente_id) {
-            await supabase
-                .from('consulta_salas')
-                .update({ paciente_id: pacienteId })
-                .eq('id', sala.id);
-        }
-
-        setRoomUrl(sala.sala_url);
-        setEmChamadaVideo(true);
-        return true;
+        setCarregandoConsulta(true);
         
-    } catch (error) {
-        console.error('Erro:', error);
-        showToast('Erro ao conectar.', true);
-        return false;
-    } finally {
-        setCarregando(false);
+        try {
+            const hoje = new Date().toISOString().split('T')[0];
+            console.log("📅 Data atual:", hoje);
+            console.log("🔍 Buscando para paciente:", pacienteId);
+
+            // Buscar agendamentos da tabela
+            const { data: agendamentos, error: errorAgendamentos } = await supabase
+                .from("agendamentos")
+                .select("*")
+                .eq("paciente_id", pacienteId)
+                .eq("tipo", "teleconsulta")
+                .eq("status", "agendada")
+                .gte("data_consulta", hoje)
+                .order("data_consulta", { ascending: true })
+                .order("horario", { ascending: true })
+                .limit(1);
+
+            console.log("📊 Agendamentos encontrados:", agendamentos);
+
+            if (errorAgendamentos) {
+                console.error("❌ Erro ao buscar agendamentos:", errorAgendamentos);
+                setProximaConsulta(null);
+                setCarregandoConsulta(false);
+                return;
+            }
+
+            if (agendamentos && agendamentos.length > 0) {
+                const agendamento = agendamentos[0];
+                
+                // Buscar dados do médico
+                const { data: medico, error: errorMedico } = await supabase
+                    .from("usuarios")
+                    .select("nome, especialidade, foto")
+                    .eq("id", agendamento.medico_id)
+                    .single();
+
+                console.log("👨‍⚕️ Médico encontrado:", medico);
+
+                if (errorMedico) {
+                    console.error("❌ Erro ao buscar médico:", errorMedico);
+                }
+
+                // Formatar a data
+                const dataFormatada = new Date(agendamento.data_consulta).toLocaleDateString('pt-BR');
+                
+                // Formatar o horário (remover segundos se existir)
+                const horarioFormatado = agendamento.horario.substring(0, 5);
+
+                setProximaConsulta({
+                    id: agendamento.id,
+                    medico: medico?.nome || "Médico não encontrado",
+                    especialidade: medico?.especialidade || "Especialidade não informada",
+                    foto: medico?.foto,
+                    data: dataFormatada,
+                    horario: horarioFormatado,
+                    link: agendamento.link_teleconsulta
+                });
+                
+                console.log("✅ Próxima consulta configurada:", {
+                    medico: medico?.nome,
+                    especialidade: medico?.especialidade,
+                    data: dataFormatada,
+                    horario: horarioFormatado
+                });
+            } else {
+                console.log("⚠️ Nenhuma consulta agendada encontrada");
+                setProximaConsulta(null);
+            }
+        } catch (error) {
+            console.error("❌ Erro ao carregar próxima consulta:", error);
+            setProximaConsulta(null);
+        } finally {
+            setCarregandoConsulta(false);
+        }
     }
-}
+
+    // FUNÇÃO PARA ENTRAR NA CONSULTA POR CÓDIGO
+    async function entrarNaConsulta(codigo = null) {
+        const codigoFinal = codigo || codigoBusca;
+        
+        if (!codigoFinal || !codigoFinal.trim()) {
+            showToast('Digite o código da consulta!', true);
+            return false;
+        }
+
+        const codigoLimpo = codigoFinal.toUpperCase().trim();
+        
+        if (codigoLimpo.length !== 6 || !/^[A-Z0-9]+$/i.test(codigoLimpo)) {
+            showToast('Código inválido! Digite 6 caracteres alfanuméricos.', true);
+            return false;
+        }
+
+        setCarregando(true);
+        
+        try {
+            // Buscar sala pelo código na tabela consulta_salas
+            const { data: sala, error } = await supabase
+                .from('consulta_salas')
+                .select('sala_url, status, medico_id, paciente_id')
+                .eq('codigo', codigoLimpo)
+                .single();
+
+            if (error) {
+                console.error("Erro ao buscar sala:", error);
+                showToast('Código inválido!', true);
+                return false;
+            }
+
+            console.log("Sala encontrada:", sala);
+
+            // Verificar se o paciente é o dono ou se a sala está livre
+            if (sala.paciente_id && sala.paciente_id !== pacienteId) {
+                showToast('Este código não pertence às suas consultas!', true);
+                return false;
+            }
+
+            // Atualizar paciente_id se estiver vazio
+            if (!sala.paciente_id) {
+                await supabase
+                    .from('consulta_salas')
+                    .update({ paciente_id: pacienteId })
+                    .eq('id', sala.id);
+            }
+
+            setRoomUrl(sala.sala_url);
+            setEmChamadaVideo(true);
+            return true;
+            
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro ao conectar.', true);
+            return false;
+        } finally {
+            setCarregando(false);
+        }
+    }
 
     // Usar o link da próxima consulta
     async function entrarComProximaConsulta() {
         if (!proximaConsulta?.link) {
-            showToast('Nenhuma consulta agendada no momento.', true);
+            showToast('Link da consulta não disponível. Entre em contato com o suporte.', true);
             return;
         }
         
-        // Tentar extrair código do link ou usar um padrão
+        console.log("Entrando na consulta com link:", proximaConsulta.link);
         setRoomUrl(proximaConsulta.link);
         setEmChamadaVideo(true);
     }
@@ -264,25 +299,6 @@ export default function TeleconsultaPa() {
     };
 
     const closeNotifications = () => setShowNotifications(false);
-
-    const getTypeIcon = (type) => {
-        switch(type) {
-            case 'consulta':
-                return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9H9l-3-9H2"/><path d="M5 3h14"/><path d="M12 3v9"/></svg>;
-            case 'teleconsulta':
-                return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m9 8 5 4-5 4V8z"/></svg>;
-            default:
-                return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
-        }
-    };
-
-    const getTypeClass = (type) => {
-        switch(type) {
-            case 'consulta': return 'consulta';
-            case 'teleconsulta': return 'teleconsulta';
-            default: return 'sistema';
-        }
-    };
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -326,8 +342,7 @@ export default function TeleconsultaPa() {
                         <div className="notification-list">
                             {notifications.length > 0 ? (
                                 notifications.map((notif) => (
-                                    <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`} onClick={() => handleNotificationClick(notif.id, notif.link)} style={{ cursor: 'pointer' }}>
-                                        <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>{getTypeIcon(notif.type)}</div>
+                                    <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`} onClick={() => handleNotificationClick(notif.id, notif.link)}>
                                         <div className="notification-content">
                                             <div className="notification-title">{notif.title}</div>
                                             <div className="notification-message">{notif.message}</div>
@@ -379,48 +394,64 @@ export default function TeleconsultaPa() {
                                             disabled={carregando}
                                         />
                                     </div>
+                                    <button 
+                                        className="btn-entrar"
+                                        onClick={() => entrarNaConsulta()}
+                                        disabled={carregando || !codigoBusca}
+                                    >
+                                        {carregando ? "Verificando..." : "Entrar na consulta"}
+                                    </button>
                                 </div>
 
                                 {/* PRÓXIMA CONSULTA */}
-                                {proximaConsulta && (
-                                    <div className="info-card">
-                                        <div className="info-card-body">
-                                            <h2 className="info-title">PRÓXIMA CONSULTA</h2>
-                                            <div className="info-content">
-                                                <div className="info-item">
-                                                    <span className="info-label">Médico(a):</span>
-                                                    <span className="info-value destaque">{proximaConsulta.medico}</span>
-                                                </div>
-                                                <div className="info-item">
-                                                    <span className="info-label">Especialidade:</span>
-                                                    <span className="info-value">{proximaConsulta.especialidade}</span>
-                                                </div>
-                                                <div className="info-item">
-                                                    <span className="info-label">Data:</span>
-                                                    <span className="info-value">{proximaConsulta.data}</span>
-                                                </div>
-                                                <div className="info-item">
-                                                    <span className="info-label">Horário:</span>
-                                                    <span className="info-value">{proximaConsulta.horario}</span>
-                                                </div>
-                                            </div>
-                                            <button 
-                                                className="btn-entrar-proxima"
-                                                onClick={entrarComProximaConsulta}
-                                            >
-                                                🎥 Entrar na consulta
-                                            </button>
-                                        </div>
+                                <div className="info-card">
+                                    <div className="info-card-header">
+                                        <h2>PRÓXIMA CONSULTA</h2>
                                     </div>
-                                )}
+                                    <div className="info-card-body">
+                                        {carregandoConsulta ? (
+                                            <div className="loading-consulta">
+                                                <p>Carregando...</p>
+                                            </div>
+                                        ) : proximaConsulta ? (
+                                            <>
+                                                <div className="info-content">
+                                                    <div className="info-item">
+                                                        <span className="info-label">Médico(a):</span>
+                                                        <span className="info-value destaque">{proximaConsulta.medico}</span>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <span className="info-label">Especialidade:</span>
+                                                        <span className="info-value">{proximaConsulta.especialidade}</span>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <span className="info-label">Data:</span>
+                                                        <span className="info-value">{proximaConsulta.data}</span>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <span className="info-label">Horário:</span>
+                                                        <span className="info-value">{proximaConsulta.horario}</span>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    className="btn-entrar-proxima"
+                                                    onClick={entrarComProximaConsulta}
+                                                >
+                                                    Entrar na consulta
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div className="sem-consulta">
+                                                <p>Nenhuma consulta agendada no momento.</p>
+                                                <Link to="/clinicas" className="btn-agendar">
+                                                    Agendar consulta
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* BOTÃO AGENDAR */}
-                            <div className="agendar-container">
-                                <Link to="/clinicas" className="btn-agendar-nova">
-                                    📅 Agendar nova consulta
-                                </Link>
-                            </div>
                         </>
                     ) : (
                         <VideoCall 
@@ -445,42 +476,6 @@ export default function TeleconsultaPa() {
                     {toast.message}
                 </div>
             )}
-
-            <style>{`
-                .btn-entrar-proxima {
-                    width: 100%;
-                    padding: 12px;
-                    background: #2c7da0;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    margin-top: 15px;
-                    transition: background 0.3s;
-                }
-                .btn-entrar-proxima:hover {
-                    background: #1f5e7a;
-                }
-                .agendar-container {
-                    text-align: center;
-                    margin-top: 30px;
-                }
-                .btn-agendar-nova {
-                    display: inline-block;
-                    padding: 12px 24px;
-                    background: #61dafb;
-                    color: #1a1a2e;
-                    text-decoration: none;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    transition: background 0.3s;
-                }
-                .btn-agendar-nova:hover {
-                    background: #4fa8c7;
-                }
-            `}</style>
         </div>
     );
 }
