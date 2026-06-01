@@ -32,7 +32,7 @@ export default function HomePa() {
 
     const navigate = useNavigate();
 
-    // Funções para gerar iniciais e cor de fundo (igual ao perfil)
+    // Funções para gerar iniciais e cor de fundo
     const getIniciais = (nome) => {
         if (!nome) return '?';
         const nomes = nome.trim().split(' ');
@@ -79,7 +79,15 @@ export default function HomePa() {
     async function buscarNotificacoes(userId) {
         const { data, error } = await supabase
             .from("notificacoes")
-            .select("*")
+            .select(`
+                *,
+                medico:medico_id (
+                    id,
+                    nome,
+                    especialidade,
+                    foto
+                )
+            `)
             .eq("usuario_id", userId)
             .order("created_at", { ascending: false });
 
@@ -88,7 +96,43 @@ export default function HomePa() {
             return;
         }
 
-        setNotifications(data || []);
+        // Processar as notificações para corrigir mensagens com "undefined"
+        const notificacoesProcessadas = (data || []).map(notif => {
+            let mensagemCorrigida = notif.mensagem;
+            
+            // Se tem médico e a mensagem tem "undefined", substitui pelo nome real
+            if (notif.medico && notif.medico.nome) {
+                if (mensagemCorrigida.includes("Dr(a). undefined")) {
+                    mensagemCorrigida = mensagemCorrigida.replace(
+                        "Dr(a). undefined",
+                        `Dr(a). ${notif.medico.nome}`
+                    );
+                }
+                // Se a mensagem começa com "Sua consulta com" mas não tem nome específico
+                if (mensagemCorrigida.includes("Sua consulta com") && 
+                    !mensagemCorrigida.includes(notif.medico.nome)) {
+                    mensagemCorrigida = mensagemCorrigida.replace(
+                        "Sua consulta com",
+                        `Sua consulta com Dr(a). ${notif.medico.nome}`
+                    );
+                }
+                // Se a mensagem tem "agendou uma consulta" mas não tem o nome do médico
+                if (mensagemCorrigida.includes("agendou uma consulta") && 
+                    !mensagemCorrigida.includes(notif.medico.nome)) {
+                    mensagemCorrigida = mensagemCorrigida.replace(
+                        "agendou uma consulta",
+                        `Dr(a). ${notif.medico.nome} agendou uma consulta`
+                    );
+                }
+            }
+            
+            return {
+                ...notif,
+                mensagem: mensagemCorrigida
+            };
+        });
+
+        setNotifications(notificacoesProcessadas);
     }
 
     async function buscarFaqs() {
@@ -298,8 +342,32 @@ export default function HomePa() {
                                             {getTypeIcon(notif.tipo)}
                                         </div>
                                         <div className="notification-content">
-                                            <div className="notification-title">{notif.titulo}</div>
-                                            <div className="notification-message">{notif.mensagem}</div>
+                                            <div className="notification-title">
+                                                {notif.titulo}
+                                            </div>
+
+                                            <div className="notification-message">
+                                                {notif.mensagem}
+                                            </div>
+
+                                            {notif.medico && notif.medico.nome && (
+                                                <div
+                                                    style={{
+                                                        marginTop: '8px',
+                                                        paddingTop: '6px',
+                                                        borderTop: '1px solid #e2e8f0',
+                                                        fontSize: '12px',
+                                                        color: '#4f46e5',
+                                                        fontWeight: '500',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px'
+                                                    }}
+                                                >
+                                                    
+                                                </div>
+                                            )}
+
                                             <div className="notification-time">
                                                 {new Date(notif.created_at).toLocaleDateString("pt-BR")}
                                             </div>

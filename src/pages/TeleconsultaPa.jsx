@@ -24,6 +24,32 @@ export default function TeleconsultaPa() {
     const [notifications, setNotifications] = useState([]);
     const [processandoCodigoUrl, setProcessandoCodigoUrl] = useState(false);
 
+    // Função auxiliar para formatar data corretamente (sem problemas de fuso horário)
+    const formatarDataCorreta = (dataString) => {
+        if (!dataString) return '';
+        // A data vem no formato YYYY-MM-DD do banco
+        const [ano, mes, dia] = dataString.split('-');
+        return `${dia}/${mes}/${ano}`;
+    };
+
+    // Função para formatar data e hora nas notificações
+    const formatarDataHoraNotificacao = (dataString) => {
+        if (!dataString) return '';
+        
+        // Se já é uma string formatada com data e hora
+        if (dataString.includes('/') && dataString.includes(':')) {
+            return dataString;
+        }
+        
+        // Se for apenas data no formato YYYY-MM-DD
+        if (dataString.includes('-')) {
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+        
+        return dataString;
+    };
+
     useEffect(() => {
         carregarDados();
     }, []);
@@ -70,7 +96,15 @@ export default function TeleconsultaPa() {
 
         const { data, error } = await supabase
             .from("notificacoes")
-            .select("*")
+            .select(`
+                *,
+                medico:medico_id (
+                    id,
+                    nome,
+                    especialidade,
+                    foto
+                )
+            `)
             .eq("usuario_id", pacienteId)
             .order("created_at", { ascending: false })
             .limit(20);
@@ -81,15 +115,66 @@ export default function TeleconsultaPa() {
         }
 
         if (data) {
-            setNotifications(data.map(n => ({
-                id: n.id,
-                title: n.titulo,
-                message: n.mensagem,
-                type: n.tipo,
-                read: n.lida,
-                link: n.link,
-                time: new Date(n.created_at).toLocaleDateString('pt-BR') + ' ' + new Date(n.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-            })));
+            // Processar as notificações para corrigir mensagens com "undefined"
+            const notificacoesProcessadas = data.map(notif => {
+                let mensagemCorrigida = notif.mensagem;
+                
+                // Corrigir datas nas mensagens (ex: 2026-06-08 para 08/06/2026)
+                if (mensagemCorrigida) {
+                    // Regex para encontrar datas no formato YYYY-MM-DD
+                    mensagemCorrigida = mensagemCorrigida.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$3/$2/$1');
+                }
+                
+                // Se tem médico e a mensagem tem "undefined", substitui pelo nome real
+                if (notif.medico && notif.medico.nome) {
+                    if (mensagemCorrigida.includes("Dr(a). undefined")) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "Dr(a). undefined",
+                            `Dr(a). ${notif.medico.nome}`
+                        );
+                    }
+                    // Se a mensagem começa com "Sua consulta com" mas não tem nome específico
+                    if (mensagemCorrigida.includes("Sua consulta com") && 
+                        !mensagemCorrigida.includes(notif.medico.nome)) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "Sua consulta com",
+                            `Sua consulta com Dr(a). ${notif.medico.nome}`
+                        );
+                    }
+                    // Se a mensagem tem "agendou uma consulta" mas não tem o nome do médico
+                    if (mensagemCorrigida.includes("agendou uma consulta") && 
+                        !mensagemCorrigida.includes(notif.medico.nome)) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "agendou uma consulta",
+                            `Dr(a). ${notif.medico.nome} agendou uma consulta`
+                        );
+                    }
+                    // Se a mensagem tem "Sua teleconsulta com" mas não tem nome específico
+                    if (mensagemCorrigida.includes("Sua teleconsulta com") && 
+                        !mensagemCorrigida.includes(notif.medico.nome)) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "Sua teleconsulta com",
+                            `Sua teleconsulta com Dr(a). ${notif.medico.nome}`
+                        );
+                    }
+                }
+                
+                return {
+                    id: notif.id,
+                    title: notif.titulo,
+                    message: mensagemCorrigida,
+                    type: notif.tipo,
+                    read: notif.lida,
+                    link: notif.link,
+                    time: new Date(notif.created_at).toLocaleDateString('pt-BR') + ' ' + new Date(notif.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    medicoNome: notif.medico?.nome || null,
+                    medicoEspecialidade: notif.medico?.especialidade || null,
+                    medicoFoto: notif.medico?.foto || null,
+                    created_at: notif.created_at
+                };
+            });
+
+            setNotifications(notificacoesProcessadas);
         }
     }
 
@@ -152,9 +237,9 @@ export default function TeleconsultaPa() {
                     setCodigoSala(sala.codigo);
                 }
 
-                // Formatar a data e horário
-                const dataFormatada = new Date(agendamento.data_consulta).toLocaleDateString('pt-BR');
-                const horarioFormatado = agendamento.horario.substring(0, 5);
+                // Formatar a data CORRETAMENTE (sem problemas de fuso horário)
+                const dataFormatada = formatarDataCorreta(agendamento.data_consulta);
+                const horarioFormatado = agendamento.horario ? agendamento.horario.substring(0, 5) : '00:00';
 
                 setProximaConsulta({
                     id: agendamento.id,
@@ -162,6 +247,7 @@ export default function TeleconsultaPa() {
                     especialidade: medico?.especialidade || "Especialidade não informada",
                     foto: medico?.foto,
                     data: dataFormatada,
+                    dataOriginal: agendamento.data_consulta,
                     horario: horarioFormatado,
                     codigo: sala?.codigo || null
                 });
@@ -262,6 +348,59 @@ export default function TeleconsultaPa() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    // Ícones SVG para cada tipo de notificação
+    const getTypeIcon = (type) => {
+        switch(type) {
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'lembrete':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            case 'sistema':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
+        }
+    };
+
+    const getTypeClass = (type) => {
+        switch(type) {
+            case 'consulta': return 'consulta';
+            case 'lembrete': return 'lembrete';
+            case 'teleconsulta': return 'teleconsulta';
+            case 'sistema': return 'sistema';
+            default: return 'sistema';
+        }
+    };
+
     const handleNotificationClick = async (id, link) => {
         await supabase
             .from("notificacoes")
@@ -337,10 +476,21 @@ export default function TeleconsultaPa() {
                         <div className="notification-list">
                             {notifications.length > 0 ? (
                                 notifications.map((notif) => (
-                                    <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`} onClick={() => handleNotificationClick(notif.id, notif.link)}>
+                                    <div 
+                                        key={notif.id} 
+                                        className={`notification-item ${!notif.read ? 'unread' : ''}`} 
+                                        onClick={() => handleNotificationClick(notif.id, notif.link)}
+                                    >
+                                        <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>
+                                            {getTypeIcon(notif.type)}
+                                        </div>
                                         <div className="notification-content">
-                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-title">
+                                                {notif.title}
+                                            </div>
                                             <div className="notification-message">{notif.message}</div>
+    
+                                            
                                             <div className="notification-time">{notif.time}</div>
                                         </div>
                                     </div>
@@ -541,6 +691,12 @@ export default function TeleconsultaPa() {
                 
                 .btn-entrar-proxima:hover {
                     background: #218838;
+                }
+
+                .medico-name-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
                 }
             `}</style>
         </div>

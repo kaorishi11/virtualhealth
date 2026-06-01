@@ -25,6 +25,21 @@ export default function AgendamentosMedicos() {
         "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"
     ];
 
+    // Função auxiliar para extrair o dia da data corretamente (sem problemas de fuso horário)
+    const extrairDiaDaData = (dataString) => {
+        if (!dataString) return null;
+        // A data vem no formato YYYY-MM-DD do banco
+        const [ano, mes, dia] = dataString.split('-');
+        return parseInt(dia, 10);
+    };
+
+    // Função para formatar data para exibição (se necessário)
+    const formatarDataExibicao = (dataString) => {
+        if (!dataString) return '';
+        const [ano, mes, dia] = dataString.split('-');
+        return `${dia}/${mes}/${ano}`;
+    };
+
     useEffect(() => {
         getUser();
     }, []);
@@ -45,7 +60,14 @@ export default function AgendamentosMedicos() {
         try {
             setLoading(true);
             
-            // Buscar agendamentos do usuário
+            // Calcular o primeiro e último dia do mês no formato YYYY-MM-DD
+            const primeiroDia = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+            
+            // Calcular o último dia do mês
+            const ultimoDia = new Date(currentYear, currentMonth + 1, 0);
+            const ultimoDiaStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(ultimoDia.getDate()).padStart(2, '0')}`;
+            
+            // Buscar agendamentos do usuário no mês selecionado
             const { data, error } = await supabase
                 .from('agendamentos')
                 .select(`
@@ -57,8 +79,8 @@ export default function AgendamentosMedicos() {
                     )
                 `)
                 .eq('paciente_id', user.id)
-                .gte('data_consulta', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`)
-                .lt('data_consulta', `${currentYear}-${String(currentMonth + 2).padStart(2, '0')}-01`)
+                .gte('data_consulta', primeiroDia)
+                .lte('data_consulta', ultimoDiaStr)
                 .order('data_consulta', { ascending: true })
                 .order('horario', { ascending: true });
 
@@ -66,14 +88,16 @@ export default function AgendamentosMedicos() {
 
             console.log('Agendamentos carregados:', data);
             
-            // Formatar os dados para exibição
+            // Formatar os dados para exibição - CORRIGIDO: extrair o dia manualmente
             const formattedAppointments = data.map(app => ({
                 id: app.id,
-                dia: new Date(app.data_consulta).getDate(),
+                dia: extrairDiaDaData(app.data_consulta), // Agora usa a função correta
+                dataOriginal: app.data_consulta,
+                dataExibicao: formatarDataExibicao(app.data_consulta),
                 medico: app.medico?.nome || 'Médico não encontrado',
                 especialidade: app.medico?.especialidade || 'Especialidade não informada',
                 tipo: app.tipo === 'presencial' ? 'Presencial' : 'Teleconsulta',
-                horario: app.horario.substring(0, 5),
+                horario: app.horario ? app.horario.substring(0, 5) : '00:00',
                 duracao: app.tipo === 'teleconsulta' ? '30 min' : '',
                 local: app.tipo === 'presencial' ? 'Consultório' : '',
                 status: app.status,
@@ -246,7 +270,6 @@ export default function AgendamentosMedicos() {
         }
     };
 
-    // Removeu a tela de loading inicial
     return (
         <div className="agenda-container">
 

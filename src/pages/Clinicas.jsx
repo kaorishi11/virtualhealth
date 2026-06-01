@@ -288,22 +288,25 @@ export default function Clinicas() {
             return false;
         }
 
-        await supabase.from("notificacoes").insert([
-            {
-                usuario_id: medico.id,
-                titulo: "Nova consulta agendada",
-                mensagem: `${pacienteNome} agendou uma consulta presencial para ${data} às ${horario}`,
-                tipo: "consulta",
-                lida: false
-            },
-            {
-                usuario_id: pacienteId,
-                titulo: "Consulta agendada com sucesso!",
-                mensagem: `Sua consulta com Dr(a). ${medico.nome} foi agendada para ${data} às ${horario} - Presencial`,
-                tipo: "consulta",
-                lida: false
-            }
-        ]);
+        // Notificação para o médico
+        await supabase.from("notificacoes").insert({
+            usuario_id: medico.id,
+            medico_id: medico.id,
+            titulo: "Nova consulta presencial agendada",
+            mensagem: `${pacienteNome} agendou uma consulta presencial com você para ${data} às ${horario}`,
+            tipo: "consulta",
+            lida: false
+        });
+
+        // Notificação para o paciente
+        await supabase.from("notificacoes").insert({
+            usuario_id: pacienteId,
+            medico_id: medico.id,
+            titulo: "Consulta agendada com sucesso!",
+            mensagem: `Sua consulta presencial com Dr(a). ${medico.nome} foi agendada para ${data} às ${horario}`,
+            tipo: "consulta",
+            lida: false
+        });
 
         return true;
     }
@@ -352,22 +355,25 @@ export default function Clinicas() {
             return false;
         }
 
-        await supabase.from("notificacoes").insert([
-            {
-                usuario_id: medico.id,
-                titulo: "Nova teleconsulta agendada",
-                mensagem: `${pacienteNome} agendou uma teleconsulta para ${data} às ${horario}. Código: ${codigoSala}`,
-                tipo: "teleconsulta",
-                lida: false
-            },
-            {
-                usuario_id: pacienteId,
-                titulo: "Teleconsulta agendada!",
-                mensagem: `Sua consulta com Dr(a). ${medico.nome} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
-                tipo: "teleconsulta",
-                lida: false
-            }
-        ]);
+        // Notificação para o médico
+        await supabase.from("notificacoes").insert({
+            usuario_id: medico.id,
+            medico_id: medico.id,
+            titulo: "Nova teleconsulta agendada",
+            mensagem: `${pacienteNome} agendou uma teleconsulta com você para ${data} às ${horario}. Código: ${codigoSala}`,
+            tipo: "teleconsulta",
+            lida: false
+        });
+
+        // Notificação para o paciente
+        await supabase.from("notificacoes").insert({
+            usuario_id: pacienteId,
+            medico_id: medico.id,
+            titulo: "Teleconsulta agendada!",
+            mensagem: `Sua teleconsulta com Dr(a). ${medico.nome} foi agendada para ${data} às ${horario}. CÓDIGO: ${codigoSala}`,
+            tipo: "teleconsulta",
+            lida: false
+        });
 
         return true;
     }
@@ -521,22 +527,61 @@ export default function Clinicas() {
     async function carregarNotificacoes() {
         if (!pacienteId) return;
 
-        const { data: notificacoes } = await supabase
+        // Buscar notificações com join para pegar dados do médico
+        const { data: notificacoes, error } = await supabase
             .from("notificacoes")
-            .select("*")
+            .select(`
+                *,
+                medicos:medico_id (
+                    id,
+                    nome,
+                    especialidade
+                )
+            `)
             .eq("usuario_id", pacienteId)
             .order("created_at", { ascending: false })
             .limit(20);
 
+        if (error) {
+            console.error("Erro ao carregar notificações:", error);
+            return;
+        }
+
         if (notificacoes) {
-            setNotifications(notificacoes.map(n => ({
-                id: n.id,
-                title: n.titulo,
-                message: n.mensagem,
-                type: n.tipo,
-                read: n.lida,
-                time: new Date(n.created_at).toLocaleDateString('pt-BR')
-            })));
+            const notificacoesFormatadas = notificacoes.map(n => {
+                let mensagemFormatada = n.mensagem;
+                
+                if (n.medicos && n.medicos.nome) {
+                    // Se a mensagem tem "Dr(a). undefined", substitui pelo nome real
+                    if (mensagemFormatada.includes("Dr(a). undefined")) {
+                        mensagemFormatada = mensagemFormatada.replace(
+                            "Dr(a). undefined",
+                            `Dr(a). ${n.medicos.nome}`
+                        );
+                    }
+                    // Se não tem o nome do médico na mensagem, adiciona
+                    else if (!mensagemFormatada.includes(n.medicos.nome) && 
+                             (n.tipo === "consulta" || n.tipo === "teleconsulta")) {
+                        mensagemFormatada = mensagemFormatada.replace(
+                            /Sua consulta com /i,
+                            `Sua consulta com Dr(a). ${n.medicos.nome} `
+                        );
+                    }
+                }
+                
+                return {
+                    id: n.id,
+                    title: n.titulo,
+                    message: mensagemFormatada,
+                    type: n.tipo,
+                    read: n.lida,
+                    time: new Date(n.created_at).toLocaleDateString('pt-BR'),
+                    medicoNome: n.medicos?.nome || null,
+                    medicoEspecialidade: n.medicos?.especialidade || null
+                };
+            });
+            
+            setNotifications(notificacoesFormatadas);
         }
     }
 
@@ -842,7 +887,7 @@ export default function Clinicas() {
                                     style={{
                                         cursor: podeClicar ? 'pointer' : 'not-allowed',
                                         opacity: isFuturo ? 1 : 0.5,
-                                        backgroundColor: isSelected ? '#6366f1' : (podeClicar ? '#ffffff' : '#f5f5f5'),
+                                                                                backgroundColor: isSelected ? '#6366f1' : (podeClicar ? '#ffffff' : '#f5f5f5'),
                                         color: isSelected ? '#ffffff' : (podeClicar ? '#333333' : '#cccccc')
                                     }}
                                 >
@@ -896,7 +941,7 @@ export default function Clinicas() {
                     <Link to="/teleconsulta">Teleconsulta</Link>
                     <Link to="/perfil">Meu Perfil</Link>
                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
                         <div className="notification-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -927,7 +972,9 @@ export default function Clinicas() {
                                     <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`} onClick={() => handleNotificationClick(notif.id)}>
                                         <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>{getTypeIcon(notif.type)}</div>
                                         <div className="notification-content">
-                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-title">
+                                                {notif.title}
+                                            </div>
                                             <div className="notification-message">{notif.message}</div>
                                             <div className="notification-time">{notif.time}</div>
                                         </div>
@@ -1085,13 +1132,13 @@ export default function Clinicas() {
                                                     <strong>Informações da Clínica:</strong>
                                                 </p>
                                                 {doc.clinicaInfo?.telefone && (
-                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>📞 Telefone: {doc.clinicaInfo.telefone}</p>
+                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Telefone: {doc.clinicaInfo.telefone}</p>
                                                 )}
                                                 {doc.clinicaInfo?.email && (
-                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>📧 Email: {doc.clinicaInfo.email}</p>
+                                                    <p style={{ fontSize: '12px', marginBottom: '5px' }}>Email: {doc.clinicaInfo.email}</p>
                                                 )}
                                                 {doc.clinicaInfo?.horario_funcionamento && (
-                                                    <p style={{ fontSize: '12px' }}>🕐 Horário: {doc.clinicaInfo.horario_funcionamento}</p>
+                                                    <p style={{ fontSize: '12px' }}>Horário: {doc.clinicaInfo.horario_funcionamento}</p>
                                                 )}
                                             </div>
                                         </div>

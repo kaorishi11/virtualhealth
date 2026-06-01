@@ -37,6 +37,27 @@ export default function ChatMedico() {
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
+    // Função auxiliar para formatar data corretamente (sem problemas de fuso horário)
+    const formatarDataCorreta = (dataString) => {
+        if (!dataString) return '';
+        const date = new Date(dataString);
+        return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // Função para corrigir datas nas mensagens
+    const corrigirDatasNaMensagem = (mensagem) => {
+        if (!mensagem) return mensagem;
+        // Corrigir datas no formato YYYY-MM-DD para DD/MM/YYYY
+        return mensagem.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$3/$2/$1');
+    };
+
     // Palavras-chave relacionadas à saúde (whitelist)
     const healthKeywords = [
         'saúde', 'medicina', 'médico', 'consulta', 'sintoma', 'dor', 'febre', 'tosse',
@@ -102,26 +123,22 @@ export default function ChatMedico() {
     const isHealthRelated = (question) => {
         const lowerQuestion = question.toLowerCase().trim();
         
-        // Se a pergunta for muito curta, considera inválida
         if (lowerQuestion.length < 4) {
             return false;
         }
         
-        // Verifica se contém alguma palavra-chave de saúde (whitelist)
         for (const keyword of healthKeywords) {
             if (lowerQuestion.includes(keyword.toLowerCase())) {
                 return true;
             }
         }
         
-        // Verifica se contém palavras que indicam NÃO saúde (blacklist)
         for (const keyword of nonHealthKeywords) {
             if (lowerQuestion.includes(keyword.toLowerCase())) {
                 return false;
             }
         }
         
-        // Perguntas comuns que podem ser sobre saúde mesmo sem palavras-chave específicas
         const healthPatterns = [
             /estou me sentindo/, /sinto/, /doi/, /dói/, /doeu/, 
             /o que pode ser/, /isso é normal/, /devo me preocupar/,
@@ -134,19 +151,16 @@ export default function ChatMedico() {
             }
         }
         
-        // Se a pergunta começa com "qual", "quem", "quando", "onde" sem contexto de saúde
         const questionStarters = /^(qual|quem|quando|onde|como|por que|para que) /i;
         if (questionStarters.test(lowerQuestion) && !healthPatterns.some(p => p.test(lowerQuestion))) {
             return false;
         }
         
-        // Por padrão, permite para não bloquear perguntas legítimas
         return true;
     };
 
     // Função para gerar resposta de fora do contexto
     const getOutOfContextResponse = (question) => {
-        // Extrai o assunto principal da pergunta
         let subject = "este assunto";
         
         for (const keyword of nonHealthKeywords) {
@@ -170,13 +184,21 @@ Sou um assistente especializado **APENAS em saúde e medicina**. Não tenho conh
 Por favor, me pergunte algo relacionado à sua saúde. Estou aqui para ajudar! 😊`;
     };
 
-    // Função para carregar notificações do banco
+    // Função para carregar notificações do banco com join no médico
     async function carregarNotificacoes() {
         if (!pacienteId) return;
 
         const { data: notificacoes, error } = await supabase
             .from("notificacoes")
-            .select("*")
+            .select(`
+                *,
+                medico:medico_id (
+                    id,
+                    nome,
+                    especialidade,
+                    foto
+                )
+            `)
             .eq("usuario_id", pacienteId)
             .order("created_at", { ascending: false })
             .limit(20);
@@ -187,19 +209,60 @@ Por favor, me pergunte algo relacionado à sua saúde. Estou aqui para ajudar! �
         }
 
         if (notificacoes) {
-            setNotifications(notificacoes.map(n => ({
-                id: n.id,
-                title: n.titulo,
-                message: n.mensagem,
-                type: n.tipo,
-                read: n.lida,
-                time: new Date(n.created_at).toLocaleDateString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                })
-            })));
+            const notificacoesProcessadas = notificacoes.map(notif => {
+                let mensagemCorrigida = notif.mensagem || '';
+                
+                // Corrigir datas na mensagem
+                mensagemCorrigida = corrigirDatasNaMensagem(mensagemCorrigida);
+                
+                // Se tem médico e a mensagem tem "undefined", substitui pelo nome real
+                if (notif.medico && notif.medico.nome) {
+                    if (mensagemCorrigida.includes("Dr(a). undefined")) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "Dr(a). undefined",
+                            `Dr(a). ${notif.medico.nome}`
+                        );
+                    }
+                    // Se a mensagem começa com "Sua consulta com" mas não tem nome específico
+                    if (mensagemCorrigida.includes("Sua consulta com") && 
+                        !mensagemCorrigida.includes(notif.medico.nome)) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "Sua consulta com",
+                            `Sua consulta com Dr(a). ${notif.medico.nome}`
+                        );
+                    }
+                    // Se a mensagem tem "agendou uma consulta" mas não tem o nome do médico
+                    if (mensagemCorrigida.includes("agendou uma consulta") && 
+                        !mensagemCorrigida.includes(notif.medico.nome)) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "agendou uma consulta",
+                            `Dr(a). ${notif.medico.nome} agendou uma consulta`
+                        );
+                    }
+                    // Se a mensagem tem "Sua teleconsulta com" mas não tem nome específico
+                    if (mensagemCorrigida.includes("Sua teleconsulta com") && 
+                        !mensagemCorrigida.includes(notif.medico.nome)) {
+                        mensagemCorrigida = mensagemCorrigida.replace(
+                            "Sua teleconsulta com",
+                            `Sua teleconsulta com Dr(a). ${notif.medico.nome}`
+                        );
+                    }
+                }
+                
+                return {
+                    id: notif.id,
+                    title: notif.titulo,
+                    message: mensagemCorrigida,
+                    type: notif.tipo,
+                    read: notif.lida,
+                    time: formatarDataCorreta(notif.created_at),
+                    medicoNome: notif.medico?.nome || null,
+                    medicoEspecialidade: notif.medico?.especialidade || null,
+                    medicoFoto: notif.medico?.foto || null
+                };
+            });
+            
+            setNotifications(notificacoesProcessadas);
         }
     }
 
@@ -256,7 +319,10 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
             }
 
             const data = await response.json();
-            return data.choices[0].message.content;
+            let resposta = data.choices[0].message.content;
+            // Corrigir datas na resposta
+            resposta = corrigirDatasNaMensagem(resposta);
+            return resposta;
         } catch (error) {
             console.error('Erro ao chamar Groq:', error);
             return "Desculpe, estou com dificuldades técnicas no momento. Por favor, tente novamente em alguns instantes. Se for uma emergência, procure atendimento médico imediatamente.";
@@ -288,20 +354,47 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
                     table: 'notificacoes',
                     filter: `usuario_id=eq.${pacienteId}`
                 }, (payload) => {
-                    const novaNotificacao = {
-                        id: payload.new.id,
-                        title: payload.new.titulo,
-                        message: payload.new.mensagem,
-                        type: payload.new.tipo,
-                        read: false,
-                        time: new Date(payload.new.created_at).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })
+                    // Buscar dados do médico para a nova notificação
+                    const buscarMedicoENotificacao = async () => {
+                        let medicoNome = null;
+                        let medicoEspecialidade = null;
+                        
+                        if (payload.new.medico_id) {
+                            const { data: medico } = await supabase
+                                .from("usuarios")
+                                .select("nome, especialidade")
+                                .eq("id", payload.new.medico_id)
+                                .single();
+                            if (medico) {
+                                medicoNome = medico.nome;
+                                medicoEspecialidade = medico.especialidade;
+                            }
+                        }
+                        
+                        let mensagemCorrigida = payload.new.mensagem || '';
+                        mensagemCorrigida = corrigirDatasNaMensagem(mensagemCorrigida);
+                        
+                        if (medicoNome && mensagemCorrigida.includes("Dr(a). undefined")) {
+                            mensagemCorrigida = mensagemCorrigida.replace(
+                                "Dr(a). undefined",
+                                `Dr(a). ${medicoNome}`
+                            );
+                        }
+                        
+                        const novaNotificacao = {
+                            id: payload.new.id,
+                            title: payload.new.titulo,
+                            message: mensagemCorrigida,
+                            type: payload.new.tipo,
+                            read: false,
+                            time: formatarDataCorreta(payload.new.created_at),
+                            medicoNome: medicoNome,
+                            medicoEspecialidade: medicoEspecialidade
+                        };
+                        setNotifications(prev => [novaNotificacao, ...prev]);
                     };
-                    setNotifications(prev => [novaNotificacao, ...prev]);
+                    
+                    buscarMedicoENotificacao();
                 })
                 .subscribe();
 
@@ -316,7 +409,6 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
 
         const userQuestion = inputValue.trim();
         
-        // VERIFICAÇÃO: Se a pergunta NÃO é sobre saúde
         if (!isHealthRelated(userQuestion)) {
             const errorMessage = {
                 id: Date.now(),
@@ -330,7 +422,6 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
             return;
         }
 
-        // Adicionar mensagem do usuário
         const userMessage = {
             id: Date.now(),
             type: "user",
@@ -342,7 +433,6 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
         setInputValue("");
         setIsLoading(true);
 
-        // Adicionar indicador de digitação
         const typingIndicator = {
             id: Date.now() + 1,
             type: "typing",
@@ -352,10 +442,8 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
         setMessages(prev => [...prev, typingIndicator]);
         scrollToBottom();
 
-        // Chamar API Groq apenas para perguntas de saúde
         const response = await sendToGroq(userQuestion);
         
-        // Remover indicador e adicionar resposta
         setMessages(prev => prev.filter(msg => msg.type !== "typing"));
         
         const doctorMessage = {
@@ -505,8 +593,11 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
                                             {getTypeIcon(notif.type)}
                                         </div>
                                         <div className="notification-content">
-                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-title">
+                                                {notif.title}
+                                            </div>
                                             <div className="notification-message">{notif.message}</div>
+                                            
                                             <div className="notification-time">{notif.time}</div>
                                         </div>
                                     </div>

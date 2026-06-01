@@ -61,7 +61,15 @@ export default function Contato() {
     async function buscarNotificacoes(userId) {
         const { data, error } = await supabase
             .from("notificacoes")
-            .select("*")
+            .select(`
+                *,
+                medico:medico_id (
+                    id,
+                    nome,
+                    especialidade,
+                    foto
+                )
+            `)
             .eq("usuario_id", userId)
             .order("created_at", { ascending: false });
 
@@ -70,16 +78,50 @@ export default function Contato() {
             return;
         }
 
-        const notificacoesFormatadas = data.map(notif => ({
-            id: notif.id,
-            title: notif.titulo,
-            message: notif.mensagem,
-            type: notif.tipo,
-            read: notif.lida,
-            time: new Date(notif.created_at).toLocaleDateString('pt-BR') + ' ' + new Date(notif.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        }));
+        // Processar as notificações para corrigir mensagens com "undefined"
+        const notificacoesProcessadas = (data || []).map(notif => {
+            let mensagemCorrigida = notif.mensagem;
+            
+            // Se tem médico e a mensagem tem "undefined", substitui pelo nome real
+            if (notif.medico && notif.medico.nome) {
+                if (mensagemCorrigida.includes("Dr(a). undefined")) {
+                    mensagemCorrigida = mensagemCorrigida.replace(
+                        "Dr(a). undefined",
+                        `Dr(a). ${notif.medico.nome}`
+                    );
+                }
+                // Se a mensagem começa com "Sua consulta com" mas não tem nome específico
+                if (mensagemCorrigida.includes("Sua consulta com") && 
+                    !mensagemCorrigida.includes(notif.medico.nome)) {
+                    mensagemCorrigida = mensagemCorrigida.replace(
+                        "Sua consulta com",
+                        `Sua consulta com Dr(a). ${notif.medico.nome}`
+                    );
+                }
+                // Se a mensagem tem "agendou uma consulta" mas não tem o nome do médico
+                if (mensagemCorrigida.includes("agendou uma consulta") && 
+                    !mensagemCorrigida.includes(notif.medico.nome)) {
+                    mensagemCorrigida = mensagemCorrigida.replace(
+                        "agendou uma consulta",
+                        `Dr(a). ${notif.medico.nome} agendou uma consulta`
+                    );
+                }
+            }
+            
+            return {
+                id: notif.id,
+                title: notif.titulo,
+                message: mensagemCorrigida,
+                type: notif.tipo,
+                read: notif.lida,
+                time: new Date(notif.created_at).toLocaleDateString('pt-BR') + ' ' + new Date(notif.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                medicoNome: notif.medico?.nome || null,
+                medicoEspecialidade: notif.medico?.especialidade || null,
+                medicoFoto: notif.medico?.foto || null
+            };
+        });
 
-        setNotifications(notificacoesFormatadas);
+        setNotifications(notificacoesProcessadas);
     }
 
     // FUNÇÕES DAS NOTIFICAÇÕES
@@ -269,8 +311,12 @@ export default function Contato() {
                                             {getTypeIcon(notif.type)}
                                         </div>
                                         <div className="notification-content">
-                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-title">
+                                                {notif.title}
+                                            </div>
                                             <div className="notification-message">{notif.message}</div>
+                                            
+                                            
                                             <div className="notification-time">{notif.time}</div>
                                         </div>
                                     </div>
