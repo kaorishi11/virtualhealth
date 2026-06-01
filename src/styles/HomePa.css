@@ -84,7 +84,7 @@
     }
 }
 
-/* HEADER - CORRIGIDO: SEM ANIMAÇÃO DE MOVIMENTO */
+/* HEADER */
 .header {
     position: fixed;
     top: 20px;
@@ -102,7 +102,6 @@
     border-radius: 50px;
     z-index: 1000;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-    /* Removeu a animação slideInLeft que causava movimento */
 }
 
 .logopaciente {
@@ -213,13 +212,10 @@
     line-height: 1.2;
 }
 
-/* CORRIGIDO: Virtual Health sem borda marcada */
 .hero-text span {
     color: #209FD5;
     position: relative;
     display: inline-block;
-    /* Removeu o glow que causava borda marcada */
-    /* Removeu qualquer box-shadow ou outline */
 }
 
 .hero-text p {
@@ -346,13 +342,35 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* EXPERTS (CARROSSEL) */
+.hr1, .hr2, .hr3 {
+    margin: 40px auto;
+    width: 80%;
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #209FD5, transparent);
+}
+
+.propaganda {
+    display: block;
+    margin: 0 auto;
+    max-width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== DICAS DOS ESPECIALISTAS - CORRIGIDO ========== */
 .experts-section {
     max-width: 1200px;
     margin: 0 auto;
     margin-bottom: 80px;
     padding: 40px 20px;
     text-align: center;
+}
+
+.experts-section h2 {
+    font-size: 28px;
+    color: #1a2a3a;
+    margin-bottom: 10px;
 }
 
 .experts-section hr {
@@ -378,8 +396,10 @@
     overflow-x: auto;
     padding: 10px;
     scroll-behavior: smooth;
+    justify-content: center;
 }
 
+/* CARD */
 .expert-card {
     width: 360px;
     min-width: 320px;
@@ -391,7 +411,6 @@
     flex-direction: column;
     justify-content: space-between;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    animation: fadeInUp 0.6s ease;
     position: relative;
     overflow: hidden;
 }
@@ -447,7 +466,7 @@
     gap: 10px;
 }
 
-/* PERFIL */
+/* PERFIL DO MÉDICO NO CARD - CORRIGIDO */
 .perfil {
     display: flex;
     align-items: center;
@@ -455,9 +474,12 @@
     margin-top: 15px;
 }
 
+/* Imagem do médico - TAMANHO CORRETO */
 .perfil-img {
-    width: 40px;
-    height: 40px;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
     border-radius: 50%;
     object-fit: cover;
     transition: all 0.3s ease;
@@ -467,9 +489,12 @@
     transform: scale(1.1) rotate(5deg);
 }
 
+/* Iniciais do médico - TAMANHO CORRETO */
 .medico-iniciais {
-    width: 40px;
-    height: 40px;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -479,31 +504,22 @@
     color: white;
     flex-shrink: 0;
     transition: all 0.3s ease;
-    animation: rotateIn 0.5s ease;
 }
 
 .medico-iniciais:hover {
     transform: scale(1.1);
-    animation: pulse 0.5s ease;
 }
 
+/* Nome do médico */
 .perfil strong {
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
     transition: color 0.3s ease;
+    line-height: 1.3;
 }
 
 .perfil:hover strong {
     color: #209FD5;
-}
-
-.stars {
-    color: orange;
-    transition: all 0.3s ease;
-}
-
-.expert-card:hover .stars {
-    animation: pulse 0.5s ease;
 }
 
 /* SETAS DO CARROSSEL */
@@ -552,6 +568,14 @@
 /* FAQ */
 .faq-section {
     padding: 40px 30px;
+    background: #f8fafc;
+}
+
+.faq-section h2 {
+    font-size: 28px;
+    color: #1a2a3a;
+    margin-bottom: 10px;
+    text-align: left;
 }
 
 .faq-section hr {
@@ -560,10 +584,7 @@
     background: #3a8dad;
     border: none;
     animation: pulse 2s infinite;
-}
-
-.faq-section h2 {
-    text-align: left;
+    margin-bottom: 30px;
 }
 
 .faq-grid {
@@ -599,6 +620,7 @@
     align-items: center;
     font-weight: 600;
     transition: color 0.3s ease;
+    color: #1a2a3a;
 }
 
 .faq-item:hover .faq-question {
@@ -1101,6 +1123,26 @@
         width: 260px;
         min-width: 240px;
         padding: 15px;
+    }
+    
+    .expert-title {
+        font-size: 16px;
+    }
+    
+    .expert-text {
+        font-size: 12px;
+    }
+    
+    .perfil-img,
+    .medico-iniciais {
+        width: 35px !important;
+        height: 35px !important;
+        min-width: 35px !important;
+        max-width: 35px !important;
+    }
+    
+    .perfil strong {
+        font-size: 11px;
     }
 }
 

@@ -65,6 +65,20 @@ export default function ConsultaMe() {
         return cores[index];
     };
 
+    // Funções adicionadas para o nome
+    const getPrimeiroNome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        return partes[0];
+    };
+
+    const getSobrenome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        if (partes.length === 1) return '';
+        return partes.slice(1).join(' ');
+    };
+
     useEffect(() => {
         carregarDadosCompletos();
     }, []);
@@ -392,42 +406,39 @@ export default function ConsultaMe() {
     }
 
     return (
-        <div className="consulta-container">
+        <div className="dashboard-container">
+            {/* SIDEBAR */}
             <div className="navbar">
                 <div className="nav-header">
                     <img src={logo} alt="Logo" className="logoperfil" />
                 </div>
 
                 <div className="medico-section">
-                    {medico?.foto && !fotoMedicoErro ? (
-                        <img 
-                            src={medico.foto} 
-                            className="medico-img" 
-                            alt={medico.nome}
-                            onError={() => setFotoMedicoErro(true)}
-                        />
-                    ) : (
-                        <div 
-                            className="medico-img-iniciais"
-                            style={{ 
-                                width: '55px', 
-                                height: '55px', 
-                                borderRadius: '50%', 
-                                backgroundColor: getCorFundo(medico?.nome),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '20px'
-                            }}
-                        >
-                            {getIniciais(medico?.nome)}
-                        </div>
-                    )}
+                    <div className="medico-img-wrapper">
+                        {medico?.foto && !fotoMedicoErro ? (
+                            <img 
+                                src={medico.foto} 
+                                className="medico-img" 
+                                alt={medico.nome}
+                                onError={() => setFotoMedicoErro(true)}
+                            />
+                        ) : (
+                            <div 
+                                className="medico-img-iniciais"
+                                style={{ backgroundColor: getCorFundo(medico?.nome) }}
+                            >
+                                {getIniciais(medico?.nome)}
+                            </div>
+                        )}
+                    </div>
                     <div className="medico-info">
-                        <h4>Dr(a). {medico?.nome?.split(' ')[0] || "Médico"}</h4>
-                        <p>{medico?.especialidade || "Especialista"}</p>
+                        <h4>
+                            <span className="primeiro-nome">{getPrimeiroNome()}</span>
+                            {getSobrenome() && (
+                                <span className="sobrenome">{getSobrenome()}</span>
+                            )}
+                        </h4>
+                        <p>{medico?.especialidade || 'Médico'}</p>
                     </div>
                 </div>
 
@@ -436,13 +447,16 @@ export default function ConsultaMe() {
                     <ul>
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
+                        <li><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li><Link to="/notificacoesme">Notificações</Link></li>
+                        <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
 
                 <div className="nav-section">
                     <h3>ATENDIMENTO</h3>
                     <ul>
-                        <li className="active"><Link to="/consulta">Iniciar consulta</Link></li>
+                        <li className='active'><Link to="/consulta">Iniciar consulta</Link></li>
                         <li><Link to="/dicas">Dicas de saúde</Link></li>
                     </ul>
                 </div>
@@ -450,19 +464,10 @@ export default function ConsultaMe() {
                 <div className="spacer"></div>
 
                 <div className="logout">
-                    <Link to="/">Desconectar</Link>
-                </div>
-            </div>
-            
-            <div className="top-header">
-                <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
-                    <div className="notification-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                        </svg>
-                        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-                    </div>
+                    <button onClick={async () => {
+                        await supabase.auth.signOut();
+                        navigate('/');
+                    }}>Desconectar</button>
                 </div>
             </div>
 
@@ -591,6 +596,28 @@ export default function ConsultaMe() {
                                 </div>
                             </div>
 
+                            {/* Card de anotações */}
+                            <div className="card-anotacoes">
+                                <div className="card-header">
+                                    <h2>Prontuário</h2>
+                                </div>
+                                <div className="card-body">
+                                    <textarea
+                                        className="anotacoes-textarea"
+                                        rows="4"
+                                        placeholder="Anotações da consulta..."
+                                        value={anotacoes}
+                                        onChange={(e) => setAnotacoes(e.target.value)}
+                                    ></textarea>
+                                    <button 
+                                        className="btn-salvar-prontuario"
+                                        onClick={handleSalvarProntuario}
+                                        disabled={prontuarioSalvo}
+                                    >
+                                        {prontuarioSalvo ? "Prontuário salvo ✓" : "Salvar prontuário"}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ) : (

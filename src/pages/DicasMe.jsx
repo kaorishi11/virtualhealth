@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 
 import logo from '../images/logo.png';
@@ -7,9 +7,11 @@ import logo from '../images/logo.png';
 import '../styles/DicasMe.css';
 
 export default function DicasMe() {
+    const navigate = useNavigate();
     const [novaDica, setNovaDica] = useState({ titulo: '', texto: '' });
     const [toast, setToast] = useState(null);
     const [modalExcluir, setModalExcluir] = useState(null);
+    const [modalEditar, setModalEditar] = useState(null);
     const [dicas, setDicas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [medico, setMedico] = useState(null);
@@ -52,12 +54,12 @@ export default function DicasMe() {
                     id: medicoData.id,
                     nome: medicoData.nome,
                     email: user.email,
-                    profissao: 'Dentista',
+                    especialidade: medicoData.especialidade || 'Médico',
                     foto: medicoData.foto || ''
                 });
             }
 
-            // Buscar dicas passando o nome do médico
+            // Buscar dicas
             await carregarDicas(user.id, nomeMedico);
 
         } catch (error) {
@@ -78,7 +80,6 @@ export default function DicasMe() {
 
             if (error) throw error;
 
-            // Se não passou o nomeMedico, tenta buscar do banco
             let nomeDoMedico = nomeMedico;
             if (!nomeDoMedico) {
                 const { data: medicoData } = await supabase
@@ -98,9 +99,8 @@ export default function DicasMe() {
                 titulo: dica.titulo || '',
                 texto: dica.texto,
                 autor: nomeDoMedico,
-                profissao: 'Dentista',
-                data: formatarData(dica.created_at),
-                avaliacao: 4
+                especialidade: medico?.especialidade || 'Médico',
+                data: formatarData(dica.created_at)
             }));
 
             setDicas(dicasFormatadas);
@@ -121,16 +121,15 @@ export default function DicasMe() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    // Funções para mostrar iniciais (igual ao perfil)
-    const getIniciais = () => {
-        if (!medico?.nome) return '?';
-        const nomes = medico.nome.trim().split(' ');
+    const getIniciais = (nome) => {
+        if (!nome) return '?';
+        const nomes = nome.trim().split(' ');
         if (nomes.length === 1) return nomes[0].charAt(0).toUpperCase();
         return (nomes[0].charAt(0) + nomes[nomes.length - 1].charAt(0)).toUpperCase();
     };
 
-    const getCorFundo = () => {
-        if (!medico?.nome) return '#6366f1';
+    const getCorFundo = (nome) => {
+        if (!nome) return '#6366f1';
         
         const cores = [
             '#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', 
@@ -140,11 +139,24 @@ export default function DicasMe() {
         ];
         
         let hash = 0;
-        for (let i = 0; i < medico.nome.length; i++) {
-            hash = medico.nome.charCodeAt(i) + ((hash << 5) - hash);
+        for (let i = 0; i < nome.length; i++) {
+            hash = nome.charCodeAt(i) + ((hash << 5) - hash);
         }
         const index = Math.abs(hash) % cores.length;
         return cores[index];
+    };
+
+    const getPrimeiroNome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        return partes[0];
+    };
+
+    const getSobrenome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        if (partes.length === 1) return '';
+        return partes.slice(1).join(' ');
     };
 
     const handlePublicarDica = async () => {
@@ -169,7 +181,7 @@ export default function DicasMe() {
                 return;
             }
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('dicas')
                 .insert([
                     {
@@ -178,12 +190,10 @@ export default function DicasMe() {
                         texto: novaDica.texto,
                         created_at: new Date()
                     }
-                ])
-                .select();
+                ]);
 
             if (error) throw error;
 
-            // Recarregar dicas com o nome do médico atual
             const nomeMedico = medico?.nome || 'Médico';
             await carregarDicas(user.id, nomeMedico);
             
@@ -193,6 +203,65 @@ export default function DicasMe() {
         } catch (error) {
             console.error('Erro ao publicar dica:', error);
             showToast('Erro ao publicar dica: ' + error.message, true);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditarClick = (dica) => {
+        console.log('Editando dica:', dica); // Debug
+        setModalEditar({
+            id: dica.id,
+            titulo: dica.titulo,
+            texto: dica.texto
+        });
+    };
+
+    const handleConfirmarEditar = async () => {
+        if (!modalEditar) return;
+
+        console.log('Salvando edição:', modalEditar); // Debug
+
+        if (modalEditar.titulo.trim() === '') {
+            showToast('O título não pode estar vazio!', true);
+            return;
+        }
+
+        if (modalEditar.texto.trim() === '') {
+            showToast('O texto da dica não pode estar vazio!', true);
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // Atualizar sem o campo updated_at
+            const { data, error } = await supabase
+                .from('dicas')
+                .update({
+                    titulo: modalEditar.titulo,
+                    texto: modalEditar.texto
+                })
+                .eq('id', modalEditar.id)
+                .select();
+
+            if (error) {
+                console.error('Erro detalhado do Supabase:', error);
+                throw error;
+            }
+
+            console.log('Dica atualizada com sucesso:', data); // Debug
+
+            const { data: { user } } = await supabase.auth.getUser();
+            const nomeMedico = medico?.nome || 'Médico';
+            await carregarDicas(user.id, nomeMedico);
+            
+            showToast('Dica editada com sucesso!', false);
+            setModalEditar(null);
+
+        } catch (error) {
+            console.error('Erro ao editar dica:', error);
+            showToast('Erro ao editar dica: ' + error.message, true);
         } finally {
             setLoading(false);
         }
@@ -216,7 +285,7 @@ export default function DicasMe() {
             if (error) throw error;
 
             setDicas(dicas.filter(d => d.id !== modalExcluir.id));
-            showToast(`Dica excluída com sucesso!`, false);
+            showToast('Dica excluída com sucesso!', false);
             setModalExcluir(null);
 
         } catch (error) {
@@ -231,29 +300,23 @@ export default function DicasMe() {
         setModalExcluir(null);
     };
 
-    // Função para quebrar o nome em duas linhas
-    const getPrimeiroNome = () => {
-        if (!medico?.nome) return '';
-        const partes = medico.nome.trim().split(' ');
-        return partes[0];
+    const handleCancelarEditar = () => {
+        setModalEditar(null);
     };
 
-    const getSobrenome = () => {
-        if (!medico?.nome) return '';
-        const partes = medico.nome.trim().split(' ');
-        if (partes.length === 1) return '';
-        return partes.slice(1).join(' ');
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/');
     };
 
-    // Remove a tela de loading - mostra o conteúdo mesmo enquanto carrega
-    // if (loading && dicas.length === 0 && !medico) {
-    //     return (
-    //         <div className="loading-container">
-    //             <div className="spinner"></div>
-    //             <p>Carregando...</p>
-    //         </div>
-    //     );
-    // }
+    if (loading && dicas.length === 0 && !medico) {
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Carregando...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="dicas-container">
@@ -275,9 +338,9 @@ export default function DicasMe() {
                         ) : (
                             <div 
                                 className="medico-img-iniciais"
-                                style={{ backgroundColor: getCorFundo() }}
+                                style={{ backgroundColor: getCorFundo(medico?.nome) }}
                             >
-                                {getIniciais()}
+                                {getIniciais(medico?.nome)}
                             </div>
                         )}
                     </div>
@@ -288,7 +351,7 @@ export default function DicasMe() {
                                 <span className="sobrenome">{getSobrenome()}</span>
                             )}
                         </h4>
-                        <p>Dentista</p>
+                        <p>{medico?.especialidade || 'Médico'}</p>
                     </div>
                 </div>
 
@@ -298,6 +361,7 @@ export default function DicasMe() {
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
                         <li><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
@@ -313,7 +377,7 @@ export default function DicasMe() {
                 <div className="spacer"></div>
 
                 <div className="logout">
-                    <Link to="/">Desconectar</Link>
+                    <button onClick={handleLogout}>Desconectar</button>
                 </div>
             </div>
 
@@ -323,7 +387,7 @@ export default function DicasMe() {
                     <h1>DICAS DE SAÚDE</h1>
                 </div>
 
-                {/* ÁREA DE PUBLICAÇÃO COM TÍTULO */}
+                {/* ÁREA DE PUBLICAÇÃO */}
                 <div className="publicar-dica">
                     <h2>PUBLICAR DICAS</h2>
                     <div className="editor-area">
@@ -354,7 +418,7 @@ export default function DicasMe() {
                     </div>
                 </div>
 
-                {/* SEÇÃO ÚLTIMAS DICAS COM TÍTULO */}
+                {/* SEÇÃO ÚLTIMAS DICAS */}
                 <div className="ultimas-dicas-section">
                     <h2>ÚLTIMAS DICAS PUBLICADAS</h2>
                     <div className="dicas-cards-grid">
@@ -366,26 +430,40 @@ export default function DicasMe() {
                         ) : (
                             dicas.map((dica) => (
                                 <div key={dica.id} className="dica-card">
-                                    <button 
-                                        className="btn-excluir"
-                                        onClick={() => handleExcluirClick(dica)}
-                                        title="Excluir dica"
-                                        disabled={loading}
-                                    >
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M3 6h18"/>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                            <line x1="10" y1="11" x2="10" y2="17"/>
-                                            <line x1="14" y1="11" x2="14" y2="17"/>
-                                        </svg>
-                                    </button>
+                                    <div className="card-actions">
+                                        <button 
+                                            className="btn-editar"
+                                            onClick={() => handleEditarClick(dica)}
+                                            title="Editar dica"
+                                            disabled={loading}
+                                        >
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M17 3l4 4-7 7H10v-4l7-7z"/>
+                                                <path d="M4 20h16"/>
+                                            </svg>
+                                        </button>
+                                        <button 
+                                            className="btn-excluir"
+                                            onClick={() => handleExcluirClick(dica)}
+                                            title="Excluir dica"
+                                            disabled={loading}
+                                        >
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M3 6h18"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                                <line x1="14" y1="11" x2="14" y2="17"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <h3 className="dica-titulo">{dica.titulo}</h3>
                                     <p className="dica-texto">{dica.texto}</p>
                                     <div className="dica-footer">
                                         <div className="dica-autor">
                                             <span className="autor-nome">{dica.autor}</span>
-                                            <span className="autor-profissao">{dica.profissao}</span>
+                                            <span className="autor-profissao">{dica.especialidade}</span>
                                         </div>
+                                        <div className="dica-data">{dica.data}</div>
                                     </div>
                                 </div>
                             ))
@@ -394,7 +472,7 @@ export default function DicasMe() {
                 </div>
             </div>
 
-            {/* MODAL */}
+            {/* MODAL DE EXCLUSÃO */}
             {modalExcluir && (
                 <div className="modal-overlay" onClick={handleCancelarExcluir}>
                     <div className="modal-confirmar" onClick={(e) => e.stopPropagation()}>
@@ -414,6 +492,42 @@ export default function DicasMe() {
                             </button>
                             <button className="btn-confirmar-excluir" onClick={handleConfirmarExcluir}>
                                 Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL DE EDIÇÃO */}
+            {modalEditar && (
+                <div className="modal-overlay" onClick={handleCancelarEditar}>
+                    <div className="modal-editar" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-editar-header">
+                            <h3>Editar Dica</h3>
+                            <button className="close-modal" onClick={handleCancelarEditar}>×</button>
+                        </div>
+                        <div className="modal-editar-body">
+                            <input 
+                                type="text"
+                                className="modal-titulo-input"
+                                placeholder="Título da dica"
+                                value={modalEditar.titulo}
+                                onChange={(e) => setModalEditar(prev => ({ ...prev, titulo: e.target.value }))}
+                            />
+                            <textarea 
+                                className="modal-texto-input"
+                                placeholder="Texto da dica"
+                                rows="6"
+                                value={modalEditar.texto}
+                                onChange={(e) => setModalEditar(prev => ({ ...prev, texto: e.target.value }))}
+                            />
+                        </div>
+                        <div className="modal-editar-footer">
+                            <button className="btn-cancelar" onClick={handleCancelarEditar}>
+                                Cancelar
+                            </button>
+                            <button className="btn-salvar" onClick={handleConfirmarEditar}>
+                                Salvar alterações
                             </button>
                         </div>
                     </div>

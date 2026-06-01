@@ -513,7 +513,6 @@ Lembre-se: você é um assistente de SAÚDE, não um assistente geral. Mantenha 
                                 ))
                             ) : (
                                 <div className="no-notifications">
-                                    <div className="no-notifications-icon">📭</div>
                                     <p>Nenhuma notificação no momento</p>
                                 </div>
                             )}

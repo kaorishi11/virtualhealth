@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { supabase } from '../services/supabase';
 
-import login from '../images/login.png';
+import login from '../images/login.jpeg';
 import paciente from '../images/paciente.png';
 import medico from '../images/medico.png';
 import olhoAberto from '../images/olho.png';

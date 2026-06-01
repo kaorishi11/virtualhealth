@@ -325,8 +325,8 @@ export default function AgendaMe() {
     }, {});
 
     return (
-        <div className="agenda-container">
-            {/* NAVBAR IGUAL AO DICASME */}
+        <div className="dashboard-container">
+            {/* SIDEBAR */}
             <div className="navbar">
                 <div className="nav-header">
                     <img src={logo} alt="Logo" className="logoperfil" />
@@ -365,8 +365,9 @@ export default function AgendaMe() {
                     <h3>GERAL</h3>
                     <ul>
                         <li><Link to="/home-medico">Visão geral</Link></li>
-                        <li className="active"><Link to="/agenda">Minha agenda</Link></li>
+                        <li className='active'><Link to="/agenda">Minha agenda</Link></li>
                         <li><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>

@@ -348,8 +348,8 @@ export default function Disponibilidade() {
     }
 
     return (
-        <div className="disponibilidade-container">
-            {/* NAVBAR */}
+        <div className="dashboard-container">
+            {/* SIDEBAR */}
             <div className="navbar">
                 <div className="nav-header">
                     <img src={logo} alt="Logo" className="logoperfil" />
@@ -390,6 +390,7 @@ export default function Disponibilidade() {
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
                         <li className="active"><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
@@ -475,7 +476,7 @@ export default function Disponibilidade() {
                     <h2>Horários cadastrados</h2>
                     {Object.keys(disponibilidadesPorDia).length === 0 ? (
                         <div className="no-data">
-                            <p>📅 Nenhum horário cadastrado</p>
+                            <p>Nenhum horário cadastrado</p>
                             <p>Adicione seus horários de disponibilidade acima.</p>
                         </div>
                     ) : (

@@ -34,7 +34,7 @@ export default function ConfigPerfilMedico() {
         universidade: '',
         ano_formacao: '',
         clinica_id: '',
-        preco_consulta: '' // Adicionado campo de preço
+        preco_consulta: ''
     });
     const [passwordData, setPasswordData] = useState({
         senhaAtual: '',
@@ -71,6 +71,32 @@ export default function ConfigPerfilMedico() {
         setClinicas(data || []);
     };
 
+    const criarRegistroUsuario = async (userId, userEmail) => {
+        try {
+            const { error } = await supabase
+                .from('usuarios')
+                .insert([{
+                    id: userId,
+                    tipo: 'medico',
+                    nome: userEmail.split('@')[0] || 'Médico',
+                    email: userEmail
+                }]);
+
+            if (error) throw error;
+            
+            await carregarDadosUsuario(userId, userEmail);
+            
+        } catch (error) {
+            console.error('Erro ao criar registro:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Erro ao criar registro do usuário',
+                confirmButtonColor: '#6366f1'
+            });
+        }
+    };
+
     const carregarDadosUsuario = async (userId, userEmail) => {
         try {
             setLoading(true);
@@ -81,11 +107,18 @@ export default function ConfigPerfilMedico() {
                 .eq('id', userId)
                 .single();
 
-            if (error && error.code !== 'PGRST116') {
+            if (error) {
+                console.error('Erro na consulta:', error);
+                if (error.code === 'PGRST116') {
+                    console.log('Usuário não encontrado, criando registro...');
+                    await criarRegistroUsuario(userId, userEmail);
+                    return;
+                }
                 throw error;
             }
 
             if (data) {
+                console.log('Dados carregados:', data);
                 setUserData({
                     nome: data.nome || '',
                     email: userEmail || '',
@@ -104,7 +137,7 @@ export default function ConfigPerfilMedico() {
                     universidade: data.universidade || '',
                     ano_formacao: data.ano_formacao || '',
                     clinica_id: data.clinica_id || '',
-                    preco_consulta: data.preco_consulta || '' // Carrega o preço
+                    preco_consulta: data.preco_consulta ? formatarPrecoParaExibicao(data.preco_consulta) : ''
                 });
             }
         } catch (error) {
@@ -145,17 +178,29 @@ export default function ConfigPerfilMedico() {
         return valor;
     };
 
-    const formatarPreco = (valor) => {
+    // Formata o preço para exibição (do banco para o input)
+    const formatarPrecoParaExibicao = (valor) => {
+        if (!valor) return '';
+        const numero = parseFloat(valor);
+        if (isNaN(numero)) return '';
+        return numero.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    };
+
+    // Formata o preço enquanto digita
+    const formatarPrecoDigitacao = (valor) => {
         // Remove tudo que não é número
         let numero = valor.replace(/\D/g, '');
         
-        // Converte para centavos
-        let centavos = parseInt(numero) / 100;
+        if (numero === '') return '';
         
-        if (isNaN(centavos)) return '';
+        // Converte para número (em reais)
+        let valorEmReais = parseFloat(numero) / 100;
         
-        // Formata como moeda brasileira
-        return centavos.toLocaleString('pt-BR', {
+        // Formata como moeda
+        return valorEmReais.toLocaleString('pt-BR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
@@ -296,7 +341,7 @@ export default function ConfigPerfilMedico() {
             setUserData(prev => ({ ...prev, [name]: formatarCEP(value) }));
         } else if (name === 'preco_consulta') {
             // Formata o preço enquanto digita
-            const precoFormatado = formatarPreco(value);
+            const precoFormatado = formatarPrecoDigitacao(value);
             setUserData(prev => ({ ...prev, [name]: precoFormatado }));
         } else {
             setUserData(prev => ({ ...prev, [name]: value }));
@@ -309,7 +354,15 @@ export default function ConfigPerfilMedico() {
     };
 
     const handleSavePersonal = async () => {
-        if (!user) return;
+        if (!user) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: 'Usuário não autenticado',
+                confirmButtonColor: '#6366f1'
+            });
+            return;
+        }
 
         try {
             setLoading(true);
@@ -318,40 +371,49 @@ export default function ConfigPerfilMedico() {
             const telefoneLimpo = userData.telefone.replace(/\D/g, '');
             const cepLimpo = userData.cep.replace(/\D/g, '');
             
-            // Converte o preço formatado para número
+            // Converte o preço formatado para número (em reais)
             let precoNumero = null;
-            if (userData.preco_consulta) {
+            if (userData.preco_consulta && userData.preco_consulta.trim() !== '') {
                 // Remove formatação e converte para número
-                const precoLimpo = userData.preco_consulta.replace(/[R$\s]/g, '').replace(/\./g, '').replace(',', '.');
+                const precoLimpo = userData.preco_consulta
+                    .replace(/[R$\s]/g, '')
+                    .replace(/\./g, '')
+                    .replace(',', '.');
                 precoNumero = parseFloat(precoLimpo);
                 if (isNaN(precoNumero)) precoNumero = null;
             }
 
             const dadosParaAtualizar = {
                 nome: userData.nome,
-                telefone: telefoneLimpo,
-                cpf: cpfLimpo,
-                cep: cepLimpo,
+                telefone: telefoneLimpo || null,
+                cpf: cpfLimpo || null,
+                cep: cepLimpo || null,
                 data_nascimento: userData.data_nascimento || null,
-                logradouro: userData.logradouro,
-                bairro: userData.bairro,
-                cidade: userData.cidade,
-                estado: userData.estado,
-                genero: userData.genero,
-                crm: userData.crm,
-                especialidade: userData.especialidade,
-                universidade: userData.universidade,
-                ano_formacao: userData.ano_formacao,
+                logradouro: userData.logradouro || null,
+                bairro: userData.bairro || null,
+                cidade: userData.cidade || null,
+                estado: userData.estado || null,
+                genero: userData.genero || null,
+                crm: userData.crm || null,
+                especialidade: userData.especialidade || null,
+                universidade: userData.universidade || null,
+                ano_formacao: userData.ano_formacao ? parseInt(userData.ano_formacao) : null,
                 clinica_id: userData.clinica_id || null,
-                preco_consulta: precoNumero // Adiciona o preço
+                preco_consulta: precoNumero
             };
+
+            console.log('Dados para atualizar:', dadosParaAtualizar);
+            console.log('User ID:', user.id);
 
             const { error } = await supabase
                 .from('usuarios')
                 .update(dadosParaAtualizar)
                 .eq('id', user.id);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Erro detalhado do Supabase:', error);
+                throw error;
+            }
 
             Swal.fire({
                 icon: 'success',
@@ -367,7 +429,7 @@ export default function ConfigPerfilMedico() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro!',
-                text: 'Erro ao salvar dados',
+                text: `Erro ao salvar dados: ${error.message}`,
                 confirmButtonColor: '#6366f1'
             });
         } finally {
@@ -449,14 +511,36 @@ export default function ConfigPerfilMedico() {
 
         try {
             setLoading(true);
+
+            // Chamar a Edge Function para deletar a conta
+            const { data, error } = await supabase.functions.invoke('delete-account', {
+                method: 'POST'
+            });
+
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            // Fazer logout
             await supabase.auth.signOut();
+
+            // Mostrar mensagem de sucesso
+            Swal.fire({
+                icon: 'success',
+                title: 'Conta excluída!',
+                text: 'Sua conta foi removida com sucesso.',
+                confirmButtonColor: '#6366f1'
+            });
+
+            // Redirecionar para home
             navigate('/');
+
         } catch (error) {
             console.error('Erro ao excluir conta:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Erro!',
-                text: 'Erro ao excluir conta',
+                text: error.message || 'Erro ao excluir conta. Tente novamente mais tarde.',
                 confirmButtonColor: '#6366f1'
             });
         } finally {
@@ -492,7 +576,7 @@ export default function ConfigPerfilMedico() {
 
     return (
         <div className="perfil-container-medico">
-            {/* NAVBAR IGUAL A DO DICASME - CORRIGIDA */}
+            {/* NAVBAR */}
             <div className="navbar-medico">
                 <div className="nav-header-medico">
                     <img src={logo} alt="Logo" className="logoperfil-medico" />

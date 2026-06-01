@@ -11,7 +11,7 @@ export default function NotificacoesMedico() {
     const [loading, setLoading] = useState(true);
     const [medico, setMedico] = useState(null);
     const [filter, setFilter] = useState('todas'); // todas, nao_lidas, lidas
-    const [fotoMedicoErro, setFotoMedicoErro] = useState(false);
+    const [fotoErro, setFotoErro] = useState(false); // CORRIGIDO: adicionado estado da foto
 
     // Funções para iniciais
     const getIniciais = (nome) => {
@@ -19,6 +19,21 @@ export default function NotificacoesMedico() {
         const nomes = nome.trim().split(' ');
         if (nomes.length === 1) return nomes[0].charAt(0).toUpperCase();
         return (nomes[0].charAt(0) + nomes[nomes.length - 1].charAt(0)).toUpperCase();
+    };
+
+    // CORRIGIDO: função getPrimeiroNome adicionada
+    const getPrimeiroNome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        return partes[0];
+    };
+
+    // CORRIGIDO: função getSobrenome adicionada
+    const getSobrenome = () => {
+        if (!medico?.nome) return '';
+        const partes = medico.nome.trim().split(' ');
+        if (partes.length === 1) return '';
+        return partes.slice(1).join(' ');
     };
 
     const getCorFundo = (nome) => {
@@ -233,7 +248,7 @@ export default function NotificacoesMedico() {
     }
 
     return (
-        <div className="notificacoes-container">
+        <div className="dashboard-container">
             {/* SIDEBAR */}
             <div className="navbar">
                 <div className="nav-header">
@@ -241,35 +256,31 @@ export default function NotificacoesMedico() {
                 </div>
 
                 <div className="medico-section">
-                    {medico?.foto && !fotoMedicoErro ? (
-                        <img 
-                            src={medico.foto} 
-                            className="medico-img" 
-                            alt={medico.nome}
-                            onError={() => setFotoMedicoErro(true)}
-                        />
-                    ) : (
-                        <div 
-                            className="medico-img-iniciais"
-                            style={{ 
-                                width: '55px', 
-                                height: '55px', 
-                                borderRadius: '50%', 
-                                backgroundColor: getCorFundo(medico?.nome),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: '20px'
-                            }}
-                        >
-                            {getIniciais(medico?.nome)}
-                        </div>
-                    )}
+                    <div className="medico-img-wrapper">
+                        {medico?.foto && !fotoErro ? (
+                            <img 
+                                src={medico.foto} 
+                                className="medico-img" 
+                                alt={medico.nome}
+                                onError={() => setFotoErro(true)}
+                            />
+                        ) : (
+                            <div 
+                                className="medico-img-iniciais"
+                                style={{ backgroundColor: getCorFundo(medico?.nome) }}
+                            >
+                                {getIniciais(medico?.nome)}
+                            </div>
+                        )}
+                    </div>
                     <div className="medico-info">
-                        <h4>Dr(a). {medico?.nome?.split(' ')[0] || "Médico"}</h4>
-                        <p>{medico?.especialidade || "Especialista"}</p>
+                        <h4>
+                            <span className="primeiro-nome">{getPrimeiroNome()}</span>
+                            {getSobrenome() && (
+                                <span className="sobrenome">{getSobrenome()}</span>
+                            )}
+                        </h4>
+                        <p>{medico?.especialidade || 'Médico'}</p>
                     </div>
                 </div>
 
@@ -278,7 +289,9 @@ export default function NotificacoesMedico() {
                     <ul>
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
-                        <li className="active"><Link to="/notificacoes">Notificações</Link></li>
+                        <li><Link to="/disponibilidade">Disponibilidade</Link></li>
+                        <li className="active"><Link to="/notificacoesme">Notificações</Link></li>
+                        <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
 
@@ -293,7 +306,10 @@ export default function NotificacoesMedico() {
                 <div className="spacer"></div>
 
                 <div className="logout">
-                    <Link to="/">Desconectar</Link>
+                    <button onClick={async () => {
+                        await supabase.auth.signOut();
+                        navigate('/');
+                    }}>Desconectar</button>
                 </div>
             </div>
 
@@ -306,46 +322,11 @@ export default function NotificacoesMedico() {
                     )}
                 </div>
 
-                {/* FILTROS E AÇÕES */}
-                <div className="notificacoes-actions">
-                    <div className="filters">
-                        <button 
-                            className={`filter-btn ${filter === 'todas' ? 'active' : ''}`}
-                            onClick={() => setFilter('todas')}
-                        >
-                            Todas
-                        </button>
-                        <button 
-                            className={`filter-btn ${filter === 'nao_lidas' ? 'active' : ''}`}
-                            onClick={() => setFilter('nao_lidas')}
-                        >
-                            Não lidas
-                            {naoLidasCount > 0 && <span className="count">{naoLidasCount}</span>}
-                        </button>
-                        <button 
-                            className={`filter-btn ${filter === 'lidas' ? 'active' : ''}`}
-                            onClick={() => setFilter('lidas')}
-                        >
-                            Lidas
-                        </button>
-                    </div>
-                    <div className="bulk-actions">
-                        {naoLidasCount > 0 && (
-                            <button className="action-btn mark-all" onClick={marcarTodasComoLidas}>
-                                Marcar todas como lidas
-                            </button>
-                        )}
-                        <button className="action-btn delete-read" onClick={excluirTodasLidas}>
-                            Excluir lidas
-                        </button>
-                    </div>
-                </div>
 
                 {/* LISTA DE NOTIFICAÇÕES */}
                 <div className="notificacoes-list">
                     {notificacoesFiltradas.length === 0 ? (
                         <div className="empty-state">
-                            <div className="empty-icon">📭</div>
                             <h3>Nenhuma notificação</h3>
                             <p>Você não tem notificações no momento.</p>
                         </div>
