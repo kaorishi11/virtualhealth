@@ -12,22 +12,28 @@ export default function VideoCall({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!roomUrl) return;
+    if (!roomUrl || !containerRef.current) return;
 
     const roomName = roomUrl.split("/").pop();
 
     async function iniciarJitsi() {
       try {
         setLoading(true);
+        setError("");
 
-        // Esperar script carregar
         await carregarScript();
 
         if (!window.JitsiMeetExternalAPI) {
-          throw new Error("JitsiMeetExternalAPI não carregou");
+          throw new Error("Jitsi não carregou.");
         }
 
-        apiRef.current = new window.JitsiMeetExternalAPI(
+        // destruir instância anterior
+        if (apiRef.current) {
+          apiRef.current.dispose();
+          apiRef.current = null;
+        }
+
+        const api = new window.JitsiMeetExternalAPI(
           "meet.jit.si",
           {
             roomName,
@@ -36,24 +42,28 @@ export default function VideoCall({
             height: "100%",
 
             userInfo: {
-              displayName: userName,
+              displayName: userName
             },
 
             configOverwrite: {
               prejoinPageEnabled: false,
               startWithAudioMuted: false,
-              startWithVideoMuted: false,
-              disableModeratorIndicator: true,
+              startWithVideoMuted: false
             },
 
             interfaceConfigOverwrite: {
               SHOW_JITSI_WATERMARK: false,
-              SHOW_WATERMARK_FOR_GUESTS: false,
+              SHOW_WATERMARK_FOR_GUESTS: false
             }
           }
         );
 
-        apiRef.current.addEventListener(
+        apiRef.current = api;
+
+        console.log("Sala:", roomName);
+
+        // evento principal
+        api.addEventListener(
           "videoConferenceJoined",
           () => {
             console.log("Entrou na call");
@@ -61,7 +71,20 @@ export default function VideoCall({
           }
         );
 
-        apiRef.current.addEventListener(
+        // fallback: remove loading quando iframe estiver pronto
+        api.addEventListener(
+          "participantJoined",
+          () => {
+            setLoading(false);
+          }
+        );
+
+        // fallback extra
+        setTimeout(() => {
+          setLoading(false);
+        }, 3000);
+
+        api.addEventListener(
           "readyToClose",
           () => {
             if (onCallEnd) onCallEnd();
@@ -79,13 +102,13 @@ export default function VideoCall({
     return () => {
       if (apiRef.current) {
         apiRef.current.dispose();
+        apiRef.current = null;
       }
     };
-  }, [roomUrl]);
+  }, [roomUrl, userName]);
 
   function carregarScript() {
     return new Promise((resolve, reject) => {
-      // já carregou
       if (window.JitsiMeetExternalAPI) {
         resolve();
         return;
@@ -96,7 +119,7 @@ export default function VideoCall({
       );
 
       if (existingScript) {
-        existingScript.onload = resolve;
+        resolve();
         return;
       }
 
@@ -107,10 +130,13 @@ export default function VideoCall({
 
       script.async = true;
 
-      script.onload = () => resolve();
+      script.onload = resolve;
 
-      script.onerror = () =>
-        reject(new Error("Erro ao carregar Jitsi"));
+      script.onerror = () => {
+        reject(
+          new Error("Erro ao carregar Jitsi")
+        );
+      };
 
       document.body.appendChild(script);
     });
@@ -124,7 +150,7 @@ export default function VideoCall({
         borderRadius: "12px",
         overflow: "hidden",
         background: "#111",
-        position: "relative",
+        position: "relative"
       }}
     >
       {loading && !error && (
@@ -136,7 +162,7 @@ export default function VideoCall({
             justifyContent: "center",
             alignItems: "center",
             color: "#fff",
-            zIndex: 10,
+            zIndex: 999
           }}
         >
           Conectando à consulta...
@@ -147,10 +173,10 @@ export default function VideoCall({
         <div
           style={{
             color: "red",
-            padding: 30,
+            padding: 30
           }}
         >
-          ❌ {error}
+          {error}
         </div>
       )}
 
@@ -158,7 +184,7 @@ export default function VideoCall({
         ref={containerRef}
         style={{
           width: "100%",
-          height: "100%",
+          height: "100%"
         }}
       />
     </div>

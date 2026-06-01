@@ -32,19 +32,6 @@ export default function TeleconsultaPa() {
         if (pacienteId) {
             carregarNotificacoes();
             carregarProximaConsulta();
-            
-            // Processar código da URL
-            if (!processandoCodigoUrl && !emChamadaVideo) {
-                const params = new URLSearchParams(window.location.search);
-                const codigoUrl = params.get('codigo');
-                if (codigoUrl) {
-                    setProcessandoCodigoUrl(true);
-                    setCodigoBusca(codigoUrl.toUpperCase());
-                    setTimeout(() => {
-                        entrarNaConsulta(codigoUrl.toUpperCase());
-                    }, 1500);
-                }
-            }
         }
     }, [pacienteId]);
 
@@ -211,7 +198,14 @@ export default function TeleconsultaPa() {
             // Buscar sala pelo código na tabela consulta_salas
             const { data: sala, error } = await supabase
                 .from('consulta_salas')
-                .select('sala_url, status, medico_id, paciente_id, codigo')
+                .select(`
+                    id,
+                    sala_url,
+                    status,
+                    medico_id,
+                    paciente_id,
+                    codigo
+                `)
                 .eq('codigo', codigoLimpo)
                 .single();
 
@@ -233,9 +227,11 @@ export default function TeleconsultaPa() {
             if (!sala.paciente_id) {
                 await supabase
                     .from('consulta_salas')
-                    .update({ paciente_id: pacienteId, status: 'aguardando_paciente' })
+                    .update({ paciente_id: pacienteId, status: 'ativa' })
                     .eq('id', sala.id);
             }
+
+            console.log('Abrindo sala:', sala.sala_url);
 
             setRoomUrl(sala.sala_url);
             setEmChamadaVideo(true);
