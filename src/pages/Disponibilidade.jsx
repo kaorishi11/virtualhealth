@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import Swal from 'sweetalert2';
 
@@ -8,6 +8,7 @@ import logo from '../images/logo.png';
 import '../styles/Disponibilidade.css';
 
 export default function Disponibilidade() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [medico, setMedico] = useState(null);
     const [fotoErro, setFotoErro] = useState(false);
@@ -18,6 +19,10 @@ export default function Disponibilidade() {
         horario_inicio: '',
         horario_fim: ''
     });
+    
+    // Estados das notificações
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([]);
 
     const diasSemana = [
         { id: 0, nome: 'Domingo' },
@@ -29,10 +34,30 @@ export default function Disponibilidade() {
         { id: 6, nome: 'Sábado' }
     ];
 
-    // FUNÇÃO PARA FORMATAR HORÁRIO - ADICIONADA
+    // Função para formatar horário
     const formatarHorario = (horario) => {
         if (!horario) return '';
         return horario.substring(0, 5);
+    };
+
+    // Função auxiliar para formatar data corretamente
+    const formatarDataCorreta = (dataString) => {
+        if (!dataString) return '';
+        const date = new Date(dataString);
+        return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // Função para corrigir datas nas mensagens
+    const corrigirDatasNaMensagem = (mensagem) => {
+        if (!mensagem) return mensagem;
+        return mensagem.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$3/$2/$1');
     };
 
     useEffect(() => {
@@ -53,6 +78,7 @@ export default function Disponibilidade() {
                     text: 'Usuário não está logado!',
                     confirmButtonColor: '#6366f1'
                 });
+                navigate('/');
                 return;
             }
 
@@ -77,6 +103,7 @@ export default function Disponibilidade() {
             }
 
             await carregarDisponibilidades(user.id);
+            await carregarNotificacoes(user.id);
 
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
@@ -89,6 +116,56 @@ export default function Disponibilidade() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Função para carregar notificações
+    const carregarNotificacoes = async (medicoId) => {
+        try {
+            const { data, error } = await supabase
+                .from("notificacoes")
+                .select(`
+                    *,
+                    paciente:paciente_id (
+                        id,
+                        nome,
+                        foto
+                    )
+                `)
+                .eq("usuario_id", medicoId)
+                .order("created_at", { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+
+            if (data) {
+                const notificacoesProcessadas = data.map(notif => {
+                    let mensagemCorrigida = notif.mensagem || '';
+                    mensagemCorrigida = corrigirDatasNaMensagem(mensagemCorrigida);
+                    
+                    return {
+                        id: notif.id,
+                        title: notif.titulo,
+                        message: mensagemCorrigida,
+                        type: notif.tipo,
+                        read: notif.lida,
+                        time: formatarDataCorreta(notif.created_at),
+                        pacienteNome: notif.paciente?.nome || null
+                    };
+                });
+                
+                setNotifications(notificacoesProcessadas);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar notificações:", error);
+        }
+    };
+
+    // Função para marcar notificação como lida
+    const marcarNotificacaoLida = async (id) => {
+        await supabase
+            .from("notificacoes")
+            .update({ lida: true })
+            .eq("id", id);
     };
 
     const carregarDisponibilidades = async (medicoId) => {
@@ -287,6 +364,78 @@ export default function Disponibilidade() {
         setEditando(null);
     };
 
+    // Funções de notificação
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const handleNotificationClick = async (id) => {
+        setNotifications(prev => 
+            prev.map(notif => 
+                notif.id === id ? { ...notif, read: true } : notif
+            )
+        );
+        await marcarNotificacaoLida(id);
+    };
+
+    const markAllAsRead = async () => {
+        const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
+        setNotifications(prev => 
+            prev.map(notif => ({ ...notif, read: true }))
+        );
+        
+        for (const id of unreadIds) {
+            await marcarNotificacaoLida(id);
+        }
+    };
+
+    const closeNotifications = () => {
+        setShowNotifications(false);
+    };
+
+    const getTypeIcon = (type) => {
+        switch(type) {
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            case 'pagamento':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10"/>
+                        <circle cx="16" cy="14" r="1"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
+        }
+    };
+
+    const getTypeClass = (type) => {
+        switch(type) {
+            case 'consulta': return 'consulta';
+            case 'teleconsulta': return 'teleconsulta';
+            case 'pagamento': return 'pagamento';
+            default: return 'sistema';
+        }
+    };
+
     const getNomeDia = (dia) => {
         const diaObj = diasSemana.find(d => d.id === dia);
         return diaObj ? diaObj.nome : '';
@@ -390,7 +539,6 @@ export default function Disponibilidade() {
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
                         <li className="active"><Link to="/disponibilidade">Disponibilidade</Link></li>
-                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
@@ -406,14 +554,82 @@ export default function Disponibilidade() {
                 <div className="spacer"></div>
 
                 <div className="logout">
-                    <Link to="/">Desconectar</Link>
+                    <button onClick={async () => {
+                        await supabase.auth.signOut();
+                        navigate('/');
+                    }}>Desconectar</button>
                 </div>
             </div>
 
             {/* CONTEÚDO PRINCIPAL */}
             <div className="disponibilidade-content">
-                <h1>MINHA DISPONIBILIDADE</h1>
-                <p className="subtitle">Defina os horários que você está disponível para atendimento</p>
+                <div className="disponibilidade-header">
+                    <div className="disponibilidade-title-center">
+                        <h1>MINHA DISPONIBILIDADE</h1>
+                        <p className="subtitle">Defina os horários que você está disponível para atendimento</p>
+                    </div>
+                    <div className="header-actions">
+                        <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
+                            <div className="notification-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="notification-badge">{unreadCount}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* MODAL DE NOTIFICAÇÕES */}
+                {showNotifications && (
+                    <div className="notification-modal-overlay" onClick={closeNotifications}>
+                        <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="notification-modal-header">
+                                <h3>Notificações</h3>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    {unreadCount > 0 && (
+                                        <button className="mark-all-btn" onClick={markAllAsRead}>
+                                            Marcar todas
+                                        </button>
+                                    )}
+                                    <button className="close-modal-btn" onClick={closeNotifications}>
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="notification-list">
+                                {notifications.length > 0 ? (
+                                    notifications.map((notif) => (
+                                        <div 
+                                            key={notif.id} 
+                                            className={`notification-item ${!notif.read ? 'unread' : ''}`}
+                                            onClick={() => handleNotificationClick(notif.id)}
+                                        >
+                                            <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>
+                                                {getTypeIcon(notif.type)}
+                                            </div>
+                                            <div className="notification-content">
+                                                <div className="notification-title">
+                                                    {notif.title}
+                                                </div>
+                                                <div className="notification-message">{notif.message}</div>
+                                                <div className="notification-time">{notif.time}</div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="no-notifications">
+                                        <p>Nenhuma notificação no momento</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* FORMULÁRIO */}
                 <div className="form-card">

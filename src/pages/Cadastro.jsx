@@ -322,20 +322,6 @@ export default function Cadastro() {
                     required
                   />
                 </div>
-
-                <select
-                  value={genero}
-                  onChange={(e) => setGenero(e.target.value)}
-                  required
-                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '16px' }}
-                >
-                  <option value="">Gênero</option>
-                  <option value="masculino">Masculino</option>
-                  <option value="feminino">Feminino</option>
-                  <option value="nao_binario">Não-binário</option>
-                  <option value="outro">Outro</option>
-                  <option value="prefiro_nao_informar">Prefiro não informar</option>
-                </select>
               </>
             )}
 

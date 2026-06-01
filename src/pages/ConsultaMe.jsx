@@ -8,8 +8,6 @@ import '../styles/ConsultaMe.css';
 
 export default function ConsultaMe() {
     const navigate = useNavigate();
-    const [anotacoes, setAnotacoes] = useState('');
-    const [prontuarioSalvo, setProntuarioSalvo] = useState(false);
     const [toast, setToast] = useState(null);
     const [roomUrl, setRoomUrl] = useState(null);
     const [emChamadaVideo, setEmChamadaVideo] = useState(false);
@@ -40,6 +38,26 @@ export default function ConsultaMe() {
     const videoRef = useRef(null);
     const streamRef = useRef(null);
 
+    // Função auxiliar para formatar data corretamente
+    const formatarDataCorreta = (dataString) => {
+        if (!dataString) return '';
+        const date = new Date(dataString);
+        return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // Função para corrigir datas nas mensagens
+    const corrigirDatasNaMensagem = (mensagem) => {
+        if (!mensagem) return mensagem;
+        return mensagem.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$3/$2/$1');
+    };
+
     const getIniciais = (nome) => {
         if (!nome) return '?';
         const nomes = nome.trim().split(' ');
@@ -65,7 +83,6 @@ export default function ConsultaMe() {
         return cores[index];
     };
 
-    // Funções adicionadas para o nome
     const getPrimeiroNome = () => {
         if (!medico?.nome) return '';
         const partes = medico.nome.trim().split(' ');
@@ -221,21 +238,35 @@ export default function ConsultaMe() {
     const carregarNotificacoes = async (usuarioId) => {
         const { data, error } = await supabase
             .from("notificacoes")
-            .select("*")
+            .select(`
+                *,
+                paciente:paciente_id (
+                    id,
+                    nome,
+                    foto
+                )
+            `)
             .eq("usuario_id", usuarioId)
             .order("created_at", { ascending: false })
             .limit(20);
 
         if (!error && data) {
-            setNotifications(data.map(n => ({
-                id: n.id,
-                title: n.titulo,
-                message: n.mensagem,
-                type: n.tipo,
-                read: n.lida,
-                link: n.link,
-                time: new Date(n.created_at).toLocaleDateString('pt-BR')
-            })));
+            const notificacoesProcessadas = data.map(notif => {
+                let mensagemCorrigida = notif.mensagem || '';
+                mensagemCorrigida = corrigirDatasNaMensagem(mensagemCorrigida);
+                
+                return {
+                    id: notif.id,
+                    title: notif.titulo,
+                    message: mensagemCorrigida,
+                    type: notif.tipo,
+                    read: notif.lida,
+                    link: notif.link,
+                    time: formatarDataCorreta(notif.created_at),
+                    pacienteNome: notif.paciente?.nome || null
+                };
+            });
+            setNotifications(notificacoesProcessadas);
         }
     };
 
@@ -297,33 +328,6 @@ export default function ConsultaMe() {
         mostrarToast('success', `Código ${codigoConsulta} copiado!`);
     };
 
-    const handleSalvarProntuario = async () => {
-        if (!anotacoes.trim()) {
-            mostrarToast('error', 'Escreva suas anotações antes de salvar!');
-            return;
-        }
-        
-        try {
-            const { error } = await supabase
-                .from('prontuarios')
-                .insert({
-                    consulta_id: salaId || consultaAtual?.id,
-                    medico_id: medico?.id,
-                    paciente_id: paciente?.id,
-                    anotacoes: anotacoes,
-                });
-            
-            if (error) throw error;
-            
-            setProntuarioSalvo(true);
-            mostrarToast('success', 'Prontuário salvo com sucesso!');
-            setTimeout(() => setProntuarioSalvo(false), 3000);
-        } catch (error) {
-            console.error('Erro:', error);
-            mostrarToast('error', 'Erro ao salvar prontuário');
-        }
-    };
-
     const calcularIdade = (dataNascimento) => {
         if (!dataNascimento) return '';
         const nascimento = new Date(dataNascimento);
@@ -379,6 +383,7 @@ export default function ConsultaMe() {
         }
     };
 
+    // Funções de notificação
     const unreadCount = notifications.filter(n => !n.read).length;
 
     const handleNotificationClick = async (id, link) => {
@@ -396,6 +401,42 @@ export default function ConsultaMe() {
     };
 
     const closeNotifications = () => setShowNotifications(false);
+
+    const getTypeIcon = (type) => {
+        switch(type) {
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
+        }
+    };
+
+    const getTypeClass = (type) => {
+        switch(type) {
+            case 'consulta': return 'consulta';
+            case 'teleconsulta': return 'teleconsulta';
+            default: return 'sistema';
+        }
+    };
 
     if (carregandoDados) {
         return (
@@ -448,7 +489,6 @@ export default function ConsultaMe() {
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
                         <li><Link to="/disponibilidade">Disponibilidade</Link></li>
-                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
@@ -471,29 +511,48 @@ export default function ConsultaMe() {
                 </div>
             </div>
 
+            {/* MODAL DE NOTIFICAÇÕES */}
             {showNotifications && (
                 <div className="notification-modal-overlay" onClick={closeNotifications}>
                     <div className="notification-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="notification-modal-header">
                             <h3>Notificações</h3>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                {unreadCount > 0 && <button className="mark-all-btn" onClick={markAllAsRead}>Marcar todas</button>}
-                                <button className="close-modal-btn" onClick={closeNotifications}>×</button>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                {unreadCount > 0 && (
+                                    <button className="mark-all-btn" onClick={markAllAsRead}>
+                                        Marcar todas
+                                    </button>
+                                )}
+                                <button className="close-modal-btn" onClick={closeNotifications}>
+                                    ×
+                                </button>
                             </div>
                         </div>
+
                         <div className="notification-list">
                             {notifications.length > 0 ? (
                                 notifications.map((notif) => (
-                                    <div key={notif.id} className={`notification-item ${!notif.read ? 'unread' : ''}`} onClick={() => handleNotificationClick(notif.id, notif.link)}>
+                                    <div 
+                                        key={notif.id} 
+                                        className={`notification-item ${!notif.read ? 'unread' : ''}`}
+                                        onClick={() => handleNotificationClick(notif.id, notif.link)}
+                                    >
+                                        <div className={`notification-icon-circle ${getTypeClass(notif.type)}`}>
+                                            {getTypeIcon(notif.type)}
+                                        </div>
                                         <div className="notification-content">
-                                            <div className="notification-title">{notif.title}</div>
+                                            <div className="notification-title">
+                                                {notif.title}
+                                            </div>
                                             <div className="notification-message">{notif.message}</div>
                                             <div className="notification-time">{notif.time}</div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="no-notifications"><p>Nenhuma notificação</p></div>
+                                <div className="no-notifications">
+                                    <p>Nenhuma notificação no momento</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -502,35 +561,32 @@ export default function ConsultaMe() {
 
             <div className="main-content">
                 <div className="consulta-header">
-                    <h1>TELECONSULTA</h1>
-                    {consultaAtual && (
-                        <p className="consulta-info">
-                            Consulta: {new Date(consultaAtual.data_consulta).toLocaleDateString('pt-BR')} às {consultaAtual.horario}
-                        </p>
-                    )}
+                    <div className="consulta-title-center">
+                        <h1>TELECONSULTA</h1>
+                        {consultaAtual && (
+                            <p className="consulta-info">
+                                Consulta: {new Date(consultaAtual.data_consulta).toLocaleDateString('pt-BR')} às {consultaAtual.horario}
+                            </p>
+                        )}
+                    </div>
+                    <div className="header-actions">
+                        <div className="notification-wrapper" onClick={() => setShowNotifications(true)}>
+                            <div className="notification-icon">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="notification-badge">{unreadCount}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {modoAtendimento === 'espera' ? (
                     <div className="atendimento-container">
                         <div className="cards-wrapper">
-                            {/* Card do código de acesso */}
-                            <div className="card-acesso">
-                                <div className="card-header">
-                                    <h2>Código de acesso</h2>
-                                </div>
-                                <div className="card-body">
-                                    <div className="codigo-display">
-                                        <span className="codigo-label">Código da consulta</span>
-                                        <div className="codigo-valor">{codigoConsulta || "------"}</div>
-                                        {codigoConsulta && (
-                                            <button className="btn-copiar" onClick={handleCopiarCodigo}>
-                                                Copiar código
-                                            </button>
-                                        )}
-                                        <p className="codigo-obs">Compartilhe este código com o paciente</p>
-                                    </div>
-                                </div>
-                            </div>
 
                             {/* Card para inserir código */}
                             <div className="card-inserir">
@@ -595,29 +651,6 @@ export default function ConsultaMe() {
                                     )}
                                 </div>
                             </div>
-
-                            {/* Card de anotações */}
-                            <div className="card-anotacoes">
-                                <div className="card-header">
-                                    <h2>Prontuário</h2>
-                                </div>
-                                <div className="card-body">
-                                    <textarea
-                                        className="anotacoes-textarea"
-                                        rows="4"
-                                        placeholder="Anotações da consulta..."
-                                        value={anotacoes}
-                                        onChange={(e) => setAnotacoes(e.target.value)}
-                                    ></textarea>
-                                    <button 
-                                        className="btn-salvar-prontuario"
-                                        onClick={handleSalvarProntuario}
-                                        disabled={prontuarioSalvo}
-                                    >
-                                        {prontuarioSalvo ? "Prontuário salvo ✓" : "Salvar prontuário"}
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 ) : (
@@ -644,6 +677,267 @@ export default function ConsultaMe() {
             )}
 
             <style jsx>{`
+                .consulta-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 24px;
+                    padding: 0 16px;
+                    position: relative;
+                }
+
+                .consulta-title-center {
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    text-align: center;
+                }
+
+                .consulta-title-center h1 {
+                    font-size: 28px;
+                    color: #1a2a3a;
+                    margin: 0;
+                    font-weight: 600;
+                }
+
+                .consulta-info {
+                    font-size: 14px;
+                    color: #64748b;
+                    margin-top: 5px;
+                }
+
+                .header-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    margin-left: auto;
+                }
+
+                .notification-wrapper {
+                    position: relative;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .notification-icon {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 8px;
+                    border-radius: 50%;
+                    transition: all 0.3s ease;
+                    color: #9A9A9A;
+                }
+
+                .notification-icon:hover {
+                    background: rgba(154, 154, 154, 0.1);
+                    transform: scale(1.1);
+                }
+
+                .notification-icon svg {
+                    width: 22px;
+                    height: 22px;
+                    stroke: #9A9A9A;
+                    transition: stroke 0.3s ease;
+                }
+
+                .notification-icon:hover svg {
+                    stroke: #209FD5;
+                }
+
+                .notification-badge {
+                    position: absolute;
+                    top: -4px;
+                    right: -4px;
+                    background: #ef4444;
+                    color: white;
+                    font-size: 10px;
+                    font-weight: 700;
+                    min-width: 18px;
+                    height: 18px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 0 4px;
+                    box-shadow: 0 0 0 2px white;
+                    animation: pulse 1s infinite;
+                }
+
+                .notification-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.5);
+                    backdrop-filter: blur(4px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                }
+
+                .notification-modal {
+                    background: white;
+                    border-radius: 24px;
+                    width: 90%;
+                    max-width: 480px;
+                    max-height: 80vh;
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                }
+
+                .notification-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 18px 24px;
+                    border-bottom: 1px solid #e2e8f0;
+                }
+
+                .notification-modal-header h3 {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #1a2a3a;
+                    margin: 0;
+                }
+
+                .close-modal-btn {
+                    background: none;
+                    border: none;
+                    font-size: 24px;
+                    cursor: pointer;
+                    color: #94a3b8;
+                    padding: 0 8px;
+                }
+
+                .close-modal-btn:hover {
+                    color: #1a2a3a;
+                }
+
+                .mark-all-btn {
+                    background: none;
+                    border: none;
+                    color: #1976d2;
+                    font-size: 0.7rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    padding: 6px 10px;
+                    border-radius: 8px;
+                }
+
+                .mark-all-btn:hover {
+                    background: #e3f2fd;
+                }
+
+                .notification-list {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 8px 0;
+                }
+
+                .notification-item {
+                    display: flex;
+                    gap: 14px;
+                    padding: 14px 20px;
+                    border-bottom: 1px solid #f0f2f5;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+
+                .notification-item:hover {
+                    background: #f8fafc;
+                }
+
+                .notification-item.unread {
+                    background: #f0f7ff;
+                }
+
+                .notification-icon-circle {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    background: #f1f5f9;
+                }
+
+                .notification-icon-circle svg {
+                    width: 20px;
+                    height: 20px;
+                    stroke: #9A9A9A;
+                }
+
+                .notification-icon-circle.consulta {
+                    background: #e0f2fe;
+                }
+
+                .notification-icon-circle.consulta svg {
+                    stroke: #0284c7;
+                }
+
+                .notification-icon-circle.teleconsulta {
+                    background: #e0e7ff;
+                }
+
+                .notification-icon-circle.teleconsulta svg {
+                    stroke: #4f46e5;
+                }
+
+                .notification-content {
+                    flex: 1;
+                }
+
+                .notification-title {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: #1a2a3a;
+                    margin-bottom: 4px;
+                    display: flex;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+
+                .notification-message {
+                    font-size: 0.75rem;
+                    color: #64748b;
+                    margin-bottom: 4px;
+                    line-height: 1.4;
+                }
+
+                .notification-time {
+                    font-size: 0.6rem;
+                    color: #94a3b8;
+                }
+
+                .no-notifications {
+                    text-align: center;
+                    padding: 48px 24px;
+                    color: #94a3b8;
+                }
+
+                .paciente-name-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                }
+
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+
                 .atendimento-container {
                     padding: 20px;
                 }
@@ -658,8 +952,7 @@ export default function ConsultaMe() {
 
                 .card-acesso,
                 .card-inserir,
-                .card-paciente,
-                .card-anotacoes {
+                .card-paciente {
                     background: white;
                     border-radius: 16px;
                     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -669,8 +962,7 @@ export default function ConsultaMe() {
 
                 .card-acesso:hover,
                 .card-inserir:hover,
-                .card-paciente:hover,
-                .card-anotacoes:hover {
+                .card-paciente:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
                 }
@@ -723,8 +1015,7 @@ export default function ConsultaMe() {
                     border-radius: 6px;
                     cursor: pointer;
                     font-size: 14px;
-                    margin-top: 10px;
-                }
+                                }
 
                 .btn-copiar:hover {
                     background: #1f5e7a;
@@ -830,38 +1121,65 @@ export default function ConsultaMe() {
                     color: #6c757d;
                 }
 
-                .anotacoes-textarea {
-                    width: 100%;
-                    padding: 12px;
-                    border: 1px solid #dee2e6;
+                .toast-notification {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
                     border-radius: 8px;
-                    font-family: inherit;
-                    font-size: 14px;
-                    resize: vertical;
-                }
-
-                .anotacoes-textarea:focus {
-                    outline: none;
-                    border-color: #2c7da0;
-                }
-
-                .btn-salvar-prontuario {
-                    width: 100%;
-                    margin-top: 16px;
-                    background: #6c757d;
                     color: white;
-                    border: none;
-                    padding: 12px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
+                    font-size: 14px;
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease;
                 }
 
-                .btn-salvar-prontuario:hover {
-                    background: #5a6268;
+                .toast-notification.success {
+                    background: #28a745;
+                }
+
+                .toast-notification.error {
+                    background: #dc3545;
+                }
+
+                .toast-notification.info {
+                    background: #17a2b8;
+                }
+
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
                 }
 
                 @media (max-width: 768px) {
+                    .consulta-header {
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 16px;
+                        padding-top: 16px;
+                    }
+
+                    .consulta-title-center {
+                        position: relative;
+                        left: 0;
+                        transform: none;
+                        margin-bottom: 10px;
+                    }
+
+                    .header-actions {
+                        margin-left: 0;
+                        justify-content: center;
+                    }
+
+                    .consulta-title-center h1 {
+                        font-size: 24px;
+                    }
+
                     .cards-wrapper {
                         grid-template-columns: 1fr;
                     }
@@ -879,6 +1197,32 @@ export default function ConsultaMe() {
                         flex-direction: column;
                         align-items: center;
                         text-align: center;
+                    }
+
+                    .notification-modal {
+                        width: 95%;
+                        max-height: 85vh;
+                    }
+                }
+
+                @media (max-width: 480px) {
+                    .consulta-title-center h1 {
+                        font-size: 20px;
+                    }
+
+                    .notification-item {
+                        padding: 12px 16px;
+                        gap: 10px;
+                    }
+
+                    .notification-icon-circle {
+                        width: 35px;
+                        height: 35px;
+                    }
+
+                    .notification-icon-circle svg {
+                        width: 18px;
+                        height: 18px;
                     }
                 }
             `}</style>

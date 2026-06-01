@@ -16,6 +16,11 @@ export default function ConfigPerfilMedico() {
     const [user, setUser] = useState(null);
     const [fotoErro, setFotoErro] = useState(false);
     const [clinicas, setClinicas] = useState([]);
+    
+    // Estados das notificações
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notifications, setNotifications] = useState([]);
+    
     const [userData, setUserData] = useState({
         nome: '',
         email: '',
@@ -45,6 +50,26 @@ export default function ConfigPerfilMedico() {
     const [novaFotoUrl, setNovaFotoUrl] = useState('');
     const navigate = useNavigate();
 
+    // Função auxiliar para formatar data corretamente
+    const formatarDataCorreta = (dataString) => {
+        if (!dataString) return '';
+        const date = new Date(dataString);
+        return date.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + date.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    // Função para corrigir datas nas mensagens
+    const corrigirDatasNaMensagem = (mensagem) => {
+        if (!mensagem) return mensagem;
+        return mensagem.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$3/$2/$1');
+    };
+
     useEffect(() => {
         getUser();
         buscarClinicas();
@@ -55,7 +80,58 @@ export default function ConfigPerfilMedico() {
         setUser(user);
         if (user) {
             carregarDadosUsuario(user.id, user.email);
+            await carregarNotificacoes(user.id);
         }
+    };
+
+    // Função para carregar notificações
+    const carregarNotificacoes = async (medicoId) => {
+        try {
+            const { data, error } = await supabase
+                .from("notificacoes")
+                .select(`
+                    *,
+                    paciente:paciente_id (
+                        id,
+                        nome,
+                        foto
+                    )
+                `)
+                .eq("usuario_id", medicoId)
+                .order("created_at", { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+
+            if (data) {
+                const notificacoesProcessadas = data.map(notif => {
+                    let mensagemCorrigida = notif.mensagem || '';
+                    mensagemCorrigida = corrigirDatasNaMensagem(mensagemCorrigida);
+                    
+                    return {
+                        id: notif.id,
+                        title: notif.titulo,
+                        message: mensagemCorrigida,
+                        type: notif.tipo,
+                        read: notif.lida,
+                        time: formatarDataCorreta(notif.created_at),
+                        pacienteNome: notif.paciente?.nome || null
+                    };
+                });
+                
+                setNotifications(notificacoesProcessadas);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar notificações:", error);
+        }
+    };
+
+    // Função para marcar notificação como lida
+    const marcarNotificacaoLida = async (id) => {
+        await supabase
+            .from("notificacoes")
+            .update({ lida: true })
+            .eq("id", id);
     };
 
     const buscarClinicas = async () => {
@@ -178,7 +254,6 @@ export default function ConfigPerfilMedico() {
         return valor;
     };
 
-    // Formata o preço para exibição (do banco para o input)
     const formatarPrecoParaExibicao = (valor) => {
         if (!valor) return '';
         const numero = parseFloat(valor);
@@ -189,17 +264,10 @@ export default function ConfigPerfilMedico() {
         });
     };
 
-    // Formata o preço enquanto digita
     const formatarPrecoDigitacao = (valor) => {
-        // Remove tudo que não é número
         let numero = valor.replace(/\D/g, '');
-        
         if (numero === '') return '';
-        
-        // Converte para número (em reais)
         let valorEmReais = parseFloat(numero) / 100;
-        
-        // Formata como moeda
         return valorEmReais.toLocaleString('pt-BR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -340,7 +408,6 @@ export default function ConfigPerfilMedico() {
         } else if (name === 'cep') {
             setUserData(prev => ({ ...prev, [name]: formatarCEP(value) }));
         } else if (name === 'preco_consulta') {
-            // Formata o preço enquanto digita
             const precoFormatado = formatarPrecoDigitacao(value);
             setUserData(prev => ({ ...prev, [name]: precoFormatado }));
         } else {
@@ -371,10 +438,8 @@ export default function ConfigPerfilMedico() {
             const telefoneLimpo = userData.telefone.replace(/\D/g, '');
             const cepLimpo = userData.cep.replace(/\D/g, '');
             
-            // Converte o preço formatado para número (em reais)
             let precoNumero = null;
             if (userData.preco_consulta && userData.preco_consulta.trim() !== '') {
-                // Remove formatação e converte para número
                 const precoLimpo = userData.preco_consulta
                     .replace(/[R$\s]/g, '')
                     .replace(/\./g, '')
@@ -402,18 +467,12 @@ export default function ConfigPerfilMedico() {
                 preco_consulta: precoNumero
             };
 
-            console.log('Dados para atualizar:', dadosParaAtualizar);
-            console.log('User ID:', user.id);
-
             const { error } = await supabase
                 .from('usuarios')
                 .update(dadosParaAtualizar)
                 .eq('id', user.id);
 
-            if (error) {
-                console.error('Erro detalhado do Supabase:', error);
-                throw error;
-            }
+            if (error) throw error;
 
             Swal.fire({
                 icon: 'success',
@@ -512,7 +571,6 @@ export default function ConfigPerfilMedico() {
         try {
             setLoading(true);
 
-            // Chamar a Edge Function para deletar a conta
             const { data, error } = await supabase.functions.invoke('delete-account', {
                 method: 'POST'
             });
@@ -521,10 +579,8 @@ export default function ConfigPerfilMedico() {
                 throw new Error(error.message);
             }
 
-            // Fazer logout
             await supabase.auth.signOut();
 
-            // Mostrar mensagem de sucesso
             Swal.fire({
                 icon: 'success',
                 title: 'Conta excluída!',
@@ -532,7 +588,6 @@ export default function ConfigPerfilMedico() {
                 confirmButtonColor: '#6366f1'
             });
 
-            // Redirecionar para home
             navigate('/');
 
         } catch (error) {
@@ -571,6 +626,78 @@ export default function ConfigPerfilMedico() {
         if (result.isConfirmed) {
             await supabase.auth.signOut();
             navigate('/');
+        }
+    };
+
+    // Funções de notificação
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const handleNotificationClick = async (id) => {
+        setNotifications(prev => 
+            prev.map(notif => 
+                notif.id === id ? { ...notif, read: true } : notif
+            )
+        );
+        await marcarNotificacaoLida(id);
+    };
+
+    const markAllAsRead = async () => {
+        const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
+        setNotifications(prev => 
+            prev.map(notif => ({ ...notif, read: true }))
+        );
+        
+        for (const id of unreadIds) {
+            await marcarNotificacaoLida(id);
+        }
+    };
+
+    const closeNotifications = () => {
+        setShowNotifications(false);
+    };
+
+    const getTypeIcon = (type) => {
+        switch(type) {
+            case 'consulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 12h-4l-3 9H9l-3-9H2"/>
+                        <path d="M5 3h14"/>
+                        <path d="M12 3v9"/>
+                    </svg>
+                );
+            case 'teleconsulta':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                        <path d="m9 8 5 4-5 4V8z"/>
+                    </svg>
+                );
+            case 'pagamento':
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <line x1="2" y1="10" x2="22" y2="10"/>
+                        <circle cx="16" cy="14" r="1"/>
+                    </svg>
+                );
+            default:
+                return (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                );
+        }
+    };
+
+    const getTypeClass = (type) => {
+        switch(type) {
+            case 'consulta': return 'consulta';
+            case 'teleconsulta': return 'teleconsulta';
+            case 'pagamento': return 'pagamento';
+            default: return 'sistema';
         }
     };
 
@@ -617,7 +744,6 @@ export default function ConfigPerfilMedico() {
                         <li><Link to="/home-medico">Visão geral</Link></li>
                         <li><Link to="/agenda">Minha agenda</Link></li>
                         <li><Link to="/disponibilidade">Disponibilidade</Link></li>
-                        <li><Link to="/notificacoesme">Notificações</Link></li>
                         <li className="active"><Link to="/perfil-medico">Perfil</Link></li>
                     </ul>
                 </div>
@@ -640,8 +766,71 @@ export default function ConfigPerfilMedico() {
             {/* CONTEÚDO PRINCIPAL */}
             <div className="main-content-medico">
                 <div className="perfil-header-medico">
-                    <h1>MEU PERFIL</h1>
+                    <div className="perfil-title-center-medico">
+                        <h1>MEU PERFIL</h1>
+                    </div>
+                    <div className="header-actions-medico">
+                        <div className="notification-wrapper-medico" onClick={() => setShowNotifications(true)}>
+                            <div className="notification-icon-medico">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                                </svg>
+                                {unreadCount > 0 && (
+                                    <span className="notification-badge-medico">{unreadCount}</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                {/* MODAL DE NOTIFICAÇÕES */}
+                {showNotifications && (
+                    <div className="notification-modal-overlay-medico" onClick={closeNotifications}>
+                        <div className="notification-modal-medico" onClick={(e) => e.stopPropagation()}>
+                            <div className="notification-modal-header-medico">
+                                <h3>Notificações</h3>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    {unreadCount > 0 && (
+                                        <button className="mark-all-btn-medico" onClick={markAllAsRead}>
+                                            Marcar todas
+                                        </button>
+                                    )}
+                                    <button className="close-modal-btn-medico" onClick={closeNotifications}>
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="notification-list-medico">
+                                {notifications.length > 0 ? (
+                                    notifications.map((notif) => (
+                                        <div 
+                                            key={notif.id} 
+                                            className={`notification-item-medico ${!notif.read ? 'unread' : ''}`}
+                                            onClick={() => handleNotificationClick(notif.id)}
+                                        >
+                                            <div className={`notification-icon-circle-medico ${getTypeClass(notif.type)}`}>
+                                                {getTypeIcon(notif.type)}
+                                            </div>
+                                            <div className="notification-content-medico">
+                                                <div className="notification-title-medico">
+                                                    {notif.title}
+                                                </div>
+                                                <div className="notification-message-medico">{notif.message}</div>
+                                                <div className="notification-time-medico">{notif.time}</div>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="no-notifications-medico">
+                                        <p>Nenhuma notificação no momento</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* FOTO E INFORMAÇÕES BÁSICAS */}
                 <div className="perfil-card-medico">
@@ -837,7 +1026,7 @@ export default function ConfigPerfilMedico() {
                                     placeholder="Especialidade" 
                                     value={userData.especialidade}
                                     onChange={handleInputChange}
-                                />
+                                                                />
                             </div>
                             <input 
                                 type="text" 

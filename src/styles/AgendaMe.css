@@ -143,7 +143,68 @@
     flex-direction: column;
     align-items: center;
 }
+/* AGENDA HEADER CENTRALIZADO */
+.agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 16px;
+    position: relative;
+}
 
+.agenda-title-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.agenda-title-center h1 {
+    font-size: 28px;
+    color: #1a2a3a;
+    margin: 0;
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .agenda-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        padding-top: 16px;
+    }
+    
+    .agenda-title-center {
+        position: relative;
+        left: 0;
+        transform: none;
+        margin-bottom: 10px;
+    }
+    
+    .header-actions {
+        margin-left: 0;
+        justify-content: center;
+    }
+    
+    .agenda-title-center h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .agenda-title-center h1 {
+        font-size: 20px;
+    }
+}
 .navbar li {
     margin-bottom: 4px;
     border-radius: 10px;
